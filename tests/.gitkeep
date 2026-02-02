@@ -1,0 +1,5 @@
+# Tests
+
+Esta carpeta contendra:
+- WePlayRises.Api.Tests/ (Integration tests)
+- WePlayRises.Crowdfunding.Tests/ (Unit tests)

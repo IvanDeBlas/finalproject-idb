@@ -1,0 +1,55 @@
+# WePlay Rises - Reglas de Priorizacion
+# Version simplificada inspirada en miUrba
+# Ultima actualizacion: 2026-01-21
+
+metadata:
+  version: "1.0"
+  description: "Reglas para priorizar tareas del MVP"
+  max_score: 105
+
+rules:
+  - id: critical_for_mvp
+    name: "Critico para MVP"
+    description: "Sin esta tarea, el MVP no funciona"
+    weight: 50
+    applies_when:
+      - "tarea es parte del flujo E2E crowdfunding"
+      - "bloquea demo final"
+
+  - id: unblocks_others
+    name: "Desbloquea otras tareas"
+    description: "Completar esta tarea permite avanzar en 2+ tareas"
+    weight: 30
+    applies_when:
+      - "task.blocks.count >= 2"
+
+  - id: quick_win
+    name: "Quick win"
+    description: "Tarea que se puede completar en < 2 horas"
+    weight: 15
+    applies_when:
+      - "task.estimado <= 2"
+
+  - id: user_facing
+    name: "Visible al usuario"
+    description: "Impacta directamente la experiencia del usuario"
+    weight: 10
+    applies_when:
+      - "tarea de frontend o UX"
+
+scoring:
+  method: sum
+  max_possible: 105
+
+tiebreaker:
+  - smaller_first
+  - alphabetical
+
+distribution:
+  backend: 50%
+  frontend: 40%
+  infra: 10%
+
+daily:
+  max_tasks: 3
+  max_hours: 8

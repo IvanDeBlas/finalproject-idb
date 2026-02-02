@@ -1,0 +1,10 @@
+-- ============================================================
+-- WePlay Rises - Modelo de Datos Completo
+-- Generado: 2026-01-22
+-- ============================================================
+-- Orden de ejecucion:
+--   1. Identity (Users, Roles)
+--   2. Tablas Maestras
+--   3. Perfiles (Artista, Fan, Profesional)
+--   4. Crowdfunding
+-- ============================================================

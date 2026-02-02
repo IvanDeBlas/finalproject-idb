@@ -1,0 +1,36 @@
+# WePlay Rises - .gitignore
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.cache
+.vs/
+*.nupkg
+
+# Node.js / React
+node_modules/
+dist/
+build/
+.cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+appsettings.Development.json
+.credentials.local.json
+
+# Misc
+*.bak
+*.tmp
+logs/

@@ -1,0 +1,2354 @@
+{
+  "info": {
+    "_postman_id": "7f8c5d3a-2e1b-4a6c-9f12-1b3c4d5e6f7g",
+    "name": "WePlay.RegistroArtista.IntegrationTests",
+    "description": "Tests de integracion para registro-artista. Cubre autenticacion, creacion de perfiles de artista y flujos E2E.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "Get Auth Token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('testEmail1', `test-${Date.now()}@weplay.local`);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time < 2000ms\", () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"ServiceResponse structure is valid\", () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Response data contains required fields\", () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('userId');",
+                  "    pm.expect(json.data).to.have.property('email');",
+                  "    pm.expect(json.data).to.have.property('token');",
+                  "});",
+                  "",
+                  "pm.test(\"Token is valid JWT\", () => {",
+                  "    const json = pm.response.json();",
+                  "    const token = json.data.token;",
+                  "    const parts = token.split('.');",
+                  "    pm.expect(parts).to.have.lengthOf(3);",
+                  "});",
+                  "",
+                  "pm.test(\"Save token and userId to environment\", () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set('bearerToken', json.data.token);",
+                  "    pm.environment.set('userId', json.data.userId);",
+                  "});",
+                  "",
+                  "pm.test(\"isSuccess is true\", () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{testEmail1}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "200 OK",
+          "item": [
+            {
+              "name": "POST Register - Success",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('currentTestEmail', `newuser-${Date.now()}@weplay.local`);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response time < 1500ms\", () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(1500);",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is true\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.true;",
+                      "});",
+                      "",
+                      "pm.test(\"Data contains userId (valid GUID)\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
+                      "    pm.expect(json.data.userId).to.match(guidRegex);",
+                      "});",
+                      "",
+                      "pm.test(\"Data contains email\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.email).to.equal(pm.environment.get('currentTestEmail'));",
+                      "});",
+                      "",
+                      "pm.test(\"Data contains token\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.token).to.exist;",
+                      "    pm.expect(json.data.token).to.not.be.empty;",
+                      "});",
+                      "",
+                      "pm.test(\"Token contains proper claims\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const token = json.data.token;",
+                      "    const base64Url = token.split('.')[1];",
+                      "    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');",
+                      "    const payload = JSON.parse(atob(base64));",
+                      "",
+                      "    pm.expect(payload).to.have.property('sub');",
+                      "    pm.expect(payload).to.have.property('email');",
+                      "    pm.expect(payload).to.have.property('exp');",
+                      "    pm.expect(payload.email).to.equal(pm.environment.get('currentTestEmail'));",
+                      "});",
+                      "",
+                      "pm.test(\"Success message present\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const message = json.messages[0];",
+                      "    pm.expect(message.errorCode).to.equal('SUCCESS');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{currentTestEmail}}\",\n    \"password\": \"SecurePass123\",\n    \"confirmPassword\": \"SecurePass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Register - With Complete Profile",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('completeProfileEmail', `complete-${Date.now()}@weplay.local`);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is true\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.true;",
+                      "});",
+                      "",
+                      "pm.test(\"Token is generated\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.token).to.exist;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{completeProfileEmail}}\",\n    \"password\": \"SecurePass123!\",\n    \"confirmPassword\": \"SecurePass123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 Bad Request",
+          "item": [
+            {
+              "name": "POST Register - Empty Email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is false\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});",
+                      "",
+                      "pm.test(\"Messages contain validation error for email\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                      "",
+                      "    const emailError = json.messages.find(m =>",
+                      "        m.errorCode === 'VALIDATION_REQUIRED' &&",
+                      "        m.message.toLowerCase().includes('email')",
+                      "    );",
+                      "    pm.expect(emailError).to.exist;",
+                      "});",
+                      "",
+                      "pm.test(\"Error message is descriptive\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages[0];",
+                      "    pm.expect(error.message).to.not.be.empty;",
+                      "    pm.expect(error.errorCode).to.not.be.empty;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"\",\n    \"password\": \"SecurePass123\",\n    \"confirmPassword\": \"SecurePass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Register - Invalid Email Format",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is AUTH_EMAIL_INVALID\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'AUTH_EMAIL_INVALID');",
+                      "    pm.expect(error).to.exist;",
+                      "    pm.expect(error.message).to.include('formato');",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is false\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"notanemail\",\n    \"password\": \"SecurePass123\",\n    \"confirmPassword\": \"SecurePass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Register - Empty Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is VALIDATION_REQUIRED for password\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m =>",
+                      "        m.errorCode === 'VALIDATION_REQUIRED' &&",
+                      "        m.message.toLowerCase().includes('contraseña')",
+                      "    );",
+                      "    pm.expect(error).to.exist;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"test@weplay.local\",\n    \"password\": \"\",\n    \"confirmPassword\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Register - Password Too Short",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is AUTH_PASSWORD_MIN_LENGTH\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'AUTH_PASSWORD_MIN_LENGTH');",
+                      "    pm.expect(error).to.exist;",
+                      "    pm.expect(error.message).to.include('8');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"test@weplay.local\",\n    \"password\": \"Short1\",\n    \"confirmPassword\": \"Short1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Register - Empty Confirm Password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"test@weplay.local\",\n    \"password\": \"SecurePass123\",\n    \"confirmPassword\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Register - Passwords Don't Match",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is AUTH_PASSWORD_MISMATCH\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'AUTH_PASSWORD_MISMATCH');",
+                      "    pm.expect(error).to.exist;",
+                      "    pm.expect(error.message.toLowerCase()).to.include('coinciden');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"test@weplay.local\",\n    \"password\": \"SecurePass123\",\n    \"confirmPassword\": \"DifferentPass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "409 Conflict",
+          "item": [
+            {
+              "name": "POST Register - Email Already Exists",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const emailToTest = `duplicate-${Date.now()}@weplay.local`;",
+                      "pm.environment.set('duplicateEmail', emailToTest);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", () => {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is AUTH_EMAIL_EXISTS\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'AUTH_EMAIL_EXISTS');",
+                      "    pm.expect(error).to.exist;",
+                      "    pm.expect(error.message.toLowerCase()).to.include('registrado');",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is false\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{duplicateEmail}}\",\n    \"password\": \"SecurePass123\",\n    \"confirmPassword\": \"SecurePass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Artistas",
+      "item": [
+        {
+          "name": "200 OK",
+          "item": [
+            {
+              "name": "POST Create - Success",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response time < 1000ms\", () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is true\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.true;",
+                      "});",
+                      "",
+                      "pm.test(\"Data contains all required fields\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data).to.have.property('id');",
+                      "    pm.expect(json.data).to.have.property('userId');",
+                      "    pm.expect(json.data).to.have.property('nombreArtistico');",
+                      "    pm.expect(json.data).to.have.property('descripcion');",
+                      "    pm.expect(json.data).to.have.property('pais');",
+                      "    pm.expect(json.data).to.have.property('ciudad');",
+                      "    pm.expect(json.data).to.have.property('imagenUrl');",
+                      "    pm.expect(json.data).to.have.property('fechaCreacion');",
+                      "});",
+                      "",
+                      "pm.test(\"Data.id is valid GUID\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
+                      "    pm.expect(json.data.id).to.match(guidRegex);",
+                      "});",
+                      "",
+                      "pm.test(\"Data.userId matches token\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const token = pm.environment.get('bearerToken');",
+                      "    const base64Url = token.split('.')[1];",
+                      "    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');",
+                      "    const payload = JSON.parse(atob(base64));",
+                      "",
+                      "    pm.expect(json.data.userId).to.equal(payload.sub);",
+                      "});",
+                      "",
+                      "pm.test(\"Save artistaId to environment\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.environment.set('artistaId', json.data.id);",
+                      "});",
+                      "",
+                      "pm.test(\"fechaCreacion is ISO datetime\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(new Date(json.data.fechaCreacion)).to.not.throw();",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Los Rockeros {{$timestamp}}\",\n    \"descripcion\": \"Banda de rock alternativo con 10 años de trayectoria\",\n    \"pais\": \"España\",\n    \"ciudad\": \"Madrid\",\n    \"imagenUrl\": \"https://example.com/artistas/band.jpg\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Minimal Data",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Optional fields are null/empty\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.descripcion).to.satisfy(val =>",
+                      "        val === null || val === \\\"\\\" || val === undefined",
+                      "    );",
+                      "    pm.expect(json.data.pais).to.satisfy(val =>",
+                      "        val === null || val === \\\"\\\" || val === undefined",
+                      "    );",
+                      "    pm.expect(json.data.ciudad).to.satisfy(val =>",
+                      "        val === null || val === \\\"\\\" || val === undefined",
+                      "    );",
+                      "});",
+                      "",
+                      "pm.test(\"nombreArtistico is required and set\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.nombreArtistico).to.not.be.empty;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Solo Artista {{$timestamp}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "GET Get By Id - Success",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response time < 500ms\", () => {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is true\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.true;",
+                      "});",
+                      "",
+                      "pm.test(\"Data contains artista with matching ID\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const artistaId = pm.environment.get('artistaId');",
+                      "    pm.expect(json.data.id).to.equal(artistaId);",
+                      "});",
+                      "",
+                      "pm.test(\"Data is accessible without authentication\", () => {",
+                      "    pm.expect(pm.request.headers.get('Authorization')).to.be.undefined;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/{{artistaId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "{{artistaId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "GET Get By User Id - Success",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is true\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.true;",
+                      "});",
+                      "",
+                      "pm.test(\"Data.userId matches request parameter\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const userId = pm.environment.get('userId');",
+                      "    pm.expect(json.data.userId).to.equal(userId);",
+                      "});",
+                      "",
+                      "pm.test(\"Data contains all artista fields\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data).to.have.property('id');",
+                      "    pm.expect(json.data).to.have.property('nombreArtistico');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "GET Get By User Id - Own Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response contains own artista profile\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.userId).to.equal(pm.environment.get('userId'));",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 Bad Request",
+          "item": [
+            {
+              "name": "POST Create - Empty Nombre Artistico",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is VALIDATION_REQUIRED\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'VALIDATION_REQUIRED');",
+                      "    pm.expect(error).to.exist;",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is false\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Nombre Artistico Too Long",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is ARTISTA_NOMBRE_MAX_LENGTH\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'ARTISTA_NOMBRE_MAX_LENGTH');",
+                      "    pm.expect(error).to.exist;",
+                      "    pm.expect(error.message).to.include('200');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"A very long artist name that exceeds the maximum allowed length of two hundred characters for the artistic name field in the system and should trigger a validation error when submitted to the API endpoint for artist profile creation with additional padding text here to ensure length\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Descripcion Too Long",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Valid Artist\",\n    \"descripcion\": \"This is a very long description that exceeds the maximum allowed length of two thousand characters. It contains lots of padding text to trigger the validation error. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam. Nisi ut quid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Pais Too Long",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Valid Artist\",\n    \"pais\": \"A very long country name that exceeds the maximum allowed length of one hundred characters for the country field in the artist profile creation\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Ciudad Too Long",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Valid Artist\",\n    \"ciudad\": \"A very long city name that exceeds the maximum allowed length of one hundred characters for the city field in the artist profile creation\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Invalid Image URL",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", () => {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is ARTISTA_IMAGEN_URL_INVALIDA\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'ARTISTA_IMAGEN_URL_INVALIDA');",
+                      "    pm.expect(error).to.exist;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Valid Artist\",\n    \"imagenUrl\": \"not-a-valid-url\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 Unauthorized",
+          "item": [
+            {
+              "name": "POST Create - Missing Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", () => {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is false\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});",
+                      "",
+                      "pm.test(\"Authorization header is not sent\", () => {",
+                      "    pm.expect(pm.request.headers.get('Authorization')).to.be.undefined;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Artist Without Token\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Invalid Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", () => {",
+                      "    pm.response.to.have.status(401);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer invalid.token.here"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Artist With Invalid Token\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "POST Create - Expired Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", () => {",
+                      "    pm.response.to.have.status(401);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Artist With Expired Token\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "GET Get By User Id - Missing Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", () => {",
+                      "    pm.response.to.have.status(401);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "GET Get By User Id - Invalid Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", () => {",
+                      "    pm.response.to.have.status(401);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer invalid.token.here"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "GET Get By User Id - Unauthorized User",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const userId = pm.environment.get('userId');",
+                      "const userId2 = pm.environment.get('userId2');",
+                      "",
+                      "if (userId === userId2) {",
+                      "    pm.expect.fail(\"userId2 debe ser diferente a userId para este test\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", () => {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is AUTH_UNAUTHORIZED\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'AUTH_UNAUTHORIZED');",
+                      "    pm.expect(error).to.exist;",
+                      "    pm.expect(error.message.toLowerCase()).to.include('permiso');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId2}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId2}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 Not Found",
+          "item": [
+            {
+              "name": "GET Get By Id - Non-existent",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", () => {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is ARTISTA_NOT_FOUND\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'ARTISTA_NOT_FOUND');",
+                      "    pm.expect(error).to.exist;",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is false\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/00000000-0000-0000-0000-000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "GET Get By User Id - No Profile Created",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", () => {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is ARTISTA_NOT_FOUND\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'ARTISTA_NOT_FOUND');",
+                      "    pm.expect(error).to.exist;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/00000000-0000-0000-0000-000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "409 Conflict",
+          "item": [
+            {
+              "name": "POST Create - Artist Profile Already Exists",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", () => {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"Error code is ARTISTA_ALREADY_EXISTS\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const error = json.messages.find(m => m.errorCode === 'ARTISTA_ALREADY_EXISTS');",
+                      "    pm.expect(error).to.exist;",
+                      "});",
+                      "",
+                      "pm.test(\"isSuccess is false\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Duplicate Artist\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "_E2E Flows",
+      "item": [
+        {
+          "name": "Complete Registration Flow",
+          "item": [
+            {
+              "name": "1. Register new user",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('e2e_email', `e2e-complete-${Date.now()}@weplay.local`);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Token generated\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.token).to.exist;",
+                      "    pm.environment.set('bearerToken_E2E', json.data.token);",
+                      "});",
+                      "",
+                      "pm.test(\"UserId captured\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.userId).to.exist;",
+                      "    pm.environment.set('userId_E2E', json.data.userId);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{e2e_email}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "2. Create artista profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"artistaId captured\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.id).to.exist;",
+                      "    pm.environment.set('artistaId_E2E', json.data.id);",
+                      "});",
+                      "",
+                      "pm.test(\"userId in response matches token\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.userId).to.equal(pm.environment.get('userId_E2E'));",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken_E2E}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"E2E Artist {{$timestamp}}\",\n    \"descripcion\": \"Integration test artist\",\n    \"pais\": \"Spain\",\n    \"ciudad\": \"Barcelona\",\n    \"imagenUrl\": \"https://example.com/e2e-artist.jpg\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "3. Get artista by ID (Public Access)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Data matches created artista\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const artistaId = pm.environment.get('artistaId_E2E');",
+                      "    pm.expect(json.data.id).to.equal(artistaId);",
+                      "});",
+                      "",
+                      "pm.test(\"Sin necesidad de autenticacion\", () => {",
+                      "    pm.expect(pm.request.headers.get('Authorization')).to.be.undefined;",
+                      "});",
+                      "",
+                      "pm.test(\"Datos basicos presentes\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.nombreArtistico).to.not.be.empty;",
+                      "    pm.expect(json.data.pais).to.not.be.empty;",
+                      "    pm.expect(json.data.ciudad).to.not.be.empty;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/{{artistaId_E2E}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "{{artistaId_E2E}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "4. Get artista by UserId (Authenticated)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Datos coinciden con creados\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.nombreArtistico).to.not.be.empty;",
+                      "});",
+                      "",
+                      "pm.test(\"userId en respuesta coincide con parametro\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const userId = pm.environment.get('userId_E2E');",
+                      "    pm.expect(json.data.userId).to.equal(userId);",
+                      "});",
+                      "",
+                      "pm.test(\"artistaId coincide\", () => {",
+                      "    const json = pm.response.json();",
+                      "    const artistaId = pm.environment.get('artistaId_E2E');",
+                      "    pm.expect(json.data.id).to.equal(artistaId);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearerToken_E2E}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId_E2E}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId_E2E}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Multi-User Isolation Flow",
+          "item": [
+            {
+              "name": "1. Register User 1",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('user1_email', `user1-${Date.now()}@weplay.local`);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Save token1 and userId1\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.environment.set('token1', json.data.token);",
+                      "    pm.environment.set('userId1', json.data.userId);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{user1_email}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "2. Create Artista for User 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Save artistaId1\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.environment.set('artistaId1', json.data.id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token1}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Artist One\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "3. Register User 2",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('user2_email', `user2-${Date.now()}@weplay.local`);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Save token2 and userId2\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.environment.set('token2', json.data.token);",
+                      "    pm.environment.set('userId2', json.data.userId);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{user2_email}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "4. Create Artista for User 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Save artistaId2\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.environment.set('artistaId2', json.data.id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token2}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombreArtistico\": \"Artist Two\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "5. User 1 Can Access Own Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response contains User 1 profile\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.data.userId).to.equal(pm.environment.get('userId1'));",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token1}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId1}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "6. User 1 Cannot Access User 2 Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", () => {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Authorization failed\", () => {",
+                      "    const json = pm.response.json();",
+                      "    pm.expect(json.isSuccess).to.be.false;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token1}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/by-user/{{userId2}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "by-user",
+                    "{{userId2}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "7. Public Access Works for Both - Artista 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Sin autenticacion requerida\", () => {",
+                      "    pm.expect(pm.request.headers.get('Authorization')).to.be.undefined;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/{{artistaId1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "{{artistaId1}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "8. Public Access Works for Both - Artista 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", () => {",
+                      "    pm.response.to.have.status(200);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/artistas/{{artistaId2}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "artistas",
+                    "{{artistaId2}}"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "identityUrl",
+      "value": "https://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "apiVersion",
+      "value": "v1",
+      "type": "string"
+    },
+    {
+      "key": "testEmail1",
+      "value": "test-{{$timestamp}}@weplay.local",
+      "type": "string"
+    },
+    {
+      "key": "testEmail2",
+      "value": "artist-{{$timestamp}}@weplay.local",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "SecurePass123!",
+      "type": "string"
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bearerToken2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaId2",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

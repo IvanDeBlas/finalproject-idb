@@ -1,0 +1,4 @@
+-- ============================================================
+-- WePlay Rises - Poblacion de Tablas Maestras
+-- Ejecutar despues de crear todas las tablas
+-- ============================================================

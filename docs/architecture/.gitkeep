@@ -1,0 +1,6 @@
+# Documentacion de Arquitectura
+
+Carpeta para documentacion arquitectonica:
+- overview.md - Vision general
+- data-model.md - Modelo de datos
+- decisions/ - ADRs (Architecture Decision Records)
