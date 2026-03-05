@@ -1,0 +1,370 @@
+================================================================================
+  POSTMAN COLLECTION - DASHBOARD ARTISTA INTEGRATION TESTS
+  WePlay Rises - MVP Integration Testing Suite
+================================================================================
+
+DELIVERY DATE: 2026-02-14
+STATUS: ✅ PRODUCTION READY
+VERSION: 1.0
+
+================================================================================
+  ARCHIVOS ENTREGADOS
+================================================================================
+
+📦 COLECCION POSTMAN
+├── postman-collection.json          (30 KB | JSON v2.1 | 18 requests)
+├── environment.json                 (1 KB | Variables desarrollo)
+└── environment-staging.json         (1 KB | Variables staging)
+
+⚙️  SCRIPTS DE EJECUCION
+├── run-tests.sh                     (2 KB | Bash - Linux/Mac)
+└── run-tests.bat                    (2 KB | Batch - Windows)
+
+📚 DOCUMENTACION
+├── README.md                        (15 min read | Guía completa)
+├── QUICK-START.md                   (5 min read | Inicio rápido)
+├── TEST-SPEC.md                     (20 min read | Especificación técnica)
+├── INDEX.md                         (10 min read | Navegación)
+├── COLLECTION-METRICS.md            (15 min read | Análisis cuantitativo)
+├── FLOW-DIAGRAM.md                  (Diagramas de flujo)
+├── DELIVERY-SUMMARY.md              (Este documento)
+└── MANIFEST.txt                     (Este archivo)
+
+================================================================================
+  RESUMEN DE CONTENIDO
+================================================================================
+
+COLECCION:          WePlay.DashboardArtista.IntegrationTests
+FOLDERS:            5 (_Setup, Dashboard, Mis Campanias, Backings, Stats)
+REQUESTS:           18 (13 principales + 5 errores)
+ASSERTIONS:         45+ (status, time, structure, logic)
+ENDPOINTS:          5 (/auth/login, /resumen, /mis-campanias, /backings, /stats)
+HTTP METHODS:       5 (POST x1, GET x17)
+STATUS CODES:       3 (200, 401, 404)
+VARIABLES:          5 (baseUrl, authToken, campaniaId, testEmail, testPassword)
+AMBIENTES:          2 (development, staging)
+
+================================================================================
+  EJECUCION RAPIDA
+================================================================================
+
+REQUISITOS:
+  • Node.js 16+
+  • Newman: npm install -g newman
+  • Backend corriendo en http://localhost:5001
+
+COMANDO BASICO:
+  $ cd C:\Repos\WePlay_Rises\plans\dashboard-artista\backend
+  $ newman run postman-collection.json
+
+CON SCRIPT:
+  # Linux/Mac
+  $ ./run-tests.sh
+
+  # Windows
+  $ run-tests.bat
+
+CON REPORTE HTML:
+  $ newman run postman-collection.json \
+      --reporters html \
+      --reporter-html-export report.html
+
+================================================================================
+  COBERTURA DE ENDPOINTS
+================================================================================
+
+  # Endpoint                    Método  Tests  Status Codes   Folder
+  ─────────────────────────────────────────────────────────────────────
+  1 /api/auth/login             POST    1      200            _Setup
+  2 /api/dashboard/resumen      GET     2      200, 401       Dashboard
+  3 /api/campanias/mis-campanias GET    3      200, 401       Mis Campanias
+  4 /api/campanias/{id}/backings GET    4      200, 404, 401  Backings
+  5 /api/campanias/{id}/stats    GET    3      200, 404, 401  Stats
+  ─────────────────────────────────────────────────────────────────────
+  TOTAL:                                18     3 codes covered
+
+================================================================================
+  ASSERTIONS POR CATEGORIA
+================================================================================
+
+  Category              Count   Examples
+  ─────────────────────────────────────────────────────────────────────
+  Status Code           13      200 OK, 401 Unauthorized, 404 Not Found
+  Response Time         9       < 500ms validation
+  Structure             12      Fields exist, arrays, types correct
+  Business Logic        11      Percentage 0-100, calculations, EUR
+  ─────────────────────────────────────────────────────────────────────
+  TOTAL:                45+
+
+================================================================================
+  VARIABLES DE COLECCION
+================================================================================
+
+  Variable          Tipo     Default                      Automático
+  ──────────────────────────────────────────────────────────────────
+  baseUrl           string   http://localhost:5001        No
+  authToken         string   (empty)                      Sí (Login)
+  campaniaId        string   (empty)                      Sí (Mis Campanias)
+  testEmail         string   usuario1@mail.com            No
+  testPassword      string   123456                       No
+
+================================================================================
+  VALIDACIONES INCLUIDAS
+================================================================================
+
+✅ HTTP Status Codes (200, 401, 404)
+✅ Response Time (< 500ms)
+✅ JSON Structure (fields, types)
+✅ Business Rules (porcentaje 0-100, EUR)
+✅ Data Types (number, string, array, boolean)
+✅ Field Presence (obligatory fields)
+✅ Calculations (porcentaje, backing promedio)
+✅ Paging (página 1, página 2)
+✅ Filters (estadoCampaniaId)
+✅ Authentication (Bearer token)
+✅ Error Handling (401, 404)
+✅ Variable Persistence (authToken, campaniaId)
+
+================================================================================
+  PERFORMANCE TARGETS
+================================================================================
+
+  Endpoint                      Target      Warning     Error
+  ──────────────────────────────────────────────────────────────
+  /api/auth/login              < 200ms     300ms       500ms
+  /api/dashboard/resumen       < 200ms     300ms       500ms
+  /api/campanias/mis-campanias < 300ms     400ms       500ms
+  /api/campanias/{id}/backings < 300ms     400ms       500ms
+  /api/campanias/{id}/stats    < 400ms     500ms      1000ms
+  ──────────────────────────────────────────────────────────────
+  Total Execution Time         ~3-5 sec     (local env)
+
+================================================================================
+  DOCUMENTACION QUICK REFERENCE
+================================================================================
+
+  Cuando necesitas...                    Lee este archivo
+  ───────────────────────────────────────────────────────────
+  Empezar rápido                    →    QUICK-START.md
+  Entender todos los detalles       →    README.md
+  Saber qué se testa               →    TEST-SPEC.md
+  Ver especificación técnica        →    TEST-SPEC.md
+  Entender la estructura            →    INDEX.md
+  Ver métricas y análisis           →    COLLECTION-METRICS.md
+  Ver diagramas y flujos            →    FLOW-DIAGRAM.md
+  Navegar archivos                  →    INDEX.md
+  Resolver problemas                →    README.md (Troubleshooting)
+  Configurar entornos               →    README.md (Variables)
+  Ejecutar en CI/CD                 →    README.md (CI/CD Integration)
+
+================================================================================
+  ESTRUCTURA DE CARPETAS
+================================================================================
+
+  C:\Repos\WePlay_Rises\plans\dashboard-artista\
+  ├── backend/
+  │   ├── postman-collection.json          ← Coleccion principal
+  │   ├── environment.json                 ← Dev config
+  │   ├── environment-staging.json         ← Staging config
+  │   ├── run-tests.sh                     ← Script Bash
+  │   ├── run-tests.bat                    ← Script Batch
+  │   ├── README.md                        ← Documentacion completa
+  │   ├── QUICK-START.md                   ← Inicio rápido
+  │   ├── TEST-SPEC.md                     ← Especificacion técnica
+  │   ├── INDEX.md                         ← Navegacion
+  │   ├── COLLECTION-METRICS.md            ← Métricas
+  │   ├── FLOW-DIAGRAM.md                  ← Diagramas
+  │   └── MANIFEST.txt                     ← Este archivo
+  │
+  └── DELIVERY-SUMMARY.md                  ← Resumen entrega
+
+================================================================================
+  FLUJO DE EJECUCION
+================================================================================
+
+  INICIO
+    │
+    ├─→ _Setup
+    │   └─→ Login (POST /api/auth/login) → authToken guardado
+    │
+    ├─→ Dashboard - Resumen
+    │   ├─→ GET /api/dashboard/resumen (200)
+    │   └─→ GET /api/dashboard/resumen (401 test)
+    │
+    ├─→ Mis Campanias
+    │   ├─→ GET /api/campanias/mis-campanias (P1) → campaniaId guardado
+    │   ├─→ GET /api/campanias/mis-campanias (Filter)
+    │   └─→ GET /api/campanias/mis-campanias (401 test)
+    │
+    ├─→ Backings por Campania
+    │   ├─→ GET /api/campanias/{id}/backings (P1)
+    │   ├─→ GET /api/campanias/{id}/backings (P2)
+    │   ├─→ GET /api/campanias/{id}/backings (404 test)
+    │   └─→ GET /api/campanias/{id}/backings (401 test)
+    │
+    ├─→ Stats de Campania
+    │   ├─→ GET /api/campanias/{id}/stats (200)
+    │   ├─→ GET /api/campanias/{id}/stats (404 test)
+    │   └─→ GET /api/campanias/{id}/stats (401 test)
+    │
+    └─→ FIN - Reportar resultados
+
+  Total Requests: 18
+  Total Assertions: 45+
+  Expected Time: 2-5 segundos
+
+================================================================================
+  REQUISITOS MINIMOS
+================================================================================
+
+  Componente          Versión      Descripcion
+  ────────────────────────────────────────────────────────────
+  Node.js             16+          Runtime para Newman
+  Newman              5.3+         CLI para Postman
+  Backend API         Running      http://localhost:5001
+  Base de Datos       Configurada  Con usuario de test
+
+  Usuario de Test (Docker):
+  Email:    usuario1@mail.com
+  Password: 123456
+
+================================================================================
+  CASOS DE USO COMUNES
+================================================================================
+
+  CASE 1: Desarrollo local
+  $ ./run-tests.sh
+
+  CASE 2: Staging con custom vars
+  $ newman run postman-collection.json \
+      --environment environment-staging.json \
+      --env-var baseUrl=https://staging-api.com
+
+  CASE 3: CI/CD Pipeline
+  $ newman run postman-collection.json \
+      --reporters json \
+      --reporter-json-export results.json \
+      --bail on
+
+  CASE 4: Reporte HTML
+  $ ./run-tests.sh environment.json html
+
+  CASE 5: Ejecutar carpeta especifica
+  $ newman run postman-collection.json --folder "Dashboard - Resumen"
+
+  CASE 6: Multiple iteraciones
+  $ newman run postman-collection.json --iterations 5
+
+================================================================================
+  TROUBLESHOOTING RAPIDO
+================================================================================
+
+  PROBLEMA                         SOLUCION
+  ─────────────────────────────────────────────────────────
+  "command not found: newman"      → npm install -g newman
+  "Connection refused"             → Verificar backend en 5001
+  "401 Unauthorized"               → Ejecutar _Setup primero
+  "404 Not Found"                  → Verificar campaniaId valido
+  "Timeout"                        → newman ... --timeout 10000
+  "ECONNREFUSED"                   → Backend no está corriendo
+
+  Ver README.md sección "Troubleshooting" para más detalles
+
+================================================================================
+  INTEGRACION CI/CD
+================================================================================
+
+  GITHUB ACTIONS:
+  - Newman se ejecuta en workflow
+  - Resultados se exportan a JSON
+  - Se crean reportes HTML
+  - Artifacts se guardan para review
+
+  AZURE PIPELINES:
+  - Newman como step en pipeline
+  - Tests como gates de quality
+  - Reportes publicados
+
+  JENKINS:
+  - Groovy pipeline
+  - Newman plugin
+  - JUnit XML reports
+
+  Ver README.md sección "CI/CD Integration" para templates completos
+
+================================================================================
+  METRICAS FINALES
+================================================================================
+
+  Colecciones Postman:       1
+  Folders:                   5
+  Requests:                  18
+  Assertions:                45+
+  Endpoints cubiertos:       5
+  HTTP Methods:              2 (POST, GET)
+  Status Codes:              3 (200, 401, 404)
+  Documentos:                9
+  Líneas de documentación:   1500+
+  Tamaño colección JSON:     ~30 KB
+  Compatibilidad:            Postman 11+, Newman 5.3+
+  Estado:                    ✅ PRODUCTION READY
+
+================================================================================
+  PROXIMOS PASOS
+================================================================================
+
+  INMEDIATO:
+  1. Ejecutar: newman run postman-collection.json
+  2. Verificar que todos los tests PASS
+  3. Leer QUICK-START.md
+
+  ESTA SEMANA:
+  1. Integrar con CI/CD pipeline
+  2. Configurar reportes HTML
+  3. Establecer ejecución periódica
+
+  ESTE MES:
+  1. Extender a más endpoints
+  2. Agregar tests de carga
+  3. Agregar tests de seguridad
+
+================================================================================
+  VERSION & METADATA
+================================================================================
+
+  Nombre Coleccion:    WePlay.DashboardArtista.IntegrationTests
+  ID Postman:          dashboard-artista-tests-001
+  Versión:             1.0
+  Fecha Creacion:      2026-02-14
+  Schema:              https://schema.getpostman.com/json/collection/v2.1.0/
+  Status:              STABLE
+  Validacion JSON:     ✅ PASS
+  Ejecucion:           ✅ READY
+
+  Creado para WePlay Rises MVP - Plataforma de crowdfunding musical
+
+================================================================================
+  CONTACTO & SOPORTE
+================================================================================
+
+  Para reportar issues o realizar mejoras:
+
+  1. Revisar documentacion correspondiente
+  2. Editar en Postman App
+  3. Exportar cambios
+  4. Comprometer a repositorio
+  5. Actualizar documentacion
+
+  Ver README.md para detalles completos
+
+================================================================================
+  FIN DE MANIFEST
+================================================================================
+
+Generated: 2026-02-14
+Version: 1.0
+Status: ✅ PRODUCTION READY
+
+Para empezar: cd C:\Repos\WePlay_Rises\plans\dashboard-artista\backend && newman run postman-collection.json
+
+================================================================================

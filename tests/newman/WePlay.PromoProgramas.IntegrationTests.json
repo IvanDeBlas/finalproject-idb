@@ -1,0 +1,957 @@
+{
+  "info": {
+    "name": "WePlay.PromoProgramas.IntegrationTests",
+    "description": "Coleccion de pruebas de integracion para la feature cp-programas-promocion (US-CP-02). Valida el lifecycle CRUD de programas de promocion: creacion con tareas, lectura, listado con filtros y paginacion, actualizacion, y desactivacion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Login Usuario Artista",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('testEmail', 'usuario1@mail.com');",
+                  "pm.collectionVariables.set('testPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Token obtained and saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('accessToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "02. Register Second User (for 403 tests)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'artista-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('otherArtistEmail', email);",
+                  "pm.collectionVariables.set('otherArtistPassword', 'TestPassword123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Other artist token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('otherArtistToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{otherArtistEmail}}\",\n  \"password\": \"{{otherArtistPassword}}\",\n  \"confirmPassword\": \"{{otherArtistPassword}}\",\n  \"nombre\": \"Other Test Artist\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoPrograma - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. POST Create PromoPrograma (happy path)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('programaTitle', 'Promociona Album ' + timestamp);",
+                  "pm.collectionVariables.set('campaniaCrowdfundingId', '3fa85f64-5717-4562-b3fc-2c963f66afa6');",
+                  "pm.collectionVariables.set('codigoTrackingBase', 'album-' + timestamp);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response time < 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "pm.test('ServiceResponse success and save ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.exist;",
+                  "    pm.collectionVariables.set('programaId', json.data.id);",
+                  "});",
+                  "pm.test('Response contains created program fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.titulo).to.equal(pm.collectionVariables.get('programaTitle'));",
+                  "    pm.expect(json.data.tipoPromoNombre).to.exist;",
+                  "    pm.expect(json.data.esActivo).to.be.true;",
+                  "    pm.expect(json.data.numeroTareas).to.equal(2);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{programaTitle}}\",\n  \"descripcion\": \"Ayudanos a difundir nuestro nuevo album...\",\n  \"tipoPromoId\": 1,\n  \"campaniaCrowdfundingId\": \"{{campaniaCrowdfundingId}}\",\n  \"proyectoArtisticoId\": null,\n  \"urlLanding\": \"https://weplay.com/campanias/album\",\n  \"codigoTrackingBase\": \"{{codigoTrackingBase}}\",\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": 10.00,\n  \"importeComisionFija\": null,\n  \"fechaInicio\": \"2026-03-01\",\n  \"fechaFin\": \"2026-06-01\",\n  \"tareas\": [\n    {\n      \"titulo\": \"Comparte en Instagram Stories\",\n      \"descripcion\": \"Sube una story mencionando la campana...\",\n      \"tipoEventoPromoId\": 3,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 5.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://docs.example.com/instrucciones-ig\",\n      \"esRepetible\": false,\n      \"maxRepeticiones\": null\n    },\n    {\n      \"titulo\": \"Comparte enlace en Twitter\",\n      \"descripcion\": \"Comparte el enlace de la campana en Twitter...\",\n      \"tipoEventoPromoId\": 4,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 3.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://docs.example.com/instrucciones-tw\",\n      \"esRepetible\": false,\n      \"maxRepeticiones\": null\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas"]
+            }
+          }
+        },
+        {
+          "name": "02. GET All Programas (mis-programas - list all)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is paginated list', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    pm.expect(json.data.totalCount).to.be.a('number');",
+                  "    pm.expect(json.data.pageNumber).to.equal(1);",
+                  "    pm.expect(json.data.pageSize).to.be.a('number');",
+                  "});",
+                  "pm.test('Created program appears in list', function () {",
+                  "    const json = pm.response.json();",
+                  "    const created = json.data.items.find(p => p.id === pm.collectionVariables.get('programaId'));",
+                  "    pm.expect(created).to.exist;",
+                  "    pm.expect(created.titulo).to.equal(pm.collectionVariables.get('programaTitle'));",
+                  "    pm.expect(created.esActivo).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/mis-programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "mis-programas"]
+            }
+          }
+        },
+        {
+          "name": "03. GET Programas with filter esActivo=true",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Filtered list returns only active programs', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    json.data.items.forEach(item => {",
+                  "        pm.expect(item.esActivo).to.be.true;",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/mis-programas?esActivo=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "mis-programas"],
+              "query": [{ "key": "esActivo", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "04. GET Programas with pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Pagination parameters respected', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.pageNumber).to.equal(1);",
+                  "    pm.expect(json.data.pageSize).to.equal(5);",
+                  "    pm.expect(json.data.items.length).to.be.at.most(5);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/mis-programas?page=1&pageSize=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "mis-programas"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. GET PromoPrograma by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response contains complete program details', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.equal(pm.collectionVariables.get('programaId'));",
+                  "    pm.expect(json.data.titulo).to.equal(pm.collectionVariables.get('programaTitle'));",
+                  "    pm.expect(json.data.esActivo).to.be.true;",
+                  "});",
+                  "pm.test('Detail includes tasks, promoters and summary', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.tareas).to.be.an('array');",
+                  "    pm.expect(json.data.tareas.length).to.equal(2);",
+                  "    pm.expect(json.data.numeroPromotores).to.be.a('number');",
+                  "    pm.expect(json.data.importeTotalComisionesGanadas).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}"]
+            }
+          }
+        },
+        {
+          "name": "06. PUT Update PromoPrograma",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('programaTitleUpdated', 'Album Actualizado ' + Date.now());"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('ServiceResponse success', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.equal(pm.collectionVariables.get('programaId'));",
+                  "});",
+                  "pm.test('Response includes updated timestamp', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.fechaActualizacion).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{programaTitleUpdated}}\",\n  \"descripcion\": \"Descripcion actualizada del programa...\",\n  \"tipoPromoId\": 1,\n  \"campaniaCrowdfundingId\": \"{{campaniaCrowdfundingId}}\",\n  \"proyectoArtisticoId\": null,\n  \"urlLanding\": \"https://weplay.com/campanias/album\",\n  \"codigoTrackingBase\": \"{{codigoTrackingBase}}\",\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": 12.00,\n  \"importeComisionFija\": null,\n  \"fechaInicio\": \"2026-03-01\",\n  \"fechaFin\": \"2026-06-01\",\n  \"tareas\": [\n    {\n      \"id\": null,\n      \"titulo\": \"Comparte en Instagram Stories\",\n      \"descripcion\": \"Sube una story mencionando la campana...\",\n      \"tipoEventoPromoId\": 3,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 5.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://docs.example.com/instrucciones-ig\",\n      \"esRepetible\": false,\n      \"maxRepeticiones\": null\n    },\n    {\n      \"id\": null,\n      \"titulo\": \"Comparte enlace en Twitter\",\n      \"descripcion\": \"Comparte el enlace de la campana en Twitter...\",\n      \"tipoEventoPromoId\": 4,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 3.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://docs.example.com/instrucciones-tw\",\n      \"esRepetible\": false,\n      \"maxRepeticiones\": null\n    },\n    {\n      \"id\": null,\n      \"titulo\": \"Nueva Tarea: Comenta en TikTok\",\n      \"descripcion\": \"Comenta en el video oficial de la campana...\",\n      \"tipoEventoPromoId\": 2,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 4.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://docs.example.com/instrucciones-tiktok\",\n      \"esRepetible\": false,\n      \"maxRepeticiones\": null\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}"]
+            }
+          }
+        },
+        {
+          "name": "07. GET PromoPrograma after Update (verify)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Updated values are persisted', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.titulo).to.equal(pm.collectionVariables.get('programaTitleUpdated'));",
+                  "    pm.expect(json.data.importeComisionPorcentaje).to.equal(12.00);",
+                  "});",
+                  "pm.test('New task was added', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.tareas.length).to.equal(3);",
+                  "    const newTask = json.data.tareas.find(t => t.titulo.includes('TikTok'));",
+                  "    pm.expect(newTask).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}"]
+            }
+          }
+        },
+        {
+          "name": "08. PATCH Desactivar PromoPrograma",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Program is deactivated and tasks deactivated', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.esActivo).to.be.false;",
+                  "    pm.expect(json.data.tareasDesactivadas).to.be.a('number');",
+                  "    pm.expect(json.data.tareasDesactivadas).to.equal(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/desactivar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}", "desactivar"]
+            }
+          }
+        },
+        {
+          "name": "09. GET PromoPrograma after Deactivation (verify)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Program remains deactivated', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.esActivo).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoPrograma - Validation Errors",
+      "item": [
+        {
+          "name": "POST 400 - Titulo vacio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('isSuccess is false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});",
+                  "pm.test('Has validation messages about Titulo', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const titleMessages = json.messages.filter(m => m.message.toLowerCase().includes('titulo'));",
+                  "    pm.expect(titleMessages.length).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"\",\n  \"descripcion\": \"Test\",\n  \"tipoPromoId\": 1,\n  \"campaniaCrowdfundingId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"proyectoArtisticoId\": null,\n  \"urlLanding\": \"https://weplay.com\",\n  \"codigoTrackingBase\": \"test-123\",\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": 10.00,\n  \"importeComisionFija\": null,\n  \"fechaInicio\": \"2026-03-01\",\n  \"fechaFin\": \"2026-06-01\",\n  \"tareas\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Sin comisiones (porcentaje y fija null)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error about commissions', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const commissionMessages = json.messages.filter(m => m.message.toLowerCase().includes('comision'));",
+                  "    pm.expect(commissionMessages.length).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Test Program\",\n  \"descripcion\": \"Test\",\n  \"tipoPromoId\": 1,\n  \"campaniaCrowdfundingId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"proyectoArtisticoId\": null,\n  \"urlLanding\": \"https://weplay.com\",\n  \"codigoTrackingBase\": \"test-' + Date.now() + '\",\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": null,\n  \"importeComisionFija\": null,\n  \"fechaInicio\": \"2026-03-01\",\n  \"fechaFin\": \"2026-06-01\",\n  \"tareas\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Tarea repetible sin maxRepeticiones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error about maxRepeticiones', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Test Program\",\n  \"descripcion\": \"Test\",\n  \"tipoPromoId\": 1,\n  \"campaniaCrowdfundingId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"proyectoArtisticoId\": null,\n  \"urlLanding\": \"https://weplay.com\",\n  \"codigoTrackingBase\": \"test-' + Date.now() + '\",\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": 10.00,\n  \"importeComisionFija\": null,\n  \"fechaInicio\": \"2026-03-01\",\n  \"fechaFin\": \"2026-06-01\",\n  \"tareas\": [\n    {\n      \"titulo\": \"Tarea Repetible sin Limite\",\n      \"descripcion\": \"Test\",\n      \"tipoEventoPromoId\": 3,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 5.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://test.com\",\n      \"esRepetible\": true,\n      \"maxRepeticiones\": null\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoPrograma - Auth Errors",
+      "item": [
+        {
+          "name": "POST 401 - Sin Authorization header",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Test\",\n  \"tipoPromoId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas"]
+            }
+          }
+        },
+        {
+          "name": "GET 403 - Programa de otro artista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Response indicates forbidden access', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{otherArtistToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}"]
+            }
+          }
+        },
+        {
+          "name": "PUT 403 - Actualizar programa de otro artista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{otherArtistToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Updated by Other Artist\",\n  \"tipoPromoId\": 1,\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": 10.00,\n  \"tareas\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}"]
+            }
+          }
+        },
+        {
+          "name": "PATCH 403 - Desactivar programa de otro artista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{otherArtistToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/desactivar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{programaId}}", "desactivar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoPrograma - Not Found",
+      "item": [
+        {
+          "name": "GET 404 - Programa no existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('isSuccess is false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/12345678-1234-1234-1234-123456789000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "12345678-1234-1234-1234-123456789000"]
+            }
+          }
+        },
+        {
+          "name": "PUT 404 - Actualizar programa no existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Updated\",\n  \"tipoPromoId\": 1,\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": 10.00,\n  \"tareas\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/12345678-1234-1234-1234-123456789000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "12345678-1234-1234-1234-123456789000"]
+            }
+          }
+        },
+        {
+          "name": "PATCH 404 - Desactivar programa no existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/12345678-1234-1234-1234-123456789000/desactivar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "12345678-1234-1234-1234-123456789000", "desactivar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoPrograma - Business Rules",
+      "item": [
+        {
+          "name": "POST 400 - Codigo tracking duplicado (en mismo programa)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error about duplicate tracking code', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Test Duplicate Tracking\",\n  \"descripcion\": \"Test\",\n  \"tipoPromoId\": 1,\n  \"campaniaCrowdfundingId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"proyectoArtisticoId\": null,\n  \"urlLanding\": \"https://weplay.com\",\n  \"codigoTrackingBase\": \"duplicate-code\",\n  \"monedaId\": 1,\n  \"importeComisionPorcentaje\": 10.00,\n  \"importeComisionFija\": null,\n  \"fechaInicio\": \"2026-03-01\",\n  \"fechaFin\": \"2026-06-01\",\n  \"tareas\": [\n    {\n      \"titulo\": \"Tarea 1\",\n      \"descripcion\": \"Test\",\n      \"tipoEventoPromoId\": 3,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 5.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://test.com\",\n      \"esRepetible\": false,\n      \"maxRepeticiones\": null,\n      \"codigoTracking\": \"dup\"\n    },\n    {\n      \"titulo\": \"Tarea 2 - Duplicated\",\n      \"descripcion\": \"Test\",\n      \"tipoEventoPromoId\": 4,\n      \"tipoRewardId\": 1,\n      \"importeRecompensa\": 3.00,\n      \"monedaId\": 1,\n      \"puntosRecompensa\": null,\n      \"urlInstrucciones\": \"https://test.com\",\n      \"esRepetible\": false,\n      \"maxRepeticiones\": null,\n      \"codigoTracking\": \"dup\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas"]
+            }
+          }
+        },
+        {
+          "name": "PATCH 400 - Desactivar programa ya desactivado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const deactivatedId = pm.collectionVariables.get('programaId');",
+                  "pm.collectionVariables.set('deactivatedProgramaId', deactivatedId);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Response indicates program already deactivated', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{deactivatedProgramaId}}/desactivar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "programas", "{{deactivatedProgramaId}}", "desactivar"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5001" },
+    { "key": "testEmail", "value": "" },
+    { "key": "testPassword", "value": "" },
+    { "key": "accessToken", "value": "" },
+    { "key": "otherArtistEmail", "value": "" },
+    { "key": "otherArtistPassword", "value": "" },
+    { "key": "otherArtistToken", "value": "" },
+    { "key": "programaId", "value": "" },
+    { "key": "programaTitle", "value": "" },
+    { "key": "programaTitleUpdated", "value": "" },
+    { "key": "campaniaCrowdfundingId", "value": "" },
+    { "key": "codigoTrackingBase", "value": "" },
+    { "key": "deactivatedProgramaId", "value": "" }
+  ]
+}

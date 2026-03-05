@@ -1,0 +1,263 @@
+{
+  "info": {
+    "name": "WePlay.CrowdsourcingTemplates.IntegrationTests",
+    "description": "Integration tests for cs-templates-guia feature (US-CS-01). Tests: list templates, get template detail, get maestras (roles/categorias), and generate necesidades from template.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Setup - Auth",
+      "item": [
+        {
+          "name": "Setup - Login Artist User",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Token saved', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.data).to.have.property('token');",
+            "    pm.environment.set('accessToken', json.data.token);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\"email\":\"{{testUsername}}\",\"password\":\"{{testPassword}}\"}"},
+            "url": {"raw":"{{baseUrl}}/api/auth/login","host":["{{baseUrl}}"],"path":["api","auth","login"]} }
+        }
+      ]
+    },
+    {
+      "name": "1. GET templates - List All Active",
+      "item": [
+        {
+          "name": "List templates - 200 OK",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response has data array', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json).to.have.property('data');",
+            "    pm.expect(json.data).to.be.an('array');",
+            "});",
+            "pm.test('Each template has required fields', () => {",
+            "    const json = pm.response.json();",
+            "    if (json.data.length > 0) {",
+            "        const t = json.data[0];",
+            "        pm.expect(t).to.have.property('id');",
+            "        pm.expect(t).to.have.property('nombre');",
+            "        pm.expect(t).to.have.property('orden');",
+            "        pm.expect(t).to.have.property('precioMinTotal');",
+            "        pm.expect(t).to.have.property('precioMaxTotal');",
+            "        pm.expect(t).to.have.property('cantidadNecesidades');",
+            "        pm.expect(t).to.have.property('fases');",
+            "        pm.expect(t.fases).to.be.an('array');",
+            "        // Save first template ID for detail test",
+            "        pm.environment.set('plantillaId', t.id);",
+            "    }",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates"]} }
+        },
+        {
+          "name": "List templates - 401 without token",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates"]} }
+        }
+      ]
+    },
+    {
+      "name": "2. GET templates/{id} - Detail",
+      "item": [
+        {
+          "name": "Get template detail - 200 OK",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response has template with necesidades', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json).to.have.property('data');",
+            "    const d = json.data;",
+            "    pm.expect(d).to.have.property('id');",
+            "    pm.expect(d).to.have.property('nombre');",
+            "    pm.expect(d).to.have.property('necesidades');",
+            "    pm.expect(d.necesidades).to.be.an('array');",
+            "    pm.expect(d).to.have.property('resumen');",
+            "});",
+            "pm.test('Resumen has financial data', () => {",
+            "    const r = pm.response.json().data.resumen;",
+            "    pm.expect(r).to.have.property('precioMinTotal');",
+            "    pm.expect(r).to.have.property('precioMaxTotal');",
+            "    pm.expect(r).to.have.property('cantidadNecesidadesAlta');",
+            "});",
+            "pm.test('Save first necesidad ID for generar test', () => {",
+            "    const necesidades = pm.response.json().data.necesidades;",
+            "    if (necesidades.length > 0) {",
+            "        pm.environment.set('plantillaNecesidadId', necesidades[0].id);",
+            "        pm.environment.set('monedaId', necesidades[0].moneda || 1);",
+            "    }",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates/{{plantillaId}}","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates","{{plantillaId}}"]} }
+        },
+        {
+          "name": "Get template detail - 404 Not Found",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));",
+            "pm.test('Error code is NotFound', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.messages[0].errorCode).to.equal('2006');",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates/00000000-0000-0000-0000-000000000001","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates","00000000-0000-0000-0000-000000000001"]} }
+        },
+        {
+          "name": "Get template detail - 400 Empty GUID",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('Validation error', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.messages).to.be.an('array');",
+            "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates/00000000-0000-0000-0000-000000000000","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates","00000000-0000-0000-0000-000000000000"]} }
+        }
+      ]
+    },
+    {
+      "name": "3. GET maestras - Roles Profesionales",
+      "item": [
+        {
+          "name": "List roles profesionales - 200 OK",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response has roles array', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json).to.have.property('data');",
+            "    pm.expect(json.data).to.be.an('array');",
+            "});",
+            "pm.test('Each role has required fields', () => {",
+            "    const json = pm.response.json();",
+            "    if (json.data.length > 0) {",
+            "        const r = json.data[0];",
+            "        pm.expect(r).to.have.property('id');",
+            "        pm.expect(r).to.have.property('nombre');",
+            "        pm.expect(r).to.have.property('categoriaRol');",
+            "        pm.expect(r).to.have.property('activo');",
+            "    }",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/maestras/roles-profesionales","host":["{{baseUrl}}"],"path":["api","crowdsourcing","maestras","roles-profesionales"]} }
+        },
+        {
+          "name": "List roles profesionales - 401 without token",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/maestras/roles-profesionales","host":["{{baseUrl}}"],"path":["api","crowdsourcing","maestras","roles-profesionales"]} }
+        }
+      ]
+    },
+    {
+      "name": "4. GET maestras - Categorias Rol",
+      "item": [
+        {
+          "name": "List categorias rol - 200 OK",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Response has categorias array', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json).to.have.property('data');",
+            "    pm.expect(json.data).to.be.an('array');",
+            "});",
+            "pm.test('Each categoria has required fields', () => {",
+            "    const json = pm.response.json();",
+            "    if (json.data.length > 0) {",
+            "        const c = json.data[0];",
+            "        pm.expect(c).to.have.property('id');",
+            "        pm.expect(c).to.have.property('nombre');",
+            "        pm.expect(c).to.have.property('orden');",
+            "    }",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET",
+            "header": [{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/maestras/categorias-rol","host":["{{baseUrl}}"],"path":["api","crowdsourcing","maestras","categorias-rol"]} }
+        }
+      ]
+    },
+    {
+      "name": "5. POST templates/{id}/generar - Generate Necesidades",
+      "item": [
+        {
+          "name": "Generate necesidades - 400 Empty body",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('Has validation errors', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.messages).to.be.an('array');",
+            "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{}"},
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates/{{plantillaId}}/generar","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates","{{plantillaId}}","generar"]} }
+        },
+        {
+          "name": "Generate necesidades - 400 Invalid necesidad IDs",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400 or 404', () => {",
+            "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+            "});",
+            "pm.test('Has error messages', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.messages).to.be.an('array');",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\",\n  \"artistaId\": \"00000000-0000-0000-0000-000000000001\",\n  \"necesidadesSeleccionadas\": [\n    {\n      \"plantillaNecesidadId\": \"00000000-0000-0000-0000-000000000099\",\n      \"presupuestoMin\": 100,\n      \"presupuestoMax\": 500,\n      \"monedaId\": 1\n    }\n  ]\n}"},
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates/{{plantillaId}}/generar","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates","{{plantillaId}}","generar"]} }
+        },
+        {
+          "name": "Generate necesidades - 404 Nonexistent template",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));",
+            "pm.test('Error code is NotFound_PlantillaProyecto', () => {",
+            "    const json = pm.response.json();",
+            "    const hasNotFound = json.messages.some(m => m.errorCode === '2006');",
+            "    pm.expect(hasNotFound).to.be.true;",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\",\n  \"artistaId\": \"00000000-0000-0000-0000-000000000001\",\n  \"necesidadesSeleccionadas\": [\n    {\n      \"plantillaNecesidadId\": \"00000000-0000-0000-0000-000000000001\",\n      \"presupuestoMin\": 100,\n      \"presupuestoMax\": 500,\n      \"monedaId\": 1\n    }\n  ]\n}"},
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates/00000000-0000-0000-0000-000000000999/generar","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates","00000000-0000-0000-0000-000000000999","generar"]} }
+        },
+        {
+          "name": "Generate necesidades - 401 without token",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\",\n  \"artistaId\": \"00000000-0000-0000-0000-000000000001\",\n  \"necesidadesSeleccionadas\": [\n    {\n      \"plantillaNecesidadId\": \"{{plantillaNecesidadId}}\",\n      \"presupuestoMin\": 100,\n      \"presupuestoMax\": 500,\n      \"monedaId\": 1\n    }\n  ]\n}"},
+            "url": {"raw":"{{baseUrl}}/api/crowdsourcing/templates/{{plantillaId}}/generar","host":["{{baseUrl}}"],"path":["api","crowdsourcing","templates","{{plantillaId}}","generar"]} }
+        }
+      ]
+    }
+  ]
+}

@@ -1,44 +1,65 @@
 # Estrategia de Testing: Registro de Artista (Landing)
 
-**Fecha:** 2026-01-26
+**Fecha:** 2026-02-12
 **Feature:** registro-artista
 **Target:** src/web (Landing - Vite + React)
-**Cobertura Objetivo:** 80%
+**Cobertura Objetivo:** 80%+
 
 ## 1. Resumen
 
 | Tipo | Cantidad | Cobertura |
 |------|----------|-----------|
-| Unit Tests | 8 | 40% |
-| Integration Tests | 5 | 40% |
-| Total | 13 | 80%+ |
+| Unit Tests | 12 | 85% |
+| Integration Tests | 4 | 75% |
+| Total | 16 | 80%+ |
 
-**Alcance Landing:** Visualización de perfil público de artista en `/artistas/{id}`. Sin formularios ni autenticación en esta app.
+**Alcance:**
+- Componente de perfil publico de artista (`/artistas/{id}`)
+- Hook `useArtista` (query para obtener artista por ID)
+- Service `artistaService.getById()`
+- Componentes de presentacion: `ArtistaHero`, `ArtistaBio`
+- Estados: loading, error, success
 
-**Prioridad Alta:**
-- Hook `useArtista` (data fetching core)
-- Page component `ArtistaProfilePage` (flujo principal)
-- Error states (NOT_FOUND, network errors)
+**Fuera de alcance:**
+- Formularios de registro (viven en `/admin`, no en landing)
+- Crear/editar perfil (viven en `/admin`)
+- Tests E2E (se realizaran por separado)
+
+---
 
 ## 2. Estructura de Tests
 
 ```
 src/web/src/features/artistas/
 ├── __tests__/
-│   ├── ArtistaProfilePage.test.tsx      # Integration - Full page
 │   ├── components/
-│   │   ├── ArtistaAvatar.test.tsx       # Unit - Avatar display
-│   │   ├── ArtistaBio.test.tsx          # Unit - Bio section
-│   │   ├── ArtistaStats.test.tsx        # Unit - Stats display
-│   │   └── ArtistaLocation.test.tsx     # Unit - Location display
+│   │   ├── ArtistaHero.test.tsx
+│   │   ├── ArtistaBio.test.tsx
+│   │   └── ArtistaPublicProfilePage.test.tsx
 │   ├── hooks/
-│   │   └── useArtista.test.ts           # Integration - Query hook
-│   └── services/
-│       └── artista.service.test.ts      # Unit - API service
-└── __mocks__/
-    ├── artista.mock.ts                   # Mock data
-    └── handlers.ts                       # MSW handlers
+│   │   └── useArtista.test.ts
+│   └── infrastructure/
+│       └── artista.service.test.ts
+├── __mocks__/
+│   ├── artista.mock.ts
+│   └── handlers.ts
+├── presentation/
+│   ├── components/
+│   │   ├── ArtistaHero.tsx
+│   │   ├── ArtistaBio.tsx
+│   │   └── index.ts
+│   └── pages/
+│       └── ArtistaPublicProfilePage.tsx
+├── application/
+│   └── hooks/
+│       └── useArtista.ts
+├── infrastructure/
+│   └── artista.service.ts
+└── domain/
+    └── types.ts
 ```
+
+---
 
 ## 3. Mocks y Fixtures
 
@@ -47,47 +68,52 @@ src/web/src/features/artistas/
 **Archivo:** `__mocks__/artista.mock.ts`
 
 ```typescript
-import { Artista } from '@shared/types/artista';
+import type { Artista } from "../domain/types"
 
 export const mockArtistaCompleto: Artista = {
-  id: '123e4567-e89b-12d3-a456-426614174000',
-  userId: 'user-123',
-  nombreArtistico: 'Luna Volcánica',
-  descripcion: 'Banda indie rock formada en Madrid. Fusionamos rock alternativo con electrónica experimental.',
-  pais: 'España',
-  ciudad: 'Madrid',
-  imagenUrl: 'https://images.unsplash.com/photo-artist-123?w=800',
-  fechaCreacion: '2026-01-15T10:30:00Z',
-  fechaActualizacion: '2026-01-20T14:45:00Z',
-};
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  userId: "user-123",
+  nombreArtistico: "Los Rockeros del Test",
+  descripcion: "Banda de rock alternativo de Madrid con 10 años de trayectoria. Nuestro sonido combina influencias del rock clasico con elementos modernos.",
+  pais: "España",
+  ciudad: "Madrid",
+  imagenUrl: "https://example.com/artista-test.jpg",
+  generoMusical: "Rock Alternativo",
+  createdAt: new Date("2026-01-15T10:00:00Z"),
+  updatedAt: new Date("2026-01-20T15:30:00Z"),
+}
 
-export const mockArtistaSinDescripcion: Artista = {
-  id: '223e4567-e89b-12d3-a456-426614174001',
-  userId: 'user-456',
-  nombreArtistico: 'DJ Pixel',
+export const mockArtistaMinimo: Artista = {
+  id: "550e8400-e29b-41d4-a716-446655440001",
+  userId: "user-456",
+  nombreArtistico: "Artista Minimal",
   descripcion: undefined,
   pais: undefined,
   ciudad: undefined,
   imagenUrl: undefined,
-  fechaCreacion: '2026-01-10T08:00:00Z',
-};
+  generoMusical: undefined,
+  createdAt: new Date("2026-02-01T08:00:00Z"),
+  updatedAt: new Date("2026-02-01T08:00:00Z"),
+}
 
-export const mockArtistaSinImagen: Artista = {
-  id: '323e4567-e89b-12d3-a456-426614174002',
-  userId: 'user-789',
-  nombreArtistico: 'Coros del Sur',
-  descripcion: 'Coro polifónico de música folclórica.',
-  pais: 'Argentina',
-  ciudad: 'Buenos Aires',
-  imagenUrl: undefined,
-  fechaCreacion: '2026-01-12T12:00:00Z',
-};
+export const mockArtistaConUbicacion: Artista = {
+  id: "550e8400-e29b-41d4-a716-446655440002",
+  userId: "user-789",
+  nombreArtistico: "Banda Internacional",
+  descripcion: "Artistas viajeros del mundo",
+  pais: "Argentina",
+  ciudad: "Buenos Aires",
+  imagenUrl: "https://example.com/banda-intl.jpg",
+  generoMusical: "Jazz Fusion",
+  createdAt: new Date("2026-01-10T12:00:00Z"),
+  updatedAt: new Date("2026-01-25T18:00:00Z"),
+}
 
 export const mockArtistaList: Artista[] = [
   mockArtistaCompleto,
-  mockArtistaSinDescripcion,
-  mockArtistaSinImagen,
-];
+  mockArtistaMinimo,
+  mockArtistaConUbicacion,
+]
 ```
 
 ### 3.2 MSW Handlers
@@ -95,68 +121,83 @@ export const mockArtistaList: Artista[] = [
 **Archivo:** `__mocks__/handlers.ts`
 
 ```typescript
-import { rest } from 'msw';
-import { mockArtistaCompleto, mockArtistaSinImagen } from './artista.mock';
-import { API_ROUTES } from '@shared/constants/api-routes';
+import { http, HttpResponse } from "msw"
+import { mockArtistaCompleto, mockArtistaMinimo } from "./artista.mock"
+
+const API_BASE = "/api"
 
 export const artistaHandlers = [
   // GET /api/artistas/:id - Success
-  rest.get(`${API_ROUTES.artistas.byId(':id')}`, (req, res, ctx) => {
-    const { id } = req.params;
+  http.get(`${API_BASE}/artistas/:id`, ({ params }) => {
+    const { id } = params
 
-    // Simular diferentes casos segun ID
-    if (id === '123e4567-e89b-12d3-a456-426614174000') {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          data: mockArtistaCompleto,
-          isSuccess: true,
-        })
-      );
-    }
-
-    if (id === '323e4567-e89b-12d3-a456-426614174002') {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          data: mockArtistaSinImagen,
-          isSuccess: true,
-        })
-      );
-    }
-
-    // Not Found
-    if (id === 'non-existent-id') {
-      return res(
-        ctx.status(404),
-        ctx.json({
-          data: null,
-          isSuccess: false,
-          messages: [
-            {
-              message: 'Artista no encontrado',
-              errorCode: 'ARTISTA_NOT_FOUND',
-            },
-          ],
-        })
-      );
-    }
-
-    // Network error simulation
-    if (id === 'error-500') {
-      return res(ctx.status(500));
-    }
-
-    // Default: return completo
-    return res(
-      ctx.status(200),
-      ctx.json({
-        data: mockArtistaCompleto,
-        isSuccess: true,
+    // Caso: Artista completo
+    if (id === mockArtistaCompleto.id) {
+      return HttpResponse.json({
+        data: {
+          id: mockArtistaCompleto.id,
+          userId: mockArtistaCompleto.userId,
+          nombreArtistico: mockArtistaCompleto.nombreArtistico,
+          descripcion: mockArtistaCompleto.descripcion,
+          pais: mockArtistaCompleto.pais,
+          ciudad: mockArtistaCompleto.ciudad,
+          imagenUrl: mockArtistaCompleto.imagenUrl,
+          generoMusical: mockArtistaCompleto.generoMusical,
+          createdAt: mockArtistaCompleto.createdAt.toISOString(),
+          updatedAt: mockArtistaCompleto.updatedAt.toISOString(),
+        },
+        messages: [
+          { message: "Artista encontrado", errorCode: "SUCCESS" },
+        ],
       })
-    );
+    }
+
+    // Caso: Artista minimo
+    if (id === mockArtistaMinimo.id) {
+      return HttpResponse.json({
+        data: {
+          id: mockArtistaMinimo.id,
+          userId: mockArtistaMinimo.userId,
+          nombreArtistico: mockArtistaMinimo.nombreArtistico,
+          createdAt: mockArtistaMinimo.createdAt.toISOString(),
+          updatedAt: mockArtistaMinimo.updatedAt.toISOString(),
+        },
+        messages: [
+          { message: "Artista encontrado", errorCode: "SUCCESS" },
+        ],
+      })
+    }
+
+    // Caso: Not Found
+    return HttpResponse.json(
+      {
+        data: null,
+        messages: [
+          { message: "Artista no encontrado", errorCode: "ARTISTA_NOT_FOUND" },
+        ],
+      },
+      { status: 404 }
+    )
   }),
-];
+
+  // GET /api/artistas/:id - Network Error (para simular errores de red)
+  http.get(`${API_BASE}/artistas/network-error`, () => {
+    return HttpResponse.error()
+  }),
+
+  // GET /api/artistas/:id - Server Error
+  http.get(`${API_BASE}/artistas/server-error`, () => {
+    return HttpResponse.json(
+      {
+        data: null,
+        messages: [
+          { message: "Error interno del servidor", errorCode: "ERROR_UNEXPECTED" },
+        ],
+      },
+      { status: 500 }
+    )
+  }),
+]
 ```
 
 ### 3.3 Test Utilities
@@ -164,105 +205,268 @@ export const artistaHandlers = [
 **Archivo:** `test-utils.tsx`
 
 ```typescript
-import { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { render, RenderOptions } from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { MemoryRouter } from "react-router-dom"
+import { ReactElement, ReactNode } from "react"
 
-// Query client sin retries para tests rapidos
-const createTestQueryClient = () =>
-  new QueryClient({
+// Create test query client with disabled retries for faster tests
+export function createTestQueryClient() {
+  return new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
         cacheTime: 0,
-        staleTime: 0,
       },
       mutations: {
         retry: false,
       },
     },
-  });
-
-interface AllProvidersProps {
-  children: React.ReactNode;
+  })
 }
 
-const AllProviders = ({ children }: AllProvidersProps) => {
-  const testQueryClient = createTestQueryClient();
+interface AllProvidersProps {
+  children: ReactNode
+  initialRoute?: string
+}
+
+export function AllProviders({ children, initialRoute = "/" }: AllProvidersProps) {
+  const testQueryClient = createTestQueryClient()
 
   return (
     <QueryClientProvider client={testQueryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      <MemoryRouter initialEntries={[initialRoute]}>
+        {children}
+      </MemoryRouter>
     </QueryClientProvider>
-  );
-};
+  )
+}
 
-const customRender = (
+interface RenderWithProvidersOptions extends Omit<RenderOptions, "wrapper"> {
+  initialRoute?: string
+}
+
+export function renderWithProviders(
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllProviders, ...options });
+  options?: RenderWithProvidersOptions
+) {
+  const { initialRoute, ...renderOptions } = options || {}
 
-export * from '@testing-library/react';
-export { customRender as render };
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <AllProviders initialRoute={initialRoute}>{children}</AllProviders>
+    ),
+    ...renderOptions,
+  })
+}
 ```
 
 ### 3.4 MSW Setup
 
-**Archivo:** `setupTests.ts` (Vitest config)
+**Archivo:** `vitest.setup.ts`
 
 ```typescript
-import { beforeAll, afterEach, afterAll } from 'vitest';
-import { setupServer } from 'msw/node';
-import { artistaHandlers } from './features/artistas/__mocks__/handlers';
+import { afterAll, afterEach, beforeAll } from "vitest"
+import { setupServer } from "msw/node"
+import { artistaHandlers } from "./src/features/artistas/__mocks__/handlers"
+import "@testing-library/jest-dom/vitest"
 
-export const server = setupServer(...artistaHandlers);
+// Setup MSW server
+export const server = setupServer(...artistaHandlers)
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: "warn" })
+})
+
+afterEach(() => {
+  server.resetHandlers()
+})
+
+afterAll(() => {
+  server.close()
+})
 ```
+
+---
 
 ## 4. Tests por Modulo
 
-### 4.1 Services
+### 4.1 Components
 
-#### artista.service.test.ts
+#### ArtistaHero.test.tsx
 
-**Archivo:** `__tests__/services/artista.service.test.ts`
+**Archivo:** `__tests__/components/ArtistaHero.test.tsx`
 
 | Test Case | Tipo | Descripcion |
 |-----------|------|-------------|
-| getById returns artista on success | Unit | Retorna artista completo cuando existe |
-| getById returns null on 404 | Unit | Retorna null cuando ID no existe |
-| getById throws error on network failure | Unit | Lanza error en fallo de red (500) |
-| getById handles timeout | Unit | Maneja timeout de request |
+| renders artista name | Unit | Renderiza el nombre artistico correctamente |
+| renders avatar with image | Unit | Muestra avatar con imagen cuando imagenUrl existe |
+| renders avatar fallback | Unit | Muestra fallback (icono User) cuando no hay imagenUrl |
+| renders genero musical | Unit | Muestra genero musical cuando existe |
+| hides genero when undefined | Unit | No renderiza seccion de genero si es undefined |
+| applies gradient background | Unit | Aplica el gradiente de fondo correctamente |
 
 **Casos Detallados:**
 
 ```markdown
-1. **getById returns artista on success**
-   - Setup: MSW handler retorna mockArtistaCompleto para ID valido
-   - Call: `artistaService.getById('123e4567-e89b-12d3-a456-426614174000')`
-   - Assert: Resultado es Artista con nombreArtistico 'Luna Volcánica'
-   - Assert: Todos los campos opcionales presentes
+1. **renders artista name**
+   - Render ArtistaHero con mockArtistaCompleto
+   - Assert: "Los Rockeros del Test" visible en h1
 
-2. **getById returns null on 404**
-   - Setup: MSW handler retorna 404 para 'non-existent-id'
-   - Call: `artistaService.getById('non-existent-id')`
-   - Assert: Resultado es null
-   - Assert: No lanza excepcion
+2. **renders avatar with image**
+   - Render con artista que tiene imagenUrl
+   - Assert: elemento img con src === imagenUrl
+   - Assert: alt === nombreArtistico
 
-3. **getById throws error on network failure**
-   - Setup: MSW handler retorna 500 para 'error-500'
-   - Call: `artistaService.getById('error-500')`
-   - Assert: Lanza error con mensaje 'Network Error'
+3. **renders avatar fallback**
+   - Render con mockArtistaMinimo (sin imagenUrl)
+   - Assert: icono User visible
+   - Assert: no hay elemento img
 
-4. **getById handles timeout**
-   - Setup: MSW handler con delay de 5000ms
-   - Call: `artistaService.getById('timeout-id')` con timeout de 1000ms
-   - Assert: Lanza error de timeout
+4. **renders genero musical**
+   - Render con mockArtistaCompleto (tiene generoMusical)
+   - Assert: texto "Rock Alternativo" visible
+
+5. **hides genero when undefined**
+   - Render con mockArtistaMinimo (sin generoMusical)
+   - Assert: texto de genero no existe en documento
+
+6. **applies gradient background**
+   - Render con cualquier artista
+   - Assert: elemento con clase "bg-gradient-to-r from-purple-900..."
 ```
+
+**Coverage esperado:** 90% (lineas), 100% (funciones)
+
+---
+
+#### ArtistaBio.test.tsx
+
+**Archivo:** `__tests__/components/ArtistaBio.test.tsx`
+
+| Test Case | Tipo | Descripcion |
+|-----------|------|-------------|
+| renders descripcion | Unit | Muestra descripcion cuando existe |
+| renders placeholder when no descripcion | Unit | Muestra "No hay descripcion disponible" cuando es undefined |
+| renders ubicacion completa | Unit | Muestra ciudad y pais cuando ambos existen |
+| renders solo ciudad | Unit | Muestra solo ciudad cuando pais es undefined |
+| renders solo pais | Unit | Muestra solo pais cuando ciudad es undefined |
+| hides ubicacion when both undefined | Unit | No muestra seccion de ubicacion si no hay datos |
+| renders genero musical | Unit | Muestra genero cuando existe |
+| hides genero when undefined | Unit | No muestra genero si es undefined |
+| renders social networks placeholder | Unit | Muestra mensaje "Proximamente" para redes sociales |
+
+**Casos Detallados:**
+
+```markdown
+1. **renders descripcion**
+   - Render con mockArtistaCompleto
+   - Assert: descripcion completa visible
+
+2. **renders placeholder when no descripcion**
+   - Render con mockArtistaMinimo (sin descripcion)
+   - Assert: texto "No hay descripcion disponible" visible
+   - Assert: texto tiene clase "italic"
+
+3. **renders ubicacion completa**
+   - Render con mockArtistaConUbicacion
+   - Assert: texto "Buenos Aires, Argentina" visible
+   - Assert: icono MapPin visible
+
+4. **renders solo ciudad**
+   - Render con artista { ciudad: "Barcelona", pais: undefined }
+   - Assert: texto "Barcelona" visible (sin coma ni pais)
+
+5. **renders solo pais**
+   - Render con artista { ciudad: undefined, pais: "Mexico" }
+   - Assert: texto "Mexico" visible
+
+6. **hides ubicacion when both undefined**
+   - Render con mockArtistaMinimo (sin ubicacion)
+   - Assert: icono MapPin no existe
+   - Assert: no hay texto de ubicacion
+
+7. **renders genero musical**
+   - Render con mockArtistaConUbicacion (tiene genero)
+   - Assert: texto "Jazz Fusion" visible
+   - Assert: icono Music visible
+
+8. **hides genero when undefined**
+   - Render con mockArtistaMinimo
+   - Assert: icono Music no existe
+
+9. **renders social networks placeholder**
+   - Render con cualquier artista
+   - Assert: titulo "Redes Sociales" visible
+   - Assert: texto "Proximamente" visible
+```
+
+**Coverage esperado:** 95% (lineas), 100% (funciones)
+
+---
+
+#### ArtistaPublicProfilePage.test.tsx
+
+**Archivo:** `__tests__/components/ArtistaPublicProfilePage.test.tsx`
+
+| Test Case | Tipo | Descripcion |
+|-----------|------|-------------|
+| renders skeleton on loading | Integration | Muestra skeleton mientras carga |
+| renders artista profile on success | Integration | Renderiza perfil completo cuando carga exitosamente |
+| renders ArtistaHero component | Integration | Renderiza componente ArtistaHero con artista |
+| renders ArtistaBio component | Integration | Renderiza componente ArtistaBio con artista |
+| renders estadisticas placeholder | Integration | Muestra seccion de estadisticas con placeholder |
+| renders not found on error | Integration | Muestra mensaje "Artista no encontrado" en error |
+| renders not found when artista is null | Integration | Muestra not found cuando data es null |
+| not found has back button | Integration | Boton "Volver al inicio" presente y funcional |
+
+**Casos Detallados:**
+
+```markdown
+1. **renders skeleton on loading**
+   - Mock useArtista para retornar { isLoading: true }
+   - Render ArtistaPublicProfilePage
+   - Assert: multiples Skeleton components visibles
+
+2. **renders artista profile on success**
+   - Mock useArtista para retornar { data: mockArtistaCompleto, isLoading: false, isError: false }
+   - Render page
+   - Assert: nombre artista visible
+   - Assert: no hay skeleton
+
+3. **renders ArtistaHero component**
+   - Mock exitoso con mockArtistaCompleto
+   - Assert: ArtistaHero renderizado (verificar avatar y nombre)
+
+4. **renders ArtistaBio component**
+   - Mock exitoso con mockArtistaCompleto
+   - Assert: ArtistaBio renderizado (verificar titulo "Sobre el Artista")
+
+5. **renders estadisticas placeholder**
+   - Mock exitoso
+   - Assert: titulo "Estadisticas" visible
+   - Assert: texto "Proximamente" visible
+   - Assert: items "Campanias", "Backers", "Fondos Recaudados" con valor "-"
+
+6. **renders not found on error**
+   - Mock useArtista para retornar { isError: true, isLoading: false }
+   - Assert: titulo "Artista no encontrado" visible
+   - Assert: icono AlertCircle visible
+   - Assert: mensaje de error descriptivo
+
+7. **renders not found when artista is null**
+   - Mock useArtista: { data: null, isError: false, isLoading: false }
+   - Assert: muestra componente ArtistaNotFound
+
+8. **not found has back button**
+   - Mock error state
+   - Assert: boton con texto "Volver al inicio" existe
+   - Assert: Link apunta a ROUTES.HOME
+```
+
+**Coverage esperado:** 85% (lineas), 90% (funciones)
+
+---
 
 ### 4.2 Hooks
 
@@ -272,562 +476,515 @@ afterAll(() => server.close());
 
 | Test Case | Tipo | Descripcion |
 |-----------|------|-------------|
-| returns data on success | Integration | Retorna artista cuando existe |
-| handles loading state | Integration | isLoading true inicialmente, false al completar |
-| handles not found error | Integration | isError true cuando artista no existe |
-| handles network error | Integration | error state en fallo de red |
-| caches data correctly | Integration | No refetch en segundo render |
-| invalidates on manual refetch | Integration | Refetch manual actualiza datos |
+| returns data on success | Unit | Retorna artista correctamente cuando la query tiene exito |
+| isLoading true initially | Unit | isLoading es true al inicio |
+| isError true on API error | Unit | isError es true cuando API falla |
+| query disabled when id is empty | Unit | Query no se ejecuta si id es vacio/undefined |
+| query key includes artista id | Unit | Query key contiene el ID del artista |
+| refetch on query key change | Integration | Se vuelve a ejecutar query cuando cambia el ID |
 
 **Setup:**
 ```typescript
-const wrapper = ({ children }) => (
-  <QueryClientProvider client={testQueryClient}>
-    {children}
-  </QueryClientProvider>
-);
+import { renderHook, waitFor } from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { useArtista } from "../../application/hooks/useArtista"
+import { server } from "../../../vitest.setup"
+import { http, HttpResponse } from "msw"
+import { mockArtistaCompleto } from "../../__mocks__/artista.mock"
 
-const { result } = renderHook(() => useArtista('123'), { wrapper });
+const createWrapper = () => {
+  const testQueryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  })
+
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={testQueryClient}>
+      {children}
+    </QueryClientProvider>
+  )
+}
 ```
 
 **Casos Detallados:**
 
 ```markdown
 1. **returns data on success**
-   - Render hook: `useArtista('123e4567-e89b-12d3-a456-426614174000')`
-   - Assert: isLoading true inicialmente
-   - Wait for: isSuccess true
-   - Assert: data es mockArtistaCompleto
-   - Assert: data.nombreArtistico === 'Luna Volcánica'
+   - renderHook(() => useArtista(mockArtistaCompleto.id), { wrapper })
+   - waitFor(() => expect(result.current.isSuccess).toBe(true))
+   - Assert: result.current.data.nombreArtistico === "Los Rockeros del Test"
+   - Assert: result.current.data.id === mockArtistaCompleto.id
 
-2. **handles loading state**
-   - Render hook: `useArtista('123e4567-e89b-12d3-a456-426614174000')`
-   - Assert: isLoading true inmediatamente
-   - Assert: data undefined mientras loading
-   - Wait for: isLoading false
-   - Assert: data definido
+2. **isLoading true initially**
+   - renderHook(() => useArtista(mockArtistaCompleto.id), { wrapper })
+   - Assert (sin waitFor): result.current.isLoading === true
+   - Assert: result.current.data === undefined
 
-3. **handles not found error**
-   - Render hook: `useArtista('non-existent-id')`
-   - Wait for: isError true
-   - Assert: error.response.status === 404
-   - Assert: data undefined
+3. **isError true on API error**
+   - Override MSW handler para retornar 404
+   - renderHook(() => useArtista("invalid-id"), { wrapper })
+   - waitFor(() => expect(result.current.isError).toBe(true))
+   - Assert: result.current.data === undefined
 
-4. **handles network error**
-   - Render hook: `useArtista('error-500')`
-   - Wait for: isError true
-   - Assert: error.message contiene 'Network Error'
+4. **query disabled when id is empty**
+   - renderHook(() => useArtista(""), { wrapper })
+   - Assert: result.current.fetchStatus === "idle"
+   - Assert: query no se ejecuta (verificar mock no fue llamado)
 
-5. **caches data correctly**
-   - First render: `useArtista('123')`
-   - Wait for: data loaded
-   - Unmount
-   - Second render: mismo ID
-   - Assert: data disponible inmediatamente (cache hit)
-   - Assert: No segundo request a MSW
+5. **query key includes artista id**
+   - renderHook(() => useArtista("test-id"), { wrapper })
+   - Assert: result.current.dataUpdatedAt existe
+   - Verificar queryKey en QueryClient cache
 
-6. **invalidates on manual refetch**
-   - Render hook: `useArtista('123')`
-   - Wait for: data loaded
-   - Mock data change en MSW
-   - Call: `result.current.refetch()`
-   - Wait for: new data loaded
-   - Assert: data actualizado
+6. **refetch on query key change**
+   - renderHook con initialProps: { id: mockArtistaCompleto.id }
+   - waitFor success
+   - rerender({ id: mockArtistaMinimo.id })
+   - waitFor(() => data cambia a mockArtistaMinimo)
 ```
 
-### 4.3 Components
+**Coverage esperado:** 100% (lineas), 100% (funciones)
 
-#### ArtistaAvatar.test.tsx
+---
 
-**Archivo:** `__tests__/components/ArtistaAvatar.test.tsx`
+### 4.3 Infrastructure
+
+#### artista.service.test.ts
+
+**Archivo:** `__tests__/infrastructure/artista.service.test.ts`
 
 | Test Case | Tipo | Descripcion |
 |-----------|------|-------------|
-| renders image when imagenUrl provided | Unit | Muestra imagen con src correcto |
-| shows placeholder when no imagenUrl | Unit | Muestra icono de placeholder |
-| shows initials in placeholder | Unit | Muestra iniciales del nombre artistico |
-| applies correct size classes | Unit | Aplica clases de tamaño (sm, md, lg) |
-| handles image load error | Unit | Fallback a placeholder en error de carga |
+| getById returns artista on success | Unit | Retorna artista correctamente en llamada exitosa |
+| getById transforms DTO to domain | Unit | Transforma fechas ISO string a Date objects |
+| getById throws on 404 | Unit | Lanza error cuando artista no existe |
+| getById throws on network error | Unit | Lanza error en fallos de red |
+| getById includes correct URL | Unit | Construye URL correcta con ID |
+
+**Setup:**
+```typescript
+import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest"
+import { artistaService } from "../../infrastructure/artista.service"
+import { server } from "../../../vitest.setup"
+import { http, HttpResponse } from "msw"
+import { mockArtistaCompleto, mockArtistaMinimo } from "../../__mocks__/artista.mock"
+```
 
 **Casos Detallados:**
 
 ```markdown
-1. **renders image when imagenUrl provided**
-   - Render: `<ArtistaAvatar artista={mockArtistaCompleto} size="md" />`
-   - Assert: img tag presente
-   - Assert: src === mockArtistaCompleto.imagenUrl
-   - Assert: alt === mockArtistaCompleto.nombreArtistico
+1. **getById returns artista on success**
+   - Llamar artistaService.getById(mockArtistaCompleto.id)
+   - Assert: resultado.nombreArtistico === mockArtistaCompleto.nombreArtistico
+   - Assert: resultado.id === mockArtistaCompleto.id
+   - Assert: resultado.descripcion === mockArtistaCompleto.descripcion
 
-2. **shows placeholder when no imagenUrl**
-   - Render: `<ArtistaAvatar artista={mockArtistaSinImagen} size="md" />`
-   - Assert: No img tag
-   - Assert: Placeholder div visible
-   - Assert: Icon visible (User icon)
+2. **getById transforms DTO to domain**
+   - Llamar artistaService.getById(mockArtistaCompleto.id)
+   - Assert: resultado.createdAt instanceof Date
+   - Assert: resultado.updatedAt instanceof Date
+   - Assert: fechas coinciden con las del mock (valor, no referencia)
 
-3. **shows initials in placeholder**
-   - Render: `<ArtistaAvatar artista={mockArtistaSinImagen} size="md" />`
-   - Assert: Placeholder contiene 'CS' (Coros del Sur)
-   - Assert: Text centered
+3. **getById throws on 404**
+   - Llamar artistaService.getById("non-existent-id")
+   - Assert: expect().rejects.toThrow()
+   - Verificar error contiene informacion de 404
 
-4. **applies correct size classes**
-   - Render: `<ArtistaAvatar artista={mockArtista} size="sm" />`
-   - Assert: container tiene clase 'w-12 h-12'
-   - Render: size="lg"
-   - Assert: container tiene clase 'w-24 h-24'
+4. **getById throws on network error**
+   - Llamar artistaService.getById("network-error")
+   - Assert: expect().rejects.toThrow()
+   - Verificar tipo de error de red
 
-5. **handles image load error**
-   - Render: `<ArtistaAvatar artista={mockArtistaCompleto} />`
-   - Simulate: img.onerror event
-   - Assert: Placeholder mostrado
-   - Assert: img tag removido
+5. **getById includes correct URL**
+   - Spy en apiFetch
+   - Llamar artistaService.getById("test-id-123")
+   - Assert: apiFetch fue llamado con URL "/artistas/test-id-123"
 ```
 
-#### ArtistaBio.test.tsx
+**Coverage esperado:** 90% (lineas), 100% (funciones)
 
-**Archivo:** `__tests__/components/ArtistaBio.test.tsx`
-
-| Test Case | Tipo | Descripcion |
-|-----------|------|-------------|
-| renders description when provided | Unit | Muestra descripcion completa |
-| shows fallback message when empty | Unit | Muestra 'Sin descripción' cuando undefined |
-| shows location when provided | Unit | Muestra ciudad y pais |
-| hides location section when not provided | Unit | No muestra seccion de ubicacion |
-| renders multiline description correctly | Unit | Respeta saltos de linea |
-
-**Casos Detallados:**
-
-```markdown
-1. **renders description when provided**
-   - Render: `<ArtistaBio artista={mockArtistaCompleto} />`
-   - Assert: Texto 'Banda indie rock...' visible
-   - Assert: No mensaje de fallback
-
-2. **shows fallback message when empty**
-   - Render: `<ArtistaBio artista={mockArtistaSinDescripcion} />`
-   - Assert: Texto 'Este artista aún no ha agregado una descripción' visible
-   - Assert: Clase text-muted-foreground aplicada
-
-3. **shows location when provided**
-   - Render: `<ArtistaBio artista={mockArtistaCompleto} />`
-   - Assert: Texto 'Madrid, España' visible
-   - Assert: Location icon visible
-
-4. **hides location section when not provided**
-   - Render: `<ArtistaBio artista={mockArtistaSinDescripcion} />`
-   - Assert: No location section
-   - Assert: No location icon
-
-5. **renders multiline description correctly**
-   - Mock: artista con descripcion multilinea
-   - Render: `<ArtistaBio artista={mockArtista} />`
-   - Assert: Parrafos separados visibles
-   - Assert: Whitespace preservado
-```
-
-#### ArtistaStats.test.tsx
-
-**Archivo:** `__tests__/components/ArtistaStats.test.tsx`
-
-| Test Case | Tipo | Descripcion |
-|-----------|------|-------------|
-| displays stats with correct labels | Unit | Muestra labels de stats |
-| formats numbers correctly | Unit | Formatea numeros con separadores |
-| shows zero values as placeholders | Unit | Muestra '0' o '--' para valores vacios |
-| renders responsive grid layout | Unit | Grid layout correcto |
-
-**Casos Detallados:**
-
-```markdown
-1. **displays stats with correct labels**
-   - Mock: artista con stats { campanias: 3, backers: 150, totalRecaudado: 5000 }
-   - Render: `<ArtistaStats stats={mockStats} />`
-   - Assert: Label 'Campañas' visible
-   - Assert: Label 'Apoyos' visible
-   - Assert: Label 'Recaudado' visible
-
-2. **formats numbers correctly**
-   - Mock: stats con totalRecaudado: 15000
-   - Render: `<ArtistaStats stats={mockStats} />`
-   - Assert: '15.000 €' visible (separador de miles)
-   - Mock: backers: 1250
-   - Assert: '1.250' visible
-
-3. **shows zero values as placeholders**
-   - Mock: stats con campanias: 0
-   - Render: `<ArtistaStats stats={mockStats} />`
-   - Assert: '0 campañas' visible
-   - Assert: Message 'Aún no ha lanzado campañas' (opcional)
-
-4. **renders responsive grid layout**
-   - Render: `<ArtistaStats stats={mockStats} />`
-   - Assert: Grid container presente
-   - Assert: grid-cols-3 en desktop
-   - Assert: grid-cols-1 en mobile
-```
-
-#### ArtistaLocation.test.tsx
-
-**Archivo:** `__tests__/components/ArtistaLocation.test.tsx`
-
-| Test Case | Tipo | Descripcion |
-|-----------|------|-------------|
-| renders full location (ciudad, pais) | Unit | Muestra ciudad y pais |
-| renders only pais when ciudad missing | Unit | Muestra solo pais |
-| renders only ciudad when pais missing | Unit | Muestra solo ciudad |
-| returns null when both missing | Unit | No renderiza componente |
-
-**Casos Detallados:**
-
-```markdown
-1. **renders full location**
-   - Render: `<ArtistaLocation ciudad="Madrid" pais="España" />`
-   - Assert: Texto 'Madrid, España' visible
-   - Assert: MapPin icon visible
-
-2. **renders only pais when ciudad missing**
-   - Render: `<ArtistaLocation pais="España" />`
-   - Assert: Texto 'España' visible
-   - Assert: Sin coma
-
-3. **renders only ciudad when pais missing**
-   - Render: `<ArtistaLocation ciudad="Madrid" />`
-   - Assert: Texto 'Madrid' visible
-
-4. **returns null when both missing**
-   - Render: `<ArtistaLocation />`
-   - Assert: Componente no en documento
-   - Assert: No mapPin icon
-```
-
-### 4.4 Pages
-
-#### ArtistaProfilePage.test.tsx
-
-**Archivo:** `__tests__/ArtistaProfilePage.test.tsx`
-
-| Test Case | Tipo | Descripcion |
-|-----------|------|-------------|
-| renders artista profile successfully | Integration | Renderiza perfil completo con datos |
-| shows loading skeleton while fetching | Integration | Muestra skeleton mientras carga |
-| displays error message on not found | Integration | Muestra mensaje de error 404 |
-| displays error message on network error | Integration | Muestra mensaje de error de red |
-| renders all sections correctly | Integration | Todas las secciones visibles |
-| navigates back to home on error | Integration | Boton volver a inicio funciona |
-
-**Casos Detallados:**
-
-```markdown
-1. **renders artista profile successfully**
-   - Setup: Route con params { id: '123e4567-e89b-12d3-a456-426614174000' }
-   - Setup: MSW handler retorna mockArtistaCompleto
-   - Render: `<ArtistaProfilePage />`
-   - Wait for: Loading termina
-   - Assert: Avatar visible
-   - Assert: Nombre artistico 'Luna Volcánica' visible
-   - Assert: Descripcion visible
-   - Assert: Location 'Madrid, España' visible
-
-2. **shows loading skeleton while fetching**
-   - Setup: MSW handler con delay de 500ms
-   - Render: `<ArtistaProfilePage />`
-   - Assert: Skeleton avatar visible
-   - Assert: Skeleton text lines visible
-   - Assert: No datos reales visibles
-   - Wait for: Skeleton desaparece
-   - Assert: Datos reales mostrados
-
-3. **displays error message on not found**
-   - Setup: Route con params { id: 'non-existent-id' }
-   - Setup: MSW handler retorna 404
-   - Render: `<ArtistaProfilePage />`
-   - Wait for: Error state
-   - Assert: Mensaje 'Artista no encontrado' visible
-   - Assert: Codigo error 'ARTISTA_NOT_FOUND' visible
-   - Assert: Boton 'Volver al inicio' visible
-
-4. **displays error message on network error**
-   - Setup: Route con params { id: 'error-500' }
-   - Setup: MSW handler retorna 500
-   - Render: `<ArtistaProfilePage />`
-   - Wait for: Error state
-   - Assert: Mensaje de error generico visible
-   - Assert: Boton 'Reintentar' visible
-
-5. **renders all sections correctly**
-   - Render: `<ArtistaProfilePage />` con mockArtistaCompleto
-   - Wait for: Data loaded
-   - Assert: Header section con avatar y nombre
-   - Assert: Bio section con descripcion
-   - Assert: Stats section (aunque sean 0)
-   - Assert: Future campaigns section (placeholder MVP)
-
-6. **navigates back to home on error**
-   - Render: `<ArtistaProfilePage />` con error 404
-   - Wait for: Error state
-   - Click: Boton 'Volver al inicio'
-   - Assert: Navigate to '/' llamado
-```
+---
 
 ## 5. Cobertura por Archivo
 
 | Archivo | Lineas | Funciones | Branches |
 |---------|--------|-----------|----------|
-| ArtistaProfilePage.tsx | 85% | 90% | 80% |
-| hooks/useArtista.ts | 95% | 100% | 90% |
-| services/artista.service.ts | 90% | 100% | 85% |
-| components/ArtistaAvatar.tsx | 80% | 85% | 75% |
-| components/ArtistaBio.tsx | 85% | 90% | 80% |
-| components/ArtistaStats.tsx | 80% | 85% | 75% |
-| components/ArtistaLocation.tsx | 90% | 95% | 85% |
+| ArtistaHero.tsx | 90% | 100% | 85% |
+| ArtistaBio.tsx | 95% | 100% | 90% |
+| ArtistaPublicProfilePage.tsx | 85% | 90% | 80% |
+| useArtista.ts | 100% | 100% | 100% |
+| artista.service.ts | 90% | 100% | 85% |
 
-**Meta Global:** 80% en todas las metricas
+**Meta Global:** 80%+ en todas las metricas
 
-**Prioridad Coverage:**
-1. `useArtista` (95%+) - Hook critico de data fetching
-2. `artista.service.ts` (90%+) - Service core
-3. `ArtistaProfilePage` (85%+) - Flujo principal
-4. Components (80%+) - Presentacion
+**Archivos NO testeados (fuera de alcance):**
+- `domain/types.ts` (solo tipos, no logica)
+- `presentation/components/index.ts` (solo exports)
+- `infrastructure/index.ts` (solo exports)
 
-## 6. Comandos de Ejecucion
+---
+
+## 6. Configuracion de Vitest
+
+### vitest.config.ts
+
+```typescript
+import { defineConfig } from "vitest/config"
+import react from "@vitejs/plugin-react"
+import path from "path"
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./vitest.setup.ts",
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      include: [
+        "src/features/**/presentation/**/*.{ts,tsx}",
+        "src/features/**/application/**/*.{ts,tsx}",
+        "src/features/**/infrastructure/**/*.{ts,tsx}",
+      ],
+      exclude: [
+        "**/__tests__/**",
+        "**/__mocks__/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.d.ts",
+        "**/index.ts",
+        "**/types.ts",
+      ],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "@shared": path.resolve(__dirname, "../shared"),
+    },
+  },
+})
+```
+
+---
+
+## 7. Comandos de Ejecucion
 
 ```bash
+# Agregar dependencias de testing
+npm install -D vitest @vitest/ui @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom msw
+
 # Ejecutar todos los tests
 npm run test
 
 # Ejecutar con coverage
 npm run test:coverage
 
-# Ejecutar tests de feature especifica
-npm run test -- --filter=artistas
+# Ejecutar tests de artistas especificamente
+npm run test -- artistas
 
-# Watch mode
+# Watch mode (desarrollo)
 npm run test:watch
 
-# Single file
-npm run test -- ArtistaProfilePage.test.tsx
-
-# UI mode (Vitest UI)
+# UI mode (visual)
 npm run test:ui
 ```
 
-## 7. CI/CD Integration
-
-```yaml
-# .github/workflows/frontend-landing-tests.yml
-name: Landing Tests
-
-on:
-  pull_request:
-    paths:
-      - 'src/web/**'
-      - 'src/shared/**'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: |
-          cd src/web
-          npm ci
-
-      - name: Run Tests
-        run: |
-          cd src/web
-          npm run test:coverage
-
-      - name: Upload Coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./src/web/coverage/lcov.info
-          flags: landing
-
-      - name: Check Coverage Threshold
-        run: |
-          cd src/web
-          npm run test:coverage:check -- --threshold 80
-```
-
-## 8. Edge Cases y Error States
-
-### 8.1 Edge Cases Criticos
-
-| Caso | Test | Comportamiento Esperado |
-|------|------|------------------------|
-| Artista sin descripcion | ArtistaBio.test | Muestra mensaje 'Sin descripción' |
-| Artista sin imagen | ArtistaAvatar.test | Muestra placeholder con iniciales |
-| Artista sin ubicacion | ArtistaLocation.test | No renderiza seccion de ubicacion |
-| ID invalido en URL | ArtistaProfilePage.test | Muestra error 404 |
-| Network timeout | artista.service.test | Lanza error de timeout |
-| Token expirado (futuro) | useArtista.test | Redirige a login (no aplica en Landing MVP) |
-| Datos parciales | ArtistaProfilePage.test | Renderiza con fallbacks |
-
-### 8.2 Error States
-
-| Error | Codigo | Test Coverage |
-|-------|--------|---------------|
-| Artista no existe | ARTISTA_NOT_FOUND | ArtistaProfilePage: displays error on not found |
-| Error de red | ERROR_UNEXPECTED | ArtistaProfilePage: displays network error |
-| Timeout | TIMEOUT | artista.service: handles timeout |
-| 500 Server Error | ERROR_UNEXPECTED | ArtistaProfilePage: displays network error |
-
-## 9. Testing Best Practices
-
-### 9.1 Testing Library Queries Priority
-
-```typescript
-// PRIORIDAD (de mejor a peor):
-// 1. getByRole
-expect(screen.getByRole('heading', { name: 'Luna Volcánica' })).toBeInTheDocument();
-
-// 2. getByLabelText (forms)
-expect(screen.getByLabelText('Nombre Artístico')).toBeInTheDocument();
-
-// 3. getByText
-expect(screen.getByText('Madrid, España')).toBeInTheDocument();
-
-// 4. getByTestId (ULTIMO RECURSO)
-expect(screen.getByTestId('artista-avatar')).toBeInTheDocument();
-```
-
-### 9.2 Async Testing
-
-```typescript
-// CORRECTO - waitFor para queries asincronas
-await waitFor(() => expect(screen.getByText('Luna Volcánica')).toBeInTheDocument());
-
-// CORRECTO - findBy (async query)
-expect(await screen.findByText('Luna Volcánica')).toBeInTheDocument();
-
-// INCORRECTO - query sincrona para datos async
-expect(screen.getByText('Luna Volcánica')).toBeInTheDocument(); // Falla
-```
-
-### 9.3 User Interactions
-
-```typescript
-// CORRECTO - userEvent (simula eventos reales)
-import userEvent from '@testing-library/user-event';
-await userEvent.click(screen.getByRole('button'));
-
-// EVITAR - fireEvent (eventos sinteticos)
-import { fireEvent } from '@testing-library/react';
-fireEvent.click(screen.getByRole('button'));
-```
-
-## 10. Checklist
-
-- [ ] Mocks definidos para API (`artista.mock.ts`)
-- [ ] MSW handlers configurados (`handlers.ts`)
-- [ ] Test utilities con QueryClient setup (`test-utils.tsx`)
-- [ ] Tests de service (`artista.service.test.ts`)
-- [ ] Tests de hook con providers (`useArtista.test.ts`)
-- [ ] Tests de componentes UI (`ArtistaAvatar`, `ArtistaBio`, etc.)
-- [ ] Tests de page component (`ArtistaProfilePage.test.tsx`)
-- [ ] Error states cubiertos (404, 500, timeout)
-- [ ] Loading states cubiertos (skeleton)
-- [ ] Edge cases cubiertos (sin imagen, sin descripcion)
-- [ ] Cobertura 80%+ en archivos core
-- [ ] Tests pasan en CI
-- [ ] Coverage report generado
-- [ ] No console.errors en tests
-
-## 11. Dependencias de Testing
+### package.json scripts
 
 ```json
 {
-  "devDependencies": {
-    "vitest": "^1.0.0",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.5.0",
-    "@testing-library/jest-dom": "^6.1.0",
-    "msw": "^2.0.0",
-    "@vitest/ui": "^1.0.0",
-    "jsdom": "^23.0.0"
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   }
 }
 ```
 
-## 12. Vitest Config
+---
 
-**Archivo:** `vitest.config.ts`
+## 8. CI/CD Integration
 
-```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+### GitHub Actions Workflow
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/setupTests.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'src/setupTests.ts',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/mockData',
-        '**/dist',
-      ],
-      statements: 80,
-      branches: 80,
-      functions: 80,
-      lines: 80,
-    },
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@shared': path.resolve(__dirname, '../shared'),
-    },
-  },
-});
+```yaml
+name: Frontend Tests - Landing
+
+on:
+  pull_request:
+    paths:
+      - "src/web/**"
+      - "src/shared/**"
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/web
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: src/web
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: src/web/coverage/coverage-final.json
+          flags: frontend-landing
+          name: landing-coverage
+
+      - name: Check coverage thresholds
+        working-directory: src/web
+        run: npm run test:coverage -- --reporter=json --outputFile=coverage-summary.json
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: src/web/coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
-
-## 13. Notas Finales
-
-### 13.1 Restricciones MVP
-
-- **No testing de autenticacion**: Landing es publica, sin auth
-- **No testing de formularios**: Solo visualizacion de perfil
-- **No testing de mutations**: Solo queries GET
-- **Stats placeholder**: Stats mock con valores 0 (campanias futuras)
-
-### 13.2 Optimizaciones Futuras (Post-MVP)
-
-- Snapshot testing para componentes estables
-- E2E tests con Playwright para flujo completo
-- Visual regression testing con Percy/Chromatic
-- Performance testing con Lighthouse CI
-- Accessibility testing con axe-core
-
-### 13.3 Test Execution Time Goal
-
-- Total: < 10 segundos
-- Unit tests: < 5 segundos
-- Integration tests: < 5 segundos
-- MSW overhead: minimo (solo 1 endpoint GET)
-
-### 13.4 Mantenimiento
-
-- Actualizar mocks cuando backend agregue campos
-- Revisar handlers MSW si endpoints cambian
-- Refactorizar tests si componentes cambian estructura
-- Mantener coverage 80%+ en nuevos cambios
 
 ---
 
-**Siguiente paso:** Implementar tests siguiendo este plan. Ejecutar `npm run test:coverage` para validar cobertura.
+## 9. Estrategia de Mocking
+
+### 9.1 Mock de API (MSW)
+
+**Ventajas:**
+- Intercepta requests a nivel de red (realista)
+- No requiere modificar codigo de produccion
+- Permite simular errores, delays, edge cases
+
+**Uso:**
+- Todos los endpoints GET `/api/artistas/:id`
+- Respuestas exitosas, 404, 500, network errors
+
+### 9.2 Mock de Hooks (vi.mock)
+
+**Evitar:** No mockear `useArtista` en tests de componentes. Usar MSW para que el flujo completo funcione.
+
+**Uso limitado:** Solo en tests de componentes que dependen de multiples hooks complejos.
+
+### 9.3 Mock de Router
+
+**react-router-dom:**
+- Usar `MemoryRouter` en test-utils
+- Simular params con `initialEntries`
+- No mockear hooks de router directamente
+
+---
+
+## 10. Tests de Snapshot (Opcional)
+
+**NO recomendado para este proyecto** debido a:
+- MVP con cambios frecuentes en UI
+- Snapshots generan ruido en PRs
+- Dificultan refactoring
+
+**Alternativa:** Tests de regression visual con Playwright (fuera de scope)
+
+---
+
+## 11. Performance Tests
+
+### Tiempo de Ejecucion Esperado
+
+| Suite | Tests | Tiempo |
+|-------|-------|--------|
+| ArtistaHero | 6 | ~500ms |
+| ArtistaBio | 9 | ~800ms |
+| ArtistaPublicProfilePage | 8 | ~2s |
+| useArtista | 6 | ~1.5s |
+| artista.service | 5 | ~700ms |
+| **TOTAL** | **34** | **~5.5s** |
+
+**Meta:** < 10 segundos total
+
+---
+
+## 12. Edge Cases y Escenarios Especiales
+
+### 12.1 Estados de Datos
+
+| Caso | Descripcion | Test Coverage |
+|------|-------------|---------------|
+| Artista completo | Todos los campos poblados | ArtistaHero, ArtistaBio |
+| Artista minimo | Solo campos obligatorios (nombreArtistico) | ArtistaBio placeholder tests |
+| Sin ubicacion | pais y ciudad undefined | ArtistaBio hide ubicacion |
+| Solo ciudad | pais undefined | ArtistaBio render solo ciudad |
+| Solo pais | ciudad undefined | ArtistaBio render solo pais |
+| Sin imagen | imagenUrl undefined | ArtistaHero fallback |
+| Sin genero | generoMusical undefined | ArtistaHero/Bio hide genero |
+
+### 12.2 Estados de Query
+
+| Estado | Descripcion | Test Coverage |
+|--------|-------------|---------------|
+| Loading | isLoading: true | ArtistaPublicProfilePage skeleton |
+| Success | data presente | ArtistaPublicProfilePage renders |
+| Error 404 | artista no existe | ArtistaPublicProfilePage not found |
+| Error 500 | server error | useArtista isError |
+| Network error | sin conexion | artista.service throws |
+| Query disabled | id vacio | useArtista disabled query |
+
+### 12.3 Casos de Navegacion
+
+| Caso | Descripcion | Test Coverage |
+|------|-------------|---------------|
+| URL con ID valido | `/artistas/{valid-id}` | Integration test success |
+| URL con ID invalido | `/artistas/fake-id` | Not found screen |
+| Cambio de ID en URL | useParams cambia | useArtista refetch |
+| Back button desde not found | Click "Volver al inicio" | Navigation test |
+
+---
+
+## 13. Accesibilidad (a11y)
+
+**Tests basicos de accesibilidad:**
+
+```typescript
+// Ejemplo para ArtistaPublicProfilePage
+it("has accessible heading structure", () => {
+  renderWithProviders(<ArtistaPublicProfilePage />)
+
+  const headings = screen.getAllByRole("heading")
+  expect(headings[0]).toHaveAttribute("level", "1") // h1: nombre artista
+})
+
+it("avatar has alt text", () => {
+  renderWithProviders(<ArtistaHero artista={mockArtistaCompleto} />)
+
+  const avatar = screen.getByRole("img")
+  expect(avatar).toHaveAttribute("alt", mockArtistaCompleto.nombreArtistico)
+})
+```
+
+**Herramienta adicional (opcional):**
+- `@axe-core/react` para auditorias automatizadas
+- Ejecutar en tests de integracion
+
+---
+
+## 14. Checklist de Implementacion
+
+### Fase 1: Setup (1h)
+- [ ] Instalar dependencias: vitest, testing-library, msw, jsdom
+- [ ] Crear `vitest.config.ts`
+- [ ] Crear `vitest.setup.ts` con MSW setup
+- [ ] Crear `test-utils.tsx` con providers
+- [ ] Agregar scripts en `package.json`
+
+### Fase 2: Mocks (1h)
+- [ ] Crear `__mocks__/artista.mock.ts` con fixtures
+- [ ] Crear `__mocks__/handlers.ts` con MSW handlers
+- [ ] Validar handlers con test simple
+
+### Fase 3: Tests Unitarios (3h)
+- [ ] ArtistaHero.test.tsx (6 tests)
+- [ ] ArtistaBio.test.tsx (9 tests)
+- [ ] useArtista.test.ts (6 tests)
+- [ ] artista.service.test.ts (5 tests)
+
+### Fase 4: Tests de Integracion (2h)
+- [ ] ArtistaPublicProfilePage.test.tsx (8 tests)
+- [ ] Validar flujo completo: loading -> success
+- [ ] Validar flujo de error: loading -> error -> not found
+
+### Fase 5: Cobertura y Ajustes (1h)
+- [ ] Ejecutar `npm run test:coverage`
+- [ ] Verificar cobertura >= 80%
+- [ ] Ajustar tests faltantes
+- [ ] Documentar casos edge no cubiertos
+
+### Fase 6: CI/CD (30min)
+- [ ] Configurar workflow de GitHub Actions
+- [ ] Validar tests pasan en CI
+- [ ] Configurar Codecov (opcional)
+
+**Tiempo Total Estimado:** 8.5 horas
+
+---
+
+## 15. Dependencias de Testing
+
+### Instalacion Completa
+
+```bash
+cd src/web
+
+npm install -D \
+  vitest@^1.2.0 \
+  @vitest/ui@^1.2.0 \
+  @testing-library/react@^14.1.2 \
+  @testing-library/user-event@^14.5.2 \
+  @testing-library/jest-dom@^6.2.0 \
+  jsdom@^24.0.0 \
+  msw@^2.1.0 \
+  @types/testing-library__jest-dom@^6.0.0
+```
+
+### Versiones Compatibles
+
+| Dependencia | Version | Notas |
+|-------------|---------|-------|
+| vitest | ^1.2.0 | Test runner (compatible con Vite 5) |
+| @vitest/ui | ^1.2.0 | UI visual para tests |
+| @testing-library/react | ^14.1.2 | Compatible con React 18 |
+| @testing-library/user-event | ^14.5.2 | Simular interacciones usuario |
+| @testing-library/jest-dom | ^6.2.0 | Matchers custom (toBeInTheDocument) |
+| jsdom | ^24.0.0 | DOM environment para Node |
+| msw | ^2.1.0 | Mock Service Worker (API mocking) |
+
+---
+
+## 16. Notas Finales
+
+### Limitaciones Conocidas
+
+1. **No se testean tipos TypeScript:** Los archivos `types.ts` no tienen logica ejecutable.
+2. **Snapshots no incluidos:** Por decision de proyecto (MVP en cambio).
+3. **Tests E2E separados:** Se haran con Playwright en fase posterior.
+4. **Animaciones deshabilitadas:** En tests, Tailwind animations se omiten.
+
+### Mejoras Futuras
+
+1. **Visual Regression Testing:** Playwright + Percy para detectar cambios visuales.
+2. **Tests de Performance:** Medir tiempos de render con React Profiler.
+3. **Tests de Accesibilidad:** Integracion con axe-core.
+4. **Mutation Testing:** Stryker para validar calidad de tests.
+
+### Recursos Adicionales
+
+- [Vitest Documentation](https://vitest.dev/)
+- [Testing Library React](https://testing-library.com/docs/react-testing-library/intro/)
+- [MSW Documentation](https://mswjs.io/)
+- [Kent C. Dodds Testing Best Practices](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
+
+---
+
+**Fin del documento de estrategia de testing.**

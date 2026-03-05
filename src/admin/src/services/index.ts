@@ -1,0 +1,8 @@
+export { authService } from "./auth.service"
+export { campaniaService } from "./campania.service"
+export { artistaService } from "./artista.service"
+export { dashboardService } from "./dashboard.service"
+export { promotorService } from "./promotor.service"
+export { promoProgramaService } from "./promo-programa.service"
+export { inscripcionService } from "./inscripcion.service"
+export { metricasService } from "./metricas.service"

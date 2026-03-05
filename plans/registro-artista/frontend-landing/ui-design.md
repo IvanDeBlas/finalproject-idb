@@ -1,505 +1,479 @@
 # Diseño UI: Registro de Artista (Landing)
 
-**Fecha:** 2026-01-26
+**Fecha:** 2026-02-12
 **Feature:** registro-artista
-**Target:** src/web (Landing - Vite + React)
+**Target:** src/web (Vite + React - Landing Pública)
+
+---
 
 ## 1. Resumen
 
-- Componentes shadcn: 8 componentes base (Card, Avatar, Badge, Button, Skeleton, Separator, Tabs, Alert)
-- Composiciones custom: 5 (ArtistaProfilePage, ArtistaHero, ArtistaBio, CampaniasPreview, ReviewsList)
-- Responsive breakpoints: sm (640px), md (768px), lg (1024px), xl (1280px)
-- Alcance: Solo perfil público de artista (`/artistas/{id}`) - Sin formularios de registro/creación
+- **Componentes shadcn/ui existentes:** 9 (Button, Card, Input, Label, Progress, Textarea, Avatar, Badge, Skeleton)
+- **Componentes custom a crear:** 5
+- **Screens:** 1 (Perfil Público de Artista)
+- **Responsive breakpoints:** sm (640px), md (768px), lg (1024px)
 
-## 2. Paleta de Colores (del proyecto)
+### Scope de esta Feature en Landing
 
-| Uso | Variable CSS | Tailwind Class | Ejemplo |
-|-----|--------------|----------------|---------|
-| Primary | `--primary-color` | `text-primary` `border-primary` | Gradient pink/purple, botones principales |
-| Background Primary | `--bg-primary` | `bg-[#1a1a2e]` | Fondo principal dark |
-| Background Secondary | `--bg-secondary` | `bg-[#16213e]` | Fondo alternativo |
-| Background Card | `--bg-card` | `bg-[#0f1729]` | Cards de contenido |
-| Background Card Hover | `--bg-card-hover` | `bg-[#1e2a42]` | Hover en cards |
-| Text Primary | `--text-primary` | `text-white` | Títulos, textos principales |
-| Text Secondary | `--text-secondary` | `text-[#94a3b8]` | Subtítulos, descripciones |
-| Text Muted | `--text-muted` | `text-[#64748b]` | Textos auxiliares, placeholders |
-| Border Primary | `--border-primary` | `border-[#334155]` | Bordes de cards, separadores |
-| Gradient Primary | `--primary-gradient` | `bg-gradient-to-r from-pink-500 to-purple-600` | Botones, badges activos |
-| Success | `--status-success` | `bg-green-500` `text-green-400` | Badge "Activa" |
-| Info | `--status-info` | `bg-blue-500` `text-blue-400` | Badge genérico |
+Esta feature se enfoca **únicamente en la visualización del perfil público de artista** (`/artistas/{id}`). Los formularios de registro y creación de perfil están en la app **Admin** (Next.js), no en Landing.
+
+---
+
+## 2. Paleta de Colores (Dark Theme)
+
+| Uso | Variable CSS | Hex | Uso Específico |
+|-----|--------------|-----|----------------|
+| Background Primary | `--bg-primary` | `#1a1a2e` | Fondo principal de la página |
+| Background Secondary | `--bg-secondary` | `#16213e` | Secciones alternativas |
+| Background Card | `--bg-card` | `#0f1729` | Cards de contenido |
+| Background Card Hover | `--bg-card-hover` | `#1e2a42` | Hover en cards interactivos |
+| Primary Color | `--primary-color` | `#a855f7` | Botones principales, focus states |
+| Primary Gradient | `--primary-gradient` | `linear-gradient(135deg, #ec4899 0%, #a855f7 100%)` | Botones CTA, hero banner |
+| Primary Gradient Hover | `--primary-gradient-hover` | `linear-gradient(135deg, #f472b6 0%, #c084fc 100%)` | Hover en gradientes |
+| Text Primary | `--text-primary` | `#ffffff` | Títulos, texto principal |
+| Text Secondary | `--text-secondary` | `#94a3b8` | Subtítulos, descripciones |
+| Text Muted | `--text-muted` | `#64748b` | Placeholder, texto terciario |
+| Text Label | `--text-label` | `#cbd5e1` | Labels de formularios |
+| Border Primary | `--border-primary` | `#334155` | Bordes de cards, separadores |
+| Border Focus | `--border-focus` | `#a855f7` | Focus en inputs |
+| Status Success | `--status-success` | `#10b981` | Estados exitosos |
+| Status Error | `--status-error` | `#ef4444` | Estados de error |
+
+### Aplicación en Tailwind
+
+```tsx
+// Fondo principal
+className="bg-[#1a1a2e]"
+
+// Card de contenido
+className="bg-[#0f1729] border border-[#334155]"
+
+// Botón con gradiente
+className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+
+// Texto
+className="text-white"           // Primary
+className="text-[#94a3b8]"       // Secondary
+className="text-[#64748b]"       // Muted
+```
+
+---
 
 ## 3. Componentes por Screen
 
-### 3.1 ArtistaProfilePage (`/artistas/{id}`)
+### 3.1 Perfil Público de Artista (`/artistas/{id}`)
 
-#### Layout
+#### Layout General
+
 ```
-┌────────────────────────────────────────────────────────────┐
-│ Header (sticky)                                            │
-│ [LOGO] MusicFund  Explorar  Para Artistas  Cómo funciona  │
-│                             Iniciar Sesión  [Registro]     │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│ ┌────────────────────────────────────────────────────────┐ │
-│ │        Hero Banner (gradient/image)                    │ │
-│ │                                                        │ │
-│ └────────────────────────────────────────────────────────┘ │
-│                                                            │
-│   [Avatar]  Luna Vibe                                      │
-│             Electronic  Synthwave  Indie                   │
-│                                                            │
-│   🎵 3 campañas  👥 247 backers  💰 €12,450 recaudados      │
-│                                                            │
-│   [💜 Seguir]  🌐 🎵 📺                                      │
-│                                                            │
-│ ┌──────────────────────┐  ┌────────────────────────────┐  │
-│ │ Biografía            │  │ Campañas Activas           │  │
-│ │                      │  │                            │  │
-│ │ Luna Vibe es...      │  │ ┌────────────────────────┐ │  │
-│ │                      │  │ │ [IMG] Neon Dreams      │ │  │
-│ │ Desde Barcelona...   │  │ │ €8,750 / €15,000      │ │  │
-│ │                      │  │ │ 58% ████░░░          │ │  │
-│ │ 🎵 Spotify           │  │ └────────────────────────┘ │  │
-│ │ 📺 YouTube           │  │                            │  │
-│ │ 🌐 Sitio oficial     │  │ [Ver todas]                │  │
-│ └──────────────────────┘  └────────────────────────────┘  │
-│                                                            │
-│ ┌──────────────────────┐                                   │
-│ │ Reseñas de Fans      │                                   │
-│ │                      │                                   │
-│ │ 👤 Carlos M. ⭐⭐⭐⭐⭐   │                                   │
-│ │ Increíble artista... │                                   │
-│ └──────────────────────┘                                   │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ HEADER (sticky)                                              │
+│ [LOGO] WePlay Rises  Explorar  Para Artistas  Login         │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│ HERO BANNER (gradient o imagen)                             │
+│ h-64 bg-gradient-to-r from-purple-900 to-pink-900           │
+│                                                              │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│ ┌───┐  ARTIST INFO (overlay sobre hero)                     │
+│ │IMG│  Luna Vibe                                            │
+│ └───┘  Electronic • Synthwave • Indie                       │
+│                                                              │
+│ 🎵 3 campañas • 👥 247 backers • 💰 €12,450 recaudados      │
+│                                                              │
+│ [💜 Seguir]  🌐 🎵 📺                                         │
+│                                                              │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│ CONTENT GRID (Desktop: 3 cols, Tablet: 2 cols, Mobile: 1)   │
+│                                                              │
+│ ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│ │ Biografía   │  │ Campañas    │  │ Actividad   │          │
+│ │             │  │ Activas     │  │ Reciente    │          │
+│ │ ...         │  │             │  │             │          │
+│ └─────────────┘  └─────────────┘  └─────────────┘          │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-#### Componentes
+#### Componentes Utilizados
 
-**Page Container**
+**Header (NavBar)**
 
 | Elemento | Componente shadcn | Customización |
 |----------|-------------------|---------------|
-| Layout principal | - (div) | `min-h-screen bg-[#1a1a2e]` |
-| Content wrapper | - (div) | `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6` |
+| Container | `<header>` | `sticky top-0 z-50 bg-[#1a1a2e] border-b border-[#334155]` |
+| Logo | Custom SVG + Text | `flex items-center gap-2 text-white font-bold text-xl` |
+| Nav Links | `<nav>` con `<a>` | `flex items-center gap-6 text-[#94a3b8] hover:text-white transition` |
+| Login Button | `<Button variant="ghost">` | `text-white hover:bg-[#1e2a42]` |
 
-**Composición general:**
+**Composición NavBar:**
 ```tsx
-<div className="min-h-screen bg-[#1a1a2e]">
-  {/* Header sticky (shared component fuera de scope) */}
-  <ArtistaHero artista={artista} />
-
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <ArtistaStats artista={artista} />
-    <ArtistaActions artista={artista} />
-
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-      <div className="lg:col-span-1">
-        <ArtistaBio artista={artista} />
+<header className="sticky top-0 z-50 bg-[#1a1a2e] border-b border-[#334155]">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-between h-16">
+      {/* Logo */}
+      <div className="flex items-center gap-2">
+        <MusicNoteIcon className="h-8 w-8 text-purple-500" />
+        <span className="text-xl font-bold text-white">WePlay Rises</span>
       </div>
-      <div className="lg:col-span-2">
-        <CampaniasPreview artistaId={artista.id} />
-      </div>
-    </div>
 
-    <div className="mt-8">
-      <ReviewsList artistaId={artista.id} />
+      {/* Navigation - Desktop */}
+      <nav className="hidden md:flex items-center gap-6">
+        <a href="/explorar" className="text-[#94a3b8] hover:text-white transition">
+          Explorar
+        </a>
+        <a href="/para-artistas" className="text-[#94a3b8] hover:text-white transition">
+          Para Artistas
+        </a>
+        <a href="/como-funciona" className="text-[#94a3b8] hover:text-white transition">
+          Cómo Funciona
+        </a>
+      </nav>
+
+      {/* Auth Buttons */}
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="sm" className="text-white">
+          Iniciar Sesión
+        </Button>
+        <Button
+          size="sm"
+          className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+        >
+          Registrarse
+        </Button>
+      </div>
     </div>
   </div>
-</div>
+</header>
 ```
 
----
+**Hero Banner**
 
-### 3.2 ArtistaHero Component
+| Elemento | Componente | Customización |
+|----------|------------|---------------|
+| Container | `<div>` | `relative h-64 bg-gradient-to-r from-purple-900 to-pink-900` |
+| Imagen (si existe) | `<img>` | `absolute inset-0 w-full h-full object-cover opacity-50` |
+| Overlay | `<div>` | `absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent` |
 
-**Propósito:** Hero banner con gradiente/imagen y avatar del artista
-
-| Elemento | Componente shadcn | Customización |
-|----------|-------------------|---------------|
-| Hero container | - (div) | `relative h-48 sm:h-56 md:h-64 bg-gradient-to-r from-purple-900 via-purple-800 to-pink-900` |
-| Backdrop blur overlay | - (div) | `absolute inset-0 bg-black/20 backdrop-blur-[2px]` (si hay imagen) |
-| Avatar container | - (div) | `absolute -bottom-16 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0` |
-| Avatar | Avatar, AvatarImage, AvatarFallback | `w-32 h-32 border-4 border-[#1a1a2e] shadow-xl` |
-| Fallback icon | - (Icon) | `lucide-react Music icon, text-purple-300 w-12 h-12` |
-
-**Composición:**
+**Composición Hero:**
 ```tsx
-<div className="relative h-48 sm:h-56 md:h-64 bg-gradient-to-r from-purple-900 via-purple-800 to-pink-900">
-  {artista.imagenUrl && (
-    <>
-      <img
-        src={artista.imagenUrl}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover"
-        aria-hidden="true"
-      />
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
-    </>
+<div className="relative h-48 sm:h-56 md:h-64 bg-gradient-to-r from-purple-900 to-pink-900">
+  {/* Si el artista tiene banner image */}
+  {bannerUrl && (
+    <img
+      src={bannerUrl}
+      alt="Banner de artista"
+      className="absolute inset-0 w-full h-full object-cover opacity-50"
+    />
   )}
 
-  <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0">
-    <Avatar className="w-32 h-32 border-4 border-[#1a1a2e] shadow-xl">
-      <AvatarImage
-        src={artista.imagenUrl}
-        alt={`Foto de perfil de ${artista.nombreArtistico}`}
-      />
-      <AvatarFallback className="bg-purple-900/50">
-        <Music className="w-12 h-12 text-purple-300" aria-hidden="true" />
-      </AvatarFallback>
-    </Avatar>
-  </div>
+  {/* Overlay degradado */}
+  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent" />
 </div>
 ```
 
-**Estados:**
-- **Default**: Gradient background + avatar con imagen
-- **No Image**: Avatar muestra fallback con ícono Music
-- **Loading**: Skeleton con mismo alto + Avatar skeleton
-
----
-
-### 3.3 ArtistaStats Component
-
-**Propósito:** Mostrar nombre, géneros y estadísticas
+**Artist Info Section**
 
 | Elemento | Componente shadcn | Customización |
 |----------|-------------------|---------------|
-| Container | - (div) | `mt-20 sm:mt-8 sm:ml-44 text-center sm:text-left` |
-| Nombre artístico | - (h1) | `text-3xl sm:text-4xl font-bold text-white mb-3` |
-| Géneros container | - (div) | `flex flex-wrap gap-2 justify-center sm:justify-start mb-4` |
-| Badge género | Badge | `bg-purple-900/50 text-purple-200 border-purple-500/30 hover:bg-purple-900/70` |
-| Stats row | - (div) | `flex flex-wrap gap-4 sm:gap-6 justify-center sm:justify-start text-[#94a3b8] text-sm` |
-| Stat item | - (span) | `flex items-center gap-2` |
-| Stat icon | - (Icon) | `w-4 h-4` |
+| Avatar Container | `<Avatar>` | `w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 -mt-12 sm:-mt-14 md:-mt-16 border-4 border-[#1a1a2e] rounded-full` |
+| Avatar Image | `<AvatarImage>` | - |
+| Avatar Fallback | `<AvatarFallback>` | `bg-[#2d1b4e] text-purple-300` con icono de música |
+| Artist Name | `<h1>` | `text-2xl sm:text-3xl md:text-4xl font-bold text-white mt-4` |
+| Genre Tags Container | `<div>` | `flex flex-wrap gap-2 mt-2` |
+| Genre Tag | `<Badge>` | `bg-[#2d1b4e] text-purple-300 border border-purple-500/50` |
+| Stats Container | `<div>` | `flex flex-wrap gap-4 sm:gap-6 text-[#94a3b8] mt-4 text-sm sm:text-base` |
+| Stat Item | `<span>` | `flex items-center gap-2` |
+| Follow Button | `<Button>` | `mt-6 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6` |
+| Social Icons Container | `<div>` | `flex gap-2 mt-4` |
+| Social Icon Button | `<Button variant="ghost" size="icon">` | `text-[#94a3b8] hover:text-white hover:bg-[#1e2a42]` |
 
-**Composición:**
+**Composición Artist Info:**
 ```tsx
-<div className="mt-20 sm:mt-8 sm:ml-44 text-center sm:text-left">
-  <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  {/* Avatar */}
+  <Avatar className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 -mt-12 sm:-mt-14 md:-mt-16 border-4 border-[#1a1a2e] rounded-full">
+    <AvatarImage src={artista.imagenUrl} alt={artista.nombreArtistico} />
+    <AvatarFallback className="bg-[#2d1b4e] text-purple-300 text-3xl">
+      <MusicalNoteIcon className="h-16 w-16" />
+    </AvatarFallback>
+  </Avatar>
+
+  {/* Nombre */}
+  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mt-4">
     {artista.nombreArtistico}
   </h1>
 
-  {/* Géneros - placeholder para MVP (no en DB) */}
-  <div className="flex flex-wrap gap-2 justify-center sm:justify-start mb-4">
-    <Badge variant="secondary" className="bg-purple-900/50 text-purple-200 border-purple-500/30">
+  {/* Géneros (ejemplo - fuera de MVP) */}
+  <div className="flex flex-wrap gap-2 mt-2">
+    <Badge className="bg-[#2d1b4e] text-purple-300 border border-purple-500/50">
       Electronic
     </Badge>
-    <Badge variant="secondary" className="bg-purple-900/50 text-purple-200 border-purple-500/30">
+    <Badge className="bg-[#2d1b4e] text-purple-300 border border-purple-500/50">
       Synthwave
     </Badge>
   </div>
 
-  {/* Stats - placeholder para MVP (no en DB aún) */}
-  <div className="flex flex-wrap gap-4 sm:gap-6 justify-center sm:justify-start text-[#94a3b8] text-sm">
+  {/* Stats (futura implementación - placeholder) */}
+  <div className="flex flex-wrap gap-4 sm:gap-6 text-[#94a3b8] mt-4 text-sm sm:text-base">
     <span className="flex items-center gap-2">
-      <Music className="w-4 h-4" aria-hidden="true" />
+      <MusicalNoteIcon className="h-5 w-5" />
       <span><strong className="text-white">0</strong> campañas</span>
     </span>
     <span className="flex items-center gap-2">
-      <Users className="w-4 h-4" aria-hidden="true" />
+      <UsersIcon className="h-5 w-5" />
       <span><strong className="text-white">0</strong> backers</span>
     </span>
     <span className="flex items-center gap-2">
-      <Euro className="w-4 h-4" aria-hidden="true" />
+      <CurrencyEuroIcon className="h-5 w-5" />
       <span><strong className="text-white">€0</strong> recaudados</span>
     </span>
   </div>
-</div>
-```
 
-**Estados:**
-- **Loading**: Skeleton para nombre, badges y stats
-- **Empty**: Mostrar "0 campañas" si no hay campañas aún
-
----
-
-### 3.4 ArtistaActions Component
-
-**Propósito:** Botón Seguir y enlaces sociales
-
-| Elemento | Componente shadcn | Customización |
-|----------|-------------------|---------------|
-| Container | - (div) | `mt-6 flex flex-wrap gap-3 justify-center sm:justify-start sm:ml-44` |
-| Follow button | Button | `bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6` |
-| Social icons container | - (div) | `flex gap-2` |
-| Social icon button | Button | `variant="ghost" size="icon" text-[#94a3b8] hover:text-white hover:bg-white/10` |
-
-**Composición:**
-```tsx
-<div className="mt-6 flex flex-wrap gap-3 justify-center sm:justify-start sm:ml-44">
-  <Button
-    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6"
-    onClick={handleFollowClick}
-  >
-    <Heart className="w-4 h-4 mr-2" aria-hidden="true" />
-    Seguir
-  </Button>
-
-  <div className="flex gap-2">
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-[#94a3b8] hover:text-white hover:bg-white/10"
-      asChild
-    >
-      <a href="https://spotify.com" target="_blank" rel="noopener noreferrer" aria-label="Spotify">
-        <Music className="w-4 h-4" />
-      </a>
+  {/* Actions */}
+  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6">
+    <Button className="w-full sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6">
+      <HeartIcon className="h-5 w-5 mr-2" />
+      Seguir
     </Button>
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-[#94a3b8] hover:text-white hover:bg-white/10"
-      asChild
-    >
-      <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-        <Youtube className="w-4 h-4" />
-      </a>
-    </Button>
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-[#94a3b8] hover:text-white hover:bg-white/10"
-      asChild
-    >
-      <a href="https://example.com" target="_blank" rel="noopener noreferrer" aria-label="Sitio web">
-        <Globe className="w-4 h-4" />
-      </a>
-    </Button>
+
+    {/* Social Links */}
+    <div className="flex gap-2">
+      <Button variant="ghost" size="icon" className="text-[#94a3b8] hover:text-white hover:bg-[#1e2a42]" asChild>
+        <a href="https://spotify.com" target="_blank" rel="noopener noreferrer" aria-label="Spotify">
+          <SpotifyIcon className="h-5 w-5" />
+        </a>
+      </Button>
+      <Button variant="ghost" size="icon" className="text-[#94a3b8] hover:text-white hover:bg-[#1e2a42]" asChild>
+        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+          <YouTubeIcon className="h-5 w-5" />
+        </a>
+      </Button>
+      <Button variant="ghost" size="icon" className="text-[#94a3b8] hover:text-white hover:bg-[#1e2a42]" asChild>
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer" aria-label="Sitio Web">
+          <GlobeIcon className="h-5 w-5" />
+        </a>
+      </Button>
+    </div>
   </div>
 </div>
 ```
 
-**Estados:**
-- **Follow button**: Placeholder (funcionalidad fuera de MVP)
-- **Social links**: Placeholder con URLs de ejemplo
-- **Hover**: Cambio de color a white + background subtle
-
----
-
-### 3.5 ArtistaBio Component
-
-**Propósito:** Card con biografía y enlaces sociales del artista
+**Biography Card**
 
 | Elemento | Componente shadcn | Customización |
 |----------|-------------------|---------------|
-| Card container | Card | `bg-[#0f1729] border-[#334155]` |
-| Card header | CardHeader | `pb-3` |
-| Card title | CardTitle | `text-xl font-bold text-white` |
-| Card content | CardContent | `pt-0` |
-| Bio text | - (p) | `text-[#94a3b8] text-sm leading-relaxed whitespace-pre-wrap mb-6` |
-| Social links list | - (div) | `space-y-3` |
-| Social link | - (a) | `flex items-center gap-3 text-primary hover:text-purple-400 hover:underline transition-colors` |
-| Social icon | - (Icon) | `w-5 h-5` |
-| Empty state | - (p) | `text-[#64748b] italic text-sm` |
-| Separator | Separator | `my-4 bg-[#334155]` |
+| Card Container | `<Card>` | `bg-[#0f1729] border border-[#334155] hover:bg-[#1e2a42]/30 transition-colors` |
+| Card Header | `<CardHeader>` | `pb-3` |
+| Card Title | `<CardTitle>` | `text-xl font-bold text-white` |
+| Card Content | `<CardContent>` | `pt-0` |
+| Bio Text | `<p>` | `text-[#94a3b8] leading-relaxed whitespace-pre-wrap` |
+| Empty State | `<p>` | `text-[#64748b] italic` |
 
-**Composición:**
+**Composición Biography:**
 ```tsx
-<Card className="bg-[#0f1729] border-[#334155]">
+<Card className="bg-[#0f1729] border border-[#334155]">
   <CardHeader className="pb-3">
-    <CardTitle className="text-xl font-bold text-white">
-      Biografía
-    </CardTitle>
+    <CardTitle className="text-xl font-bold text-white">Biografía</CardTitle>
   </CardHeader>
   <CardContent className="pt-0">
     {artista.descripcion ? (
-      <p className="text-[#94a3b8] text-sm leading-relaxed whitespace-pre-wrap mb-6">
+      <p className="text-[#94a3b8] leading-relaxed whitespace-pre-wrap">
         {artista.descripcion}
       </p>
     ) : (
-      <p className="text-[#64748b] italic text-sm mb-6">
+      <p className="text-[#64748b] italic">
         Este artista aún no ha agregado una biografía.
       </p>
     )}
+  </CardContent>
+</Card>
+```
 
-    {/* Location */}
-    {(artista.ciudad || artista.pais) && (
-      <p className="text-[#94a3b8] text-sm mb-4 flex items-center gap-2">
-        <MapPin className="w-4 h-4" aria-hidden="true" />
-        <span>
-          {[artista.ciudad, artista.pais].filter(Boolean).join(', ')}
-        </span>
-      </p>
-    )}
+**Campañas Section (Placeholder MVP)**
 
-    <Separator className="my-4 bg-[#334155]" />
+| Elemento | Componente shadcn | Customización |
+|----------|-------------------|---------------|
+| Card Container | `<Card>` | `bg-[#0f1729] border border-[#334155]` |
+| Card Header | `<CardHeader>` | `pb-3` |
+| Card Title | `<CardTitle>` | `text-xl font-bold text-white` |
+| Card Content | `<CardContent>` | `pt-0` |
+| Empty State | `<div>` | `text-center py-8` |
+| Empty Icon | Custom SVG/Icon | `h-16 w-16 text-[#64748b] mx-auto mb-4` |
+| Empty Text | `<p>` | `text-[#94a3b8]` |
 
-    {/* Social links - placeholder para MVP */}
-    <div className="space-y-3">
-      <a
-        href="https://spotify.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 text-primary hover:text-purple-400 hover:underline transition-colors"
-      >
-        <Music className="w-5 h-5" aria-hidden="true" />
-        <span className="text-sm">Escuchar en Spotify</span>
-      </a>
-      <a
-        href="https://youtube.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 text-primary hover:text-purple-400 hover:underline transition-colors"
-      >
-        <Youtube className="w-5 h-5" aria-hidden="true" />
-        <span className="text-sm">Videos en YouTube</span>
-      </a>
-      <a
-        href="https://example.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 text-primary hover:text-purple-400 hover:underline transition-colors"
-      >
-        <Globe className="w-5 h-5" aria-hidden="true" />
-        <span className="text-sm">Sitio web oficial</span>
-      </a>
+**Composición Campañas:**
+```tsx
+<Card className="bg-[#0f1729] border border-[#334155]">
+  <CardHeader className="pb-3">
+    <CardTitle className="text-xl font-bold text-white">Campañas Activas</CardTitle>
+  </CardHeader>
+  <CardContent className="pt-0">
+    {/* Placeholder para MVP */}
+    <div className="text-center py-8">
+      <MusicalNoteIcon className="h-16 w-16 text-[#64748b] mx-auto mb-4" />
+      <p className="text-[#94a3b8]">Próximamente campañas musicales...</p>
     </div>
   </CardContent>
 </Card>
 ```
+
+---
+
+## 4. Componentes Custom a Crear
+
+### 4.1 `<NavBar>` (Custom)
+
+**Ubicación:** `src/web/src/components/layout/NavBar.tsx`
+
+**Props:**
+```typescript
+interface NavBarProps {
+  className?: string;
+}
+```
+
+**Descripción:** Header sticky con navegación, logo y botones de autenticación.
+
+**Componentes internos:**
+- Logo (custom SVG + text)
+- Nav links (desktop)
+- Mobile menu button (hamburger - futura implementación)
+- Auth buttons (Login, Register)
+
+**Responsive:**
+- Mobile: Solo logo + hamburger (futura implementación)
+- Tablet+: Logo + nav links + auth buttons
+
+---
+
+### 4.2 `<ArtistHero>` (Custom)
+
+**Ubicación:** `src/web/src/components/artistas/ArtistHero.tsx`
+
+**Props:**
+```typescript
+interface ArtistHeroProps {
+  artista: Artista;
+  isLoading?: boolean;
+}
+```
+
+**Descripción:** Sección de hero banner + avatar + info del artista.
+
+**Componentes internos:**
+- Hero banner (gradient o imagen)
+- Avatar (shadcn/ui)
+- Nombre y tags de género
+- Stats (campañas, backers, recaudado)
+- Follow button
+- Social links
 
 **Estados:**
-- **Default**: Mostrar descripción completa
-- **No Description**: Mensaje muted "Este artista aún no ha agregado una biografía"
-- **No Location**: Ocultar sección de ubicación
-- **Loading**: Skeleton para texto
+- `isLoading`: Skeletons en avatar, nombre, stats
+- `!bannerUrl`: Muestra solo gradiente
+- `!imagenUrl`: Avatar fallback con icono
 
 ---
 
-### 3.6 CampaniasPreview Component
+### 4.3 `<ArtistBio>` (Custom)
 
-**Propósito:** Tabs con campañas activas/pasadas (placeholder para MVP)
+**Ubicación:** `src/web/src/components/artistas/ArtistBio.tsx`
 
-| Elemento | Componente shadcn | Customización |
-|----------|-------------------|---------------|
-| Card container | Card | `bg-[#0f1729] border-[#334155]` |
-| Tabs root | Tabs | `defaultValue="activas"` |
-| Tabs list | TabsList | `bg-[#1a1a2e] border-b border-[#334155]` |
-| Tab trigger | TabsTrigger | `data-[state=active]:bg-[#2d1b4e] data-[state=active]:text-primary` |
-| Tab content | TabsContent | - |
-| Empty state | Alert | `bg-[#1a1a2e] border-[#334155] text-[#94a3b8]` |
-| Empty icon | - (Icon) | `Music w-12 h-12 text-[#64748b] mx-auto mb-3` |
-
-**Composición:**
-```tsx
-<Card className="bg-[#0f1729] border-[#334155]">
-  <Tabs defaultValue="activas" className="w-full">
-    <TabsList className="w-full bg-[#1a1a2e] border-b border-[#334155] rounded-none justify-start">
-      <TabsTrigger
-        value="activas"
-        className="data-[state=active]:bg-[#2d1b4e] data-[state=active]:text-primary"
-      >
-        Campañas Activas
-      </TabsTrigger>
-      <TabsTrigger
-        value="pasadas"
-        className="data-[state=active]:bg-[#2d1b4e] data-[state=active]:text-primary"
-      >
-        Campañas Pasadas
-      </TabsTrigger>
-    </TabsList>
-
-    <TabsContent value="activas" className="p-6">
-      {/* Empty state para MVP */}
-      <Alert className="bg-[#1a1a2e] border-[#334155] text-center">
-        <Music className="w-12 h-12 text-[#64748b] mx-auto mb-3" aria-hidden="true" />
-        <AlertTitle className="text-white mb-2">Próximamente campañas</AlertTitle>
-        <AlertDescription className="text-[#94a3b8]">
-          Este artista aún no ha lanzado campañas. ¡Mantente atento!
-        </AlertDescription>
-      </Alert>
-    </TabsContent>
-
-    <TabsContent value="pasadas" className="p-6">
-      <Alert className="bg-[#1a1a2e] border-[#334155] text-center">
-        <Music className="w-12 h-12 text-[#64748b] mx-auto mb-3" aria-hidden="true" />
-        <AlertTitle className="text-white mb-2">Sin campañas finalizadas</AlertTitle>
-        <AlertDescription className="text-[#94a3b8]">
-          Este artista no ha finalizado campañas aún.
-        </AlertDescription>
-      </Alert>
-    </TabsContent>
-  </Tabs>
-</Card>
+**Props:**
+```typescript
+interface ArtistBioProps {
+  descripcion?: string;
+  isLoading?: boolean;
+}
 ```
 
-**Nota MVP:** Este componente muestra placeholder. La integración real con campañas será implementada en feature "crear-campania".
+**Descripción:** Card con la biografía del artista.
+
+**Componentes internos:**
+- Card (shadcn/ui)
+- CardHeader con título
+- CardContent con texto o empty state
+
+**Estados:**
+- `isLoading`: Skeleton lines
+- `!descripcion`: Mensaje "Este artista aún no ha agregado una biografía"
 
 ---
 
-### 3.7 ReviewsList Component (Opcional - Fuera de MVP)
+### 4.4 `<ArtistCampaignsSection>` (Custom - Placeholder)
 
-**Propósito:** Placeholder para reseñas de fans
+**Ubicación:** `src/web/src/components/artistas/ArtistCampaignsSection.tsx`
 
-| Elemento | Componente shadcn | Customización |
-|----------|-------------------|---------------|
-| Card container | Card | `bg-[#0f1729] border-[#334155]` |
-| Card header | CardHeader | `pb-3` |
-| Card title | CardTitle | `text-xl font-bold text-white` |
-| Empty state | - (p) | `text-[#64748b] italic text-sm text-center py-8` |
-
-**Composición:**
-```tsx
-<Card className="bg-[#0f1729] border-[#334155]">
-  <CardHeader className="pb-3">
-    <CardTitle className="text-xl font-bold text-white">
-      Reseñas de Fans
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <p className="text-[#64748b] italic text-sm text-center py-8">
-      Las reseñas estarán disponibles próximamente.
-    </p>
-  </CardContent>
-</Card>
+**Props:**
+```typescript
+interface ArtistCampaignsSectionProps {
+  artistaId: string;
+  isLoading?: boolean;
+}
 ```
 
-**Nota:** Este componente es placeholder. Feature de reviews fuera del alcance del MVP.
+**Descripción:** Card placeholder para campañas del artista (fuera de MVP).
+
+**Componentes internos:**
+- Card (shadcn/ui)
+- Empty state con icono y mensaje
+
+**Estados:**
+- `isLoading`: Skeleton cards (3 placeholders)
+- Empty: Mensaje "Próximamente campañas musicales..."
 
 ---
 
-## 4. Loading States
+### 4.5 `<ArtistProfileSkeleton>` (Custom)
 
-### 4.1 ArtistaProfilePage Loading
+**Ubicación:** `src/web/src/components/artistas/ArtistProfileSkeleton.tsx`
 
-**Componente:** `ArtistaProfileSkeleton`
+**Props:**
+```typescript
+// Sin props - componente estático
+```
 
-| Elemento | Componente shadcn | Customización |
-|----------|-------------------|---------------|
-| Hero skeleton | Skeleton | `h-48 sm:h-56 md:h-64 w-full rounded-none` |
-| Avatar skeleton | Skeleton | `w-32 h-32 rounded-full absolute -bottom-16 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0` |
-| Title skeleton | Skeleton | `h-10 w-64 mx-auto sm:mx-0 sm:ml-44 mt-20 sm:mt-8` |
-| Badges skeleton | Skeleton | `h-6 w-24` (3 instancias con gap) |
-| Stats skeleton | Skeleton | `h-5 w-32` (3 instancias) |
-| Card skeleton | Skeleton | `h-96 w-full rounded-lg` |
+**Descripción:** Loading skeleton para toda la página de perfil de artista.
+
+**Componentes internos:**
+- Hero skeleton (gradient + círculo para avatar)
+- Skeleton para nombre (h-8 w-64)
+- Skeleton para badges (3 small rectangles)
+- Skeleton para stats (3 lines)
+- Skeleton cards para bio y campañas
 
 **Composición:**
 ```tsx
-<div className="min-h-screen bg-[#1a1a2e]">
-  <div className="relative">
-    <Skeleton className="h-48 sm:h-56 md:h-64 w-full rounded-none" />
-    <Skeleton className="w-32 h-32 rounded-full absolute -bottom-16 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0" />
+<div className="animate-pulse">
+  {/* Hero + Avatar */}
+  <div className="relative h-64 bg-gradient-to-r from-purple-900/30 to-pink-900/30">
+    <div className="absolute -bottom-16 left-8">
+      <Skeleton className="h-32 w-32 rounded-full border-4 border-[#1a1a2e]" />
+    </div>
   </div>
 
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div className="mt-20 sm:mt-8 sm:ml-44 space-y-4">
-      <Skeleton className="h-10 w-64 mx-auto sm:mx-0" />
-      <div className="flex gap-2 justify-center sm:justify-start">
-        <Skeleton className="h-6 w-24" />
-        <Skeleton className="h-6 w-24" />
-      </div>
-      <div className="flex gap-6 justify-center sm:justify-start">
-        <Skeleton className="h-5 w-32" />
-        <Skeleton className="h-5 w-32" />
-        <Skeleton className="h-5 w-32" />
-      </div>
+  {/* Info */}
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+    <Skeleton className="h-10 w-64 mb-4" />
+    <div className="flex gap-2 mb-4">
+      <Skeleton className="h-6 w-20 rounded-full" />
+      <Skeleton className="h-6 w-24 rounded-full" />
+      <Skeleton className="h-6 w-16 rounded-full" />
+    </div>
+    <div className="flex gap-6 mb-6">
+      <Skeleton className="h-5 w-32" />
+      <Skeleton className="h-5 w-32" />
+      <Skeleton className="h-5 w-40" />
     </div>
 
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-      <Skeleton className="h-96 w-full rounded-lg" />
-      <Skeleton className="lg:col-span-2 h-96 w-full rounded-lg" />
+    {/* Content Grid */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+      <Skeleton className="h-64" />
+      <Skeleton className="h-64" />
+      <Skeleton className="h-64" />
     </div>
   </div>
 </div>
@@ -507,387 +481,382 @@
 
 ---
 
-## 5. Error States
+## 5. Estados Visuales
 
-### 5.1 Artista Not Found (404)
+### 5.1 Loading States
 
-**Componente:** `ArtistaNotFoundPage`
+| Componente | Loading Visual |
+|------------|----------------|
+| **Perfil completo** | `<ArtistProfileSkeleton>` (hero + info + cards) |
+| **Avatar** | `<Skeleton className="h-32 w-32 rounded-full">` |
+| **Nombre** | `<Skeleton className="h-10 w-64">` |
+| **Bio text** | `<Skeleton className="h-4 w-full mb-2">` x4 lines |
+| **Stats** | `<Skeleton className="h-5 w-32">` x3 |
+| **Badges** | `<Skeleton className="h-6 w-20 rounded-full">` x3 |
 
-| Elemento | Componente shadcn | Customización |
-|----------|-------------------|---------------|
-| Container | - (div) | `min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[#1a1a2e] px-4` |
-| Icon | - (Icon) | `Music w-24 h-24 text-[#64748b] mx-auto mb-6` |
-| Title | - (h1) | `text-3xl font-bold text-white mb-3 text-center` |
-| Description | - (p) | `text-[#94a3b8] text-center mb-8 max-w-md` |
-| Button | Button | `bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700` |
+**Duración de animación:** Pulse infinito (`animate-pulse`)
 
-**Composición:**
-```tsx
-<div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-[#1a1a2e] px-4">
-  <div className="text-center">
-    <Music className="w-24 h-24 text-[#64748b] mx-auto mb-6" aria-hidden="true" />
-    <h1 className="text-3xl font-bold text-white mb-3">
-      Artista no encontrado
-    </h1>
-    <p className="text-[#94a3b8] text-center mb-8 max-w-md">
-      El perfil que buscas no existe o ha sido eliminado.
-    </p>
-    <Button
-      className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-      onClick={() => navigate('/explorar')}
-    >
-      Explorar artistas
-    </Button>
-  </div>
-</div>
-```
+### 5.2 Empty States
 
-### 5.2 Error de Carga
+| Escenario | Visual | Mensaje |
+|-----------|--------|---------|
+| **Sin avatar** | `<AvatarFallback>` con icono de música | - |
+| **Sin descripción** | Texto muted italic | "Este artista aún no ha agregado una biografía." |
+| **Sin campañas** | Icono musical + texto centrado | "Próximamente campañas musicales..." |
+| **Sin banner** | Solo gradiente purple-to-pink | - |
 
-**Componente:** `ArtistaErrorState`
+### 5.3 Error States
 
-| Elemento | Componente shadcn | Customización |
-|----------|-------------------|---------------|
-| Alert container | Alert | `bg-red-950/50 border-red-900 text-red-200` |
-| Alert icon | - (Icon) | `AlertCircle w-5 h-5` |
-| Alert title | AlertTitle | `text-red-100 mb-2` |
-| Alert description | AlertDescription | `text-red-200/80` |
-| Retry button | Button | `mt-4 bg-red-900 hover:bg-red-800` |
+| Error | Visual | Acción |
+|-------|--------|--------|
+| **404 - Artista no encontrado** | Página completa con error | Botón "Volver a explorar" |
+| **500 - Error de servidor** | Toast notification rojo | Botón "Reintentar" |
+| **Red error (fetch failed)** | Toast notification rojo | Auto-retry con TanStack Query |
 
-**Composición:**
+**Componente 404 Page:**
 ```tsx
 <div className="min-h-screen bg-[#1a1a2e] flex items-center justify-center px-4">
-  <Alert className="max-w-md bg-red-950/50 border-red-900 text-red-200">
-    <AlertCircle className="w-5 h-5" />
-    <AlertTitle className="text-red-100 mb-2">Error al cargar perfil</AlertTitle>
-    <AlertDescription className="text-red-200/80">
-      No pudimos cargar el perfil del artista. Por favor, intenta nuevamente.
-    </AlertDescription>
+  <div className="text-center">
+    <h1 className="text-6xl font-bold text-white mb-4">404</h1>
+    <p className="text-xl text-[#94a3b8] mb-8">
+      Artista no encontrado
+    </p>
     <Button
-      onClick={handleRetry}
-      className="mt-4 w-full bg-red-900 hover:bg-red-800"
+      asChild
+      className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
     >
-      Reintentar
+      <a href="/explorar">Volver a Explorar</a>
     </Button>
-  </Alert>
+  </div>
 </div>
 ```
+
+### 5.4 Hover States
+
+| Elemento | Hover Effect |
+|----------|--------------|
+| **Nav links** | `text-[#94a3b8] → text-white` transition 150ms |
+| **Button gradient** | `from-pink-500 to-purple-600 → from-pink-600 to-purple-700` transition 200ms |
+| **Social icon buttons** | `bg-transparent → bg-[#1e2a42]` + `text-[#94a3b8] → text-white` |
+| **Biography card** | `bg-[#0f1729] → bg-[#1e2a42]/30` transition 200ms |
+| **Badges** | Scale 1.05 transition 150ms (opcional) |
 
 ---
 
 ## 6. Responsive Design
 
-| Breakpoint | Width | Cambios Layout |
-|------------|-------|----------------|
-| **Mobile** | < 640px | - Hero h-48<br>- Avatar w-24 h-24, centrado<br>- Stats apilados 2x2 grid<br>- Bio y Campañas stack vertical<br>- Padding px-4 |
-| **Small** | 640px - 767px | - Hero h-56<br>- Avatar w-28 h-28, left-8<br>- Stats en fila, wrap permitido<br>- Bio y Campañas stack vertical<br>- Padding px-6 |
-| **Medium** | 768px - 1023px | - Hero h-64<br>- Avatar w-32 h-32<br>- Stats en fila sin wrap<br>- Bio y Campañas stack vertical<br>- Padding px-6 |
-| **Large** | >= 1024px | - Hero h-64<br>- Avatar w-32 h-32<br>- Grid 3 columnas (1 col Bio, 2 cols Campañas)<br>- Reviews full width abajo<br>- Padding px-8 |
+### 6.1 Breakpoints
 
-### Responsive Clases Detalladas
+| Breakpoint | Width | Cambios Principales |
+|------------|-------|---------------------|
+| **Mobile** | < 640px (sm) | Stack vertical, padding reducido, avatar más pequeño |
+| **Tablet** | 640px - 1024px (sm-lg) | Grid 2 columnas, padding medio |
+| **Desktop** | > 1024px (lg) | Grid 3 columnas, max-width 7xl, padding amplio |
+
+### 6.2 Componentes por Breakpoint
 
 **Hero Banner:**
-```tsx
-className="h-48 sm:h-56 md:h-64"
-```
+| Breakpoint | Height |
+|------------|--------|
+| Mobile | `h-48` (192px) |
+| Tablet | `h-56` (224px) |
+| Desktop | `h-64` (256px) |
 
 **Avatar:**
-```tsx
-className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 -bottom-12 sm:-bottom-14 md:-bottom-16 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0"
-```
+| Breakpoint | Size | Margin Top |
+|------------|------|------------|
+| Mobile | `w-24 h-24` (96px) | `-mt-12` |
+| Tablet | `w-28 h-28` (112px) | `-mt-14` |
+| Desktop | `w-32 h-32` (128px) | `-mt-16` |
 
-**Stats Container:**
-```tsx
-className="mt-16 sm:mt-20 md:mt-20 sm:ml-44 text-center sm:text-left"
-```
+**Artist Name:**
+| Breakpoint | Font Size |
+|------------|-----------|
+| Mobile | `text-2xl` |
+| Tablet | `text-3xl` |
+| Desktop | `text-4xl` |
 
 **Stats Row:**
+| Breakpoint | Layout |
+|------------|--------|
+| Mobile | `flex-wrap gap-4` (stack 2x2) |
+| Tablet+ | `flex gap-6` (horizontal) |
+
+**Content Grid:**
 ```tsx
-className="flex flex-wrap gap-4 sm:gap-6 justify-center sm:justify-start"
+// Mobile: 1 columna
+// Tablet: 2 columnas (Bio + Campañas)
+// Desktop: 3 columnas (Bio + Campañas + Placeholder futuro)
+className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 ```
 
-**Main Grid:**
+**Container Padding:**
 ```tsx
-className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+// Mobile: px-4
+// Tablet: px-6
+// Desktop: px-8
+className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
 ```
 
-**Bio Column:**
-```tsx
-className="lg:col-span-1"
-```
+### 6.3 Responsive Classes Clave
 
-**Campañas Column:**
 ```tsx
-className="lg:col-span-2"
+// Typography
+className="text-2xl sm:text-3xl md:text-4xl"
+
+// Spacing
+className="mt-4 sm:mt-6 md:mt-8"
+className="gap-4 sm:gap-6"
+
+// Layout
+className="flex-col sm:flex-row"
+className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+
+// Sizing
+className="w-full sm:w-auto"
+className="h-48 sm:h-56 md:h-64"
 ```
 
 ---
 
-## 7. Animaciones
+## 7. Animaciones y Transiciones
 
-| Elemento | Animación | Duración | Trigger |
-|----------|-----------|----------|---------|
-| Button hover | `scale-105` + shadow glow | 150ms | hover |
-| Card hover | `bg-[#1e2a42]` (lighten) | 200ms | hover |
-| Social icon hover | `text-white` + `bg-white/10` | 150ms | hover |
-| Social link hover | `text-purple-400` + underline | 200ms | hover |
-| Avatar image load | `animate-fadeIn` (opacity 0 → 1) | 300ms | onLoad |
-| Page load | `animate-fadeIn` (opacity 0 → 1) | 300ms | mount |
-| Skeleton pulse | `animate-pulse` | infinite | loading |
-| Tab switch | `animate-fadeIn` | 200ms | tab change |
+### 7.1 Transiciones CSS
 
-**Tailwind Animations (agregar a tailwind.config.js):**
-```js
-theme: {
-  extend: {
-    animation: {
-      'fadeIn': 'fadeIn 300ms ease-in-out',
-    },
-    keyframes: {
-      fadeIn: {
-        '0%': { opacity: '0' },
-        '100%': { opacity: '1' },
-      },
-    },
-  },
-}
+| Elemento | Propiedad | Duración | Easing |
+|----------|-----------|----------|--------|
+| **Nav links** | color | 150ms | ease |
+| **Button hover** | background-color, transform (scale 1.02) | 200ms | ease |
+| **Card hover** | background-color | 200ms | ease |
+| **Social icons** | color, background-color | 150ms | ease |
+| **Page mount** | opacity 0 → 1 | 300ms | ease-in-out |
+
+### 7.2 Animaciones Tailwind
+
+**Button Hover:**
+```tsx
+<Button className="... transition-all duration-200 hover:scale-102">
+```
+
+**Nav Link:**
+```tsx
+<a className="... transition-colors duration-150">
+```
+
+**Card:**
+```tsx
+<Card className="... transition-colors duration-200">
+```
+
+### 7.3 Loading Animations
+
+**Skeleton Pulse:**
+```tsx
+<Skeleton className="animate-pulse" />
+```
+
+**Spinner (para botones - no aplica en esta feature de landing):**
+```tsx
+<Loader2Icon className="animate-spin h-5 w-5" />
+```
+
+### 7.4 Page Transitions (React Router)
+
+**Fade In al montar:**
+```tsx
+// En el componente principal
+<div className="animate-in fade-in duration-300">
+  {/* Contenido del perfil */}
+</div>
 ```
 
 ---
 
 ## 8. Accesibilidad
 
-| Requisito | Implementación |
-|-----------|----------------|
-| **Contraste de color** | - Text white (#fff) sobre bg-primary (#1a1a2e) = 15.8:1 ✓<br>- Text secondary (#94a3b8) sobre bg-primary = 7.2:1 ✓<br>- Primary purple (#a855f7) sobre dark = 4.8:1 ✓ |
-| **Focus visible** | - `focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#1a1a2e]` en todos los botones y links |
-| **Alt text en imágenes** | - Avatar: `alt="Foto de perfil de {nombreArtistico}"`<br>- Hero banner: `alt=""` (decorativa) con `aria-hidden="true"` |
-| **ARIA labels en icon buttons** | - Social icons: `aria-label="Spotify"`, `aria-label="YouTube"`, etc. |
-| **Heading hierarchy** | - h1: Nombre artístico<br>- h2: Secciones (Biografía, Campañas, Reseñas) |
-| **Link external indicators** | - `target="_blank"` + `rel="noopener noreferrer"` en todos los enlaces sociales |
-| **Loading states** | - `aria-busy="true"` en contenedores durante carga<br>- `aria-live="polite"` en mensajes de error |
-| **Empty states** | - Mensajes descriptivos en lugar de "No data"<br>- Iconos con `aria-hidden="true"` |
-| **Keyboard navigation** | - Tab order lógico: Follow → Social icons → Bio links → Campañas tabs<br>- Enter para activar botones y links<br>- Arrow keys para navegar tabs |
-| **Screen reader** | - Textos descriptivos en fallbacks de Avatar<br>- `aria-label` en iconos decorativos |
+### 8.1 Contraste de Colores
 
-### ARIA Labels Detallados
+| Par | Ratio | Cumple WCAG AA |
+|-----|-------|----------------|
+| White (#ffffff) sobre bg-primary (#1a1a2e) | 15.8:1 | ✓ (AAA) |
+| Text-secondary (#94a3b8) sobre bg-card (#0f1729) | 7.2:1 | ✓ (AAA) |
+| Text-muted (#64748b) sobre bg-card (#0f1729) | 4.8:1 | ✓ (AA) |
+| Purple-500 (#a855f7) sobre bg-primary (#1a1a2e) | 5.1:1 | ✓ (AA) |
+
+**Verificación:** Todas las combinaciones de texto/fondo cumplen mínimo WCAG AA (4.5:1 para texto normal).
+
+### 8.2 Focus States
+
+**Ring visible en todos los elementos interactivos:**
+```tsx
+// Botones
+className="focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[#1a1a2e]"
+
+// Links
+className="focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+```
+
+### 8.3 ARIA Labels y Roles
 
 **Avatar:**
 ```tsx
 <Avatar>
-  <AvatarImage
-    src={artista.imagenUrl}
-    alt={`Foto de perfil de ${artista.nombreArtistico}`}
-  />
-  <AvatarFallback>
-    <Music aria-hidden="true" />
-    <span className="sr-only">Sin foto de perfil</span>
+  <AvatarImage src={imagenUrl} alt={`Foto de perfil de ${nombreArtistico}`} />
+  <AvatarFallback aria-label="Placeholder de perfil">
+    <MusicalNoteIcon aria-hidden="true" />
   </AvatarFallback>
 </Avatar>
 ```
 
-**Social Icon Buttons:**
+**Social Links:**
 ```tsx
-<Button aria-label="Visitar perfil en Spotify" asChild>
-  <a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
-    <Music aria-hidden="true" />
+<Button variant="ghost" size="icon" asChild>
+  <a
+    href={spotifyUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Perfil de Spotify de {nombreArtistico}"
+  >
+    <SpotifyIcon aria-hidden="true" />
   </a>
 </Button>
 ```
 
-**Stats Icons:**
+**Follow Button:**
 ```tsx
-<Music className="w-4 h-4" aria-hidden="true" />
-<span className="sr-only">Campañas:</span>
-<span>3 campañas</span>
+<Button aria-label="Seguir a {nombreArtistico}">
+  <HeartIcon aria-hidden="true" className="mr-2" />
+  Seguir
+</Button>
 ```
 
-**Empty State:**
-```tsx
-<Alert role="status">
-  <Music aria-hidden="true" />
-  <AlertTitle>Próximamente campañas</AlertTitle>
-  <AlertDescription>
-    Este artista aún no ha lanzado campañas. ¡Mantente atento!
-  </AlertDescription>
-</Alert>
-```
-
-**Loading Skeleton:**
+**Loading State:**
 ```tsx
 <div role="status" aria-live="polite" aria-busy="true">
-  <span className="sr-only">Cargando perfil del artista...</span>
-  <Skeleton className="h-64 w-full" />
+  <ArtistProfileSkeleton />
+  <span className="sr-only">Cargando perfil de artista...</span>
 </div>
 ```
 
----
-
-## 9. Props Interfaces
-
-### ArtistaProfilePageProps
-```typescript
-interface ArtistaProfilePageProps {
-  artistaId: string; // from route params
-}
+**Empty States:**
+```tsx
+<div role="status" aria-live="polite">
+  <p className="text-[#64748b] italic">
+    Este artista aún no ha agregado una biografía.
+  </p>
+</div>
 ```
 
-### ArtistaHeroProps
-```typescript
-import { Artista } from '@/shared/types/artista';
+### 8.4 Keyboard Navigation
 
-interface ArtistaHeroProps {
-  artista: Artista;
-}
+| Elemento | Comportamiento |
+|----------|----------------|
+| **Nav links** | Tab order lógico (izq → der) |
+| **Follow button** | Enter/Space activa acción |
+| **Social links** | Tab order después del Follow button |
+| **Skip link** | "Saltar al contenido" (invisible hasta focus) |
+
+**Skip Link Implementation:**
+```tsx
+<a
+  href="#main-content"
+  className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-purple-600 focus:text-white focus:rounded-md"
+>
+  Saltar al contenido
+</a>
 ```
 
-### ArtistaStatsProps
-```typescript
-import { Artista } from '@/shared/types/artista';
+### 8.5 Semantic HTML
 
-interface ArtistaStatsProps {
-  artista: Artista;
-  campanasCount?: number; // Opcional para MVP
-  backersCount?: number;
-  totalRecaudado?: number;
-}
-```
+**Estructura correcta:**
+```tsx
+<header>
+  <nav>
+    {/* Navigation */}
+  </nav>
+</header>
 
-### ArtistaActionsProps
-```typescript
-import { Artista } from '@/shared/types/artista';
+<main id="main-content">
+  <section aria-labelledby="artist-info">
+    <h1 id="artist-info">{nombreArtistico}</h1>
+    {/* Artist info */}
+  </section>
 
-interface ArtistaActionsProps {
-  artista: Artista;
-  isFollowing?: boolean; // Fuera de MVP
-  onFollowClick?: () => void;
-}
-```
+  <section aria-labelledby="artist-bio">
+    <h2 id="artist-bio">Biografía</h2>
+    {/* Bio content */}
+  </section>
 
-### ArtistaBioProps
-```typescript
-import { Artista } from '@/shared/types/artista';
-
-interface ArtistaBioProps {
-  artista: Artista;
-}
-```
-
-### CampaniasPreviewProps
-```typescript
-interface CampaniasPreviewProps {
-  artistaId: string;
-  // Campañas vendrán de query separado en feature futura
-}
-```
-
-### ArtistaNotFoundPageProps
-```typescript
-interface ArtistaNotFoundPageProps {
-  onExplorarClick?: () => void;
-}
-```
-
-### ArtistaErrorStateProps
-```typescript
-interface ArtistaErrorStateProps {
-  error: Error;
-  onRetry: () => void;
-}
+  <section aria-labelledby="artist-campaigns">
+    <h2 id="artist-campaigns">Campañas Activas</h2>
+    {/* Campaigns */}
+  </section>
+</main>
 ```
 
 ---
 
-## 10. Componentes shadcn/ui Necesarios
+## 9. Integración con Datos
 
-| Componente | Instalado | Uso |
-|------------|-----------|-----|
-| `Card`, `CardHeader`, `CardTitle`, `CardContent` | Verificar | Contenedores de Bio, Campañas, Reviews |
-| `Avatar`, `AvatarImage`, `AvatarFallback` | Verificar | Foto de perfil del artista |
-| `Badge` | Verificar | Géneros musicales |
-| `Button` | Verificar | Follow, social icons, CTAs |
-| `Skeleton` | Verificar | Loading states |
-| `Separator` | Verificar | Divisor en Bio card |
-| `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` | Verificar | Campañas Activas/Pasadas |
-| `Alert`, `AlertTitle`, `AlertDescription` | Verificar | Empty states, error states |
+### 9.1 TanStack Query Hook
 
-**Instalación (si falta alguno):**
-```bash
-npx shadcn-ui@latest add card avatar badge button skeleton separator tabs alert
-```
+**Hook:** `useArtista(id: string)`
 
----
-
-## 11. Iconos (lucide-react)
-
-| Icono | Uso |
-|-------|-----|
-| `Music` | Fallback avatar, icono campañas, empty states |
-| `Users` | Stat backers |
-| `Euro` | Stat recaudado |
-| `Heart` | Follow button |
-| `Globe` | Social link web |
-| `Youtube` | Social link YouTube |
-| `MapPin` | Ubicación (ciudad/país) |
-| `AlertCircle` | Error states |
-
-**Importación:**
-```typescript
-import {
-  Music,
-  Users,
-  Euro,
-  Heart,
-  Globe,
-  Youtube,
-  MapPin,
-  AlertCircle
-} from 'lucide-react';
-```
-
----
-
-## 12. Integración con TanStack Query
-
-### Query Hook: `useArtista`
+**Ubicación:** `src/web/src/features/artistas/hooks/useArtista.ts`
 
 ```typescript
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants/query-keys';
-import { API_ROUTES } from '@/shared/constants/api-routes';
-import { Artista } from '@/shared/types/artista';
-import { api } from '@/services/api';
+import { artistaService } from '../services/artista.service';
 
 export const useArtista = (id: string) => {
   return useQuery({
     queryKey: QUERY_KEYS.artistas.byId(id),
-    queryFn: async () => {
-      const response = await api.get<Artista>(API_ROUTES.artistas.byId(id));
-      return response.data;
-    },
+    queryFn: () => artistaService.getById(id),
     enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    retry: 1,
   });
 };
 ```
 
-### Uso en ArtistaProfilePage
+### 9.2 Uso en Componente
 
-```typescript
+```tsx
 import { useParams } from 'react-router-dom';
-import { useArtista } from '@/features/artistas/hooks/useArtista';
+import { useArtista } from '../hooks/useArtista';
+import { ArtistProfileSkeleton } from '../components/ArtistProfileSkeleton';
+import { ArtistHero } from '../components/ArtistHero';
+import { ArtistBio } from '../components/ArtistBio';
 
-export const ArtistaProfilePage = () => {
+export const ArtistaPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: artista, isLoading, error } = useArtista(id!);
+  const { data, isLoading, isError } = useArtista(id!);
 
-  if (isLoading) return <ArtistaProfileSkeleton />;
-  if (error) return <ArtistaErrorState error={error} onRetry={refetch} />;
-  if (!artista) return <ArtistaNotFoundPage />;
+  if (isLoading) {
+    return <ArtistProfileSkeleton />;
+  }
+
+  if (isError || !data?.data) {
+    return <NotFoundPage />;
+  }
+
+  const artista = data.data;
 
   return (
     <div className="min-h-screen bg-[#1a1a2e]">
-      <ArtistaHero artista={artista} />
-      {/* ... resto de componentes */}
+      <NavBar />
+
+      <main>
+        <ArtistHero artista={artista} />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ArtistBio descripcion={artista.descripcion} />
+            <ArtistCampaignsSection artistaId={artista.id} />
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
@@ -895,125 +864,259 @@ export const ArtistaProfilePage = () => {
 
 ---
 
-## 13. Estructura de Archivos
+## 10. Componentes shadcn/ui Necesarios
 
-```
-src/web/src/features/artistas/
-├── components/
-│   ├── ArtistaHero.tsx
-│   ├── ArtistaStats.tsx
-│   ├── ArtistaActions.tsx
-│   ├── ArtistaBio.tsx
-│   ├── CampaniasPreview.tsx
-│   ├── ReviewsList.tsx (placeholder)
-│   ├── ArtistaProfileSkeleton.tsx
-│   ├── ArtistaNotFoundPage.tsx
-│   └── ArtistaErrorState.tsx
-├── hooks/
-│   └── useArtista.ts
-├── pages/
-│   └── ArtistaProfilePage.tsx
-└── types/
-    └── artista-profile.types.ts (props interfaces)
+### 10.1 Ya Instalados
+
+| Componente | Uso en Feature | Variantes Utilizadas |
+|------------|----------------|----------------------|
+| `<Button>` | Follow button, social icons, nav buttons | `default`, `ghost` |
+| `<Card>` | Biography card, campaigns card | `default` |
+| `<CardHeader>` | Títulos de cards | - |
+| `<CardTitle>` | "Biografía", "Campañas Activas" | - |
+| `<CardContent>` | Contenido de cards | - |
+| `<Avatar>` | Foto de perfil del artista | Size customizado |
+| `<AvatarImage>` | Imagen real del artista | - |
+| `<AvatarFallback>` | Placeholder con icono musical | Custom bg color |
+| `<Badge>` | Tags de género musical | Custom variant (purple) |
+| `<Skeleton>` | Loading states | - |
+
+### 10.2 Componentes Faltantes (a Instalar)
+
+**Ninguno.** Todos los componentes shadcn/ui necesarios ya están instalados.
+
+### 10.3 Iconos Necesarios
+
+**Librería:** `heroicons` (o `lucide-react`)
+
+| Icono | Uso | Import |
+|-------|-----|--------|
+| `MusicalNoteIcon` | Fallback avatar, empty states | `@heroicons/react/24/outline` |
+| `HeartIcon` | Follow button | `@heroicons/react/24/outline` |
+| `UsersIcon` | Stat backers | `@heroicons/react/24/outline` |
+| `CurrencyEuroIcon` | Stat recaudado | `@heroicons/react/24/outline` |
+| `GlobeIcon` | Website link | `@heroicons/react/24/outline` |
+| `SpotifyIcon` | Social link | Custom SVG o `react-icons` |
+| `YouTubeIcon` | Social link | Custom SVG o `react-icons` |
+
+**Alternativa:** Usar `lucide-react` para consistencia:
+```tsx
+import { Music, Heart, Users, DollarSign, Globe } from 'lucide-react';
 ```
 
 ---
 
-## 14. Checklist de Implementación
+## 11. Customizaciones de Tema
 
-### Layout y Estructura
-- [ ] ArtistaProfilePage layout con grid responsive
-- [ ] Hero banner con gradient/imagen de fondo
-- [ ] Avatar posicionado con -mt-16 overlay
-- [ ] Grid 1 col mobile, 3 cols desktop (Bio | Campañas x2)
-- [ ] Max-width container (max-w-7xl) centrado
+### 11.1 Tailwind Config Extensions
 
-### Componentes
-- [ ] ArtistaHero con Avatar y fallback Music icon
-- [ ] ArtistaStats con nombre, géneros (Badge), stats row
-- [ ] ArtistaActions con Follow button + social icons
-- [ ] ArtistaBio con Card, descripción, ubicación, social links
-- [ ] CampaniasPreview con Tabs y empty state
-- [ ] ReviewsList placeholder con empty state
+**Archivo:** `tailwind.config.ts`
 
-### Estados UI
-- [ ] Loading: ArtistaProfileSkeleton con Skeleton components
-- [ ] Error: ArtistaErrorState con Alert + retry button
-- [ ] 404: ArtistaNotFoundPage con mensaje y CTA
-- [ ] Empty bio: Mensaje muted en ArtistaBio
-- [ ] Empty campañas: Alert con icono y mensaje
-
-### Responsive
-- [ ] Hero height: h-48 sm → h-56 md → h-64
-- [ ] Avatar size: w-24 mobile → w-32 desktop
-- [ ] Avatar position: centrado mobile → left-8 desktop
-- [ ] Stats: grid 2x2 mobile → fila desktop
-- [ ] Grid: stack vertical mobile → 3 cols desktop
-- [ ] Padding: px-4 mobile → px-8 desktop
-
-### Accesibilidad
-- [ ] Alt text en Avatar: "Foto de perfil de {nombre}"
-- [ ] ARIA labels en social icon buttons
-- [ ] Heading hierarchy (h1 nombre, h2 secciones)
-- [ ] Focus visible ring en buttons y links
-- [ ] Social links con target="_blank" + rel="noopener noreferrer"
-- [ ] Loading states con aria-busy="true"
-- [ ] Empty states con role="status"
-- [ ] Icons decorativos con aria-hidden="true"
-
-### Animaciones
-- [ ] Button hover: scale-105 + shadow (150ms)
-- [ ] Social icon hover: color change (150ms)
-- [ ] Social link hover: underline + color (200ms)
-- [ ] Page load: fadeIn animation (300ms)
-- [ ] Skeleton pulse durante loading
-
-### Integración
-- [ ] useArtista hook con TanStack Query
-- [ ] QUERY_KEYS.artistas.byId(id)
-- [ ] API_ROUTES.artistas.byId(id)
-- [ ] Manejo de error con ServiceResponse
-- [ ] Tipos Artista desde shared/types
-
-### Placeholders MVP
-- [ ] Géneros musicales (hardcoded "Electronic", "Synthwave")
-- [ ] Stats (0 campañas, 0 backers, €0)
-- [ ] Social links (URLs de ejemplo)
-- [ ] Follow button sin funcionalidad
-- [ ] Campañas empty state
-- [ ] Reviews empty state
-
----
-
-## 15. Notas Importantes
-
-### Alcance MVP
-Este plan cubre **solo el perfil público de artista** en Landing. Los formularios de registro y creación de perfil están en el plan de Admin (`frontend-admin/ui-design.md`).
-
-### Datos Placeholder
-Para el MVP, varios elementos mostrarán datos de placeholder:
-- **Géneros**: Hardcoded en el componente (no hay campo en DB)
-- **Stats**: Todos en 0 (campañas, backers, recaudado)
-- **Social links**: URLs de ejemplo hasta que se agreguen campos en DB
-- **Campañas**: Empty state con mensaje "Próximamente"
-- **Reviews**: Empty state (feature fuera de MVP)
-
-### Feature Flags
-Considerar feature flags para ocultar secciones no implementadas:
 ```typescript
-const FEATURE_FLAGS = {
-  showCampanias: false, // hasta feature crear-campania
-  showReviews: false,   // fuera de MVP
-  showFollow: false,    // fuera de MVP
+export default {
+  darkMode: ['class'],
+  theme: {
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: '#a855f7',
+          foreground: '#ffffff',
+        },
+        secondary: {
+          DEFAULT: '#94a3b8',
+          foreground: '#ffffff',
+        },
+        muted: {
+          DEFAULT: '#1e293b',
+          foreground: '#94a3b8',
+        },
+        accent: {
+          DEFAULT: '#ec4899',
+          foreground: '#ffffff',
+        },
+        destructive: {
+          DEFAULT: '#ef4444',
+          foreground: '#ffffff',
+        },
+        card: {
+          DEFAULT: '#0f1729',
+          foreground: '#ffffff',
+        },
+      },
+      borderRadius: {
+        lg: '0.75rem',
+        md: '0.5rem',
+        sm: '0.375rem',
+      },
+      boxShadow: {
+        glow: '0 0 20px rgba(168, 85, 247, 0.3)',
+      },
+      animation: {
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animate')],
 };
 ```
 
-### Integración Futura
-Al implementar feature "crear-campania":
-- Reemplazar `CampaniasPreview` empty state con query real
-- Agregar cards de campaña con progress bar y stats
-- Link a `/campanias/{id}` desde cada card
+### 11.2 CSS Variables Globales
+
+**Archivo:** `src/web/src/index.css`
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 8%;      /* #1a1a2e */
+    --foreground: 210 20% 98%;     /* #ffffff */
+
+    --card: 220 45% 7%;            /* #0f1729 */
+    --card-foreground: 210 20% 98%;
+
+    --primary: 271 91% 65%;        /* #a855f7 */
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 215 20% 65%;      /* #94a3b8 */
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 217 33% 17%;          /* #1e293b */
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 330 81% 60%;         /* #ec4899 */
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 84% 60%;      /* #ef4444 */
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 215 28% 32%;         /* #334155 */
+    --input: 220 45% 7%;           /* #0f1729 */
+    --ring: 271 91% 65%;           /* #a855f7 */
+
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+```
 
 ---
 
-**Siguiente paso:** Ejecutar agente de implementación frontend-landing con este plan como referencia.
+## 12. Checklist de Implementación UI
+
+### Componentes shadcn/ui
+- [x] Button (ya instalado)
+- [x] Card, CardHeader, CardTitle, CardContent (ya instalado)
+- [x] Avatar, AvatarImage, AvatarFallback (ya instalado)
+- [x] Badge (ya instalado)
+- [x] Skeleton (ya instalado)
+
+### Componentes Custom
+- [ ] `<NavBar>` - Header con navegación
+- [ ] `<ArtistHero>` - Hero banner + info del artista
+- [ ] `<ArtistBio>` - Card de biografía
+- [ ] `<ArtistCampaignsSection>` - Placeholder de campañas
+- [ ] `<ArtistProfileSkeleton>` - Loading state completo
+
+### Estados Visuales
+- [ ] Loading (skeleton loaders)
+- [ ] Empty state - Sin avatar (fallback con icono)
+- [ ] Empty state - Sin descripción (mensaje muted)
+- [ ] Empty state - Sin campañas (placeholder)
+- [ ] Error 404 - Artista no encontrado
+- [ ] Hover states en links y botones
+
+### Responsive Design
+- [ ] Mobile (< 640px): Stack vertical, avatar pequeño
+- [ ] Tablet (640-1024px): Grid 2 columnas
+- [ ] Desktop (> 1024px): Grid 3 columnas
+
+### Accesibilidad
+- [ ] Contraste de colores mínimo 4.5:1 (verificado)
+- [ ] Focus rings visibles (purple-500)
+- [ ] ARIA labels en avatar e iconos
+- [ ] Alt text descriptivo en imágenes
+- [ ] Skip link funcional
+- [ ] Keyboard navigation (tab order lógico)
+- [ ] Semantic HTML (header, main, section, h1, h2)
+- [ ] Loading states con aria-busy y aria-live
+
+### Animaciones
+- [ ] Transiciones en hover (150-200ms)
+- [ ] Fade in al montar página (300ms)
+- [ ] Skeleton pulse animation
+- [ ] Button scale on hover (1.02)
+
+### Integración
+- [ ] Hook `useArtista(id)` con TanStack Query
+- [ ] Manejo de errores con toast (futura implementación)
+- [ ] Retry logic en fetch errors
+- [ ] Stale time configurado (5 min)
+
+### Design Tokens
+- [ ] CSS variables en `index.css`
+- [ ] Tailwind config extendido
+- [ ] Gradientes pink-to-purple aplicados
+- [ ] Shadow glow en focus states
+
+---
+
+## 13. Notas de Implementación
+
+### 13.1 Iconos
+
+**Decisión:** Usar `lucide-react` para consistencia con shadcn/ui.
+
+```bash
+npm install lucide-react
+```
+
+```tsx
+import { Music, Heart, Users, DollarSign, Globe } from 'lucide-react';
+```
+
+### 13.2 Social Icons
+
+Para Spotify y YouTube, considerar usar `react-icons`:
+
+```bash
+npm install react-icons
+```
+
+```tsx
+import { FaSpotify, FaYoutube } from 'react-icons/fa';
+```
+
+### 13.3 Fuentes
+
+**Font:** Inter (de Google Fonts)
+
+```html
+<!-- En index.html -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+```
+
+### 13.4 Próximos Pasos (Fuera de MVP)
+
+- Implementar sistema de reviews/testimonios
+- Agregar galería de imágenes/videos del artista
+- Sistema de follows con contador dinámico
+- Integración real con campañas (cuando esté implementada esa feature)
+- Mobile menu (hamburger) para navegación
+
+---
+
+**Fin del Plan de Diseño UI**

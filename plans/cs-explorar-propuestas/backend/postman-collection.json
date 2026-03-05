@@ -1,0 +1,1601 @@
+{
+    "info": {
+        "_postman_id": "c5d6e7f8-a9b0-1c2d-3e4f-5a6b7c8d9e0f",
+        "name": "WePlay.CrowdsourcingExplorarPropuestas.IntegrationTests",
+        "description": "Integration tests for Crowdsourcing Explorar Propuestas API (US-CS-03). Tests public necesidades listing, detalle, propuesta creation, retrieval and withdrawal. Full dependency chain: Auth -> Artista -> Campania -> Reward -> Publish -> Fan User for testing.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "_Setup",
+            "item": [
+                {
+                    "name": "01. Register Artista User (for necesidades)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const email = 'cs-artista-' + Date.now() + '@weplay.com';",
+                                    "pm.collectionVariables.set('artistaEmail', email);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse structure is correct', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has token and saves artistaToken', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.token).to.be.a('string').and.not.empty;",
+                                    "    pm.collectionVariables.set('artistaToken', json.data.token);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{artistaEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\",\n    \"nombre\": \"CS Test Artista\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "02. Create Artista Profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has artistaId and saves it', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.a('string').and.not.empty;",
+                                    "    pm.collectionVariables.set('artistaId', json.data);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombreArtistico\": \"CS_Artist_{{$timestamp}}\",\n    \"descripcion\": \"Created by cs-explorar-propuestas test setup\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/artistas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "artistas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "03. Create Campania (Borrador)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has campaniaId and saves it', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.a('string').and.not.empty;",
+                                    "    pm.collectionVariables.set('campaniaId', json.data);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"Test Campaign {{$timestamp}}\",\n    \"descripcion\": \"Campaign created by cs-explorar-propuestas test\",\n    \"importeObjetivo\": 5000\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "04. Create Reward for Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has rewardId and saves it', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.a('string').and.not.empty;",
+                                    "    pm.collectionVariables.set('rewardId', json.data);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombre\": \"Test Reward {{$timestamp}}\",\n    \"descripcion\": \"Test reward from cs-explorar-propuestas\",\n    \"importeMinimo\": 100,\n    \"cantidad\": 10\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/recompensas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "recompensas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "05. Publish Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200 or 204', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true (if 200)', function () {",
+                                    "    if (pm.response.code === 200) {",
+                                    "        const json = pm.response.json();",
+                                    "        pm.expect(json.isSuccess).to.be.true;",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/publicar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "publicar"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "06. Create Crowdsourcing Necesidad",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has necesidadId and saves it', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.a('string').and.not.empty;",
+                                    "    pm.collectionVariables.set('necesidadId', json.data);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"Test Necesidad {{$timestamp}}\",\n    \"descripcion\": \"Test necesidad for cs-explorar-propuestas testing\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 100.00,\n    \"presupuestoMax\": 500.00,\n    \"monedaId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "07. Register Professional User (for propuestas)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const email = 'cs-professional-' + Date.now() + '@weplay.com';",
+                                    "pm.collectionVariables.set('proEmail', email);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse structure is correct', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has token and saves proToken', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.token).to.be.a('string').and.not.empty;",
+                                    "    pm.collectionVariables.set('proToken', json.data.token);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{proEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\",\n    \"nombre\": \"CS Test Professional\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "08. Create Professional Profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"Test Professional\",\n    \"descripcion\": \"Professional profile for testing propuestas\",\n    \"experiencia\": 5,\n    \"portfolioUrl\": \"https://example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/perfiles-profesionales",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "perfiles-profesionales"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Explorar Necesidades - Lectura",
+            "item": [
+                {
+                    "name": "01. GET Necesidades Publicas (Listado)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse structure is correct', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Pagination structure is correct', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    pm.expect(data).to.have.property('items').that.is.an('array');",
+                                    "    pm.expect(data).to.have.property('totalCount').that.is.a('number');",
+                                    "    pm.expect(data).to.have.property('page').that.is.a('number');",
+                                    "    pm.expect(data).to.have.property('pageSize').that.is.a('number');",
+                                    "    pm.expect(data).to.have.property('totalPages').that.is.a('number');",
+                                    "});",
+                                    "",
+                                    "pm.test('Items have expected fields', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const items = json.data.items;",
+                                    "    if (items.length > 0) {",
+                                    "        const item = items[0];",
+                                    "        pm.expect(item).to.have.property('id');",
+                                    "        pm.expect(item).to.have.property('titulo');",
+                                    "        pm.expect(item).to.have.property('tipoNecesidadId');",
+                                    "        pm.expect(item).to.have.property('tipoNecesidadNombre');",
+                                    "        pm.expect(item).to.have.property('modalidadTrabajoId');",
+                                    "        pm.expect(item).to.have.property('numeroPropuestas');",
+                                    "    }",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades?page=1&pageSize=12",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "12"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "02. GET Necesidades with Filter (type)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Items array exists', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.items).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades?tipoNecesidadId=1&page=1&pageSize=12",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tipoNecesidadId",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "12"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "03. GET Necesidad Detail (public view)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has required detail fields', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    pm.expect(data).to.have.property('id');",
+                                    "    pm.expect(data).to.have.property('titulo');",
+                                    "    pm.expect(data).to.have.property('descripcion');",
+                                    "    pm.expect(data).to.have.property('artista');",
+                                    "    pm.expect(data.artista).to.have.property('nombreArtistico');",
+                                    "});",
+                                    "",
+                                    "pm.test('Has calculated fields for professional', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    pm.expect(data).to.have.property('yaPropuso').that.is.a('boolean');",
+                                    "    pm.expect(data).to.have.property('esPropietario').that.is.a('boolean');",
+                                    "    pm.expect(data).to.have.property('tienePerfilProfesional').that.is.a('boolean');",
+                                    "});",
+                                    "",
+                                    "pm.test('Save necesidad details for next tests', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.collectionVariables.set('necesidadIdDetail', json.data.id);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Propuestas - CRUD Lifecycle",
+            "item": [
+                {
+                    "name": "01. POST Create Propuesta (Success)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201 Created', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has expected response data', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    pm.expect(data).to.have.property('id');",
+                                    "    pm.expect(data).to.have.property('necesidadTitulo');",
+                                    "    pm.expect(data).to.have.property('precioPropuesto');",
+                                    "    pm.expect(data).to.have.property('estadoPropuestaNombre');",
+                                    "    pm.expect(data.estadoPropuestaNombre).to.equal('Pendiente');",
+                                    "    pm.expect(data).to.have.property('fechaCreacion');",
+                                    "    pm.collectionVariables.set('propuestaId', data.id);",
+                                    "});",
+                                    "",
+                                    "pm.test('ErrorCode is 0001 (Created)', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages[0].errorCode).to.equal('0001');",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"precioPropuesto\": 350.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 14,\n    \"mensajePropuesta\": \"I have extensive experience in audio engineering with 10 years in the industry. I specialize in indie rock and have worked with several international bands. My approach is collaborative and I ensure high-quality results.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/propuestas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}",
+                                "propuestas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "02. GET Mis Propuestas (List with new proposal)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has pagination structure', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    pm.expect(data).to.have.property('items').that.is.an('array');",
+                                    "    pm.expect(data).to.have.property('totalCount').that.is.greaterThanOrEqualTo(1);",
+                                    "    pm.expect(data).to.have.property('page');",
+                                    "    pm.expect(data).to.have.property('pageSize');",
+                                    "});",
+                                    "",
+                                    "pm.test('Created proposal appears in list', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const items = json.data.items;",
+                                    "    const created = items.find(p => p.id === pm.collectionVariables.get('propuestaId'));",
+                                    "    pm.expect(created).to.exist;",
+                                    "    pm.expect(created.estadoPropuestaNombre).to.equal('Pendiente');",
+                                    "    pm.expect(created.precioPropuesto).to.equal(350);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/mis-propuestas?page=1&pageSize=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "propuestas",
+                                "mis-propuestas"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "03. PATCH Retirar Propuesta (Success)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Response has correct withdrawal data', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    pm.expect(data).to.have.property('id');",
+                                    "    pm.expect(data).to.have.property('estadoPropuestaNombre');",
+                                    "    pm.expect(data.estadoPropuestaNombre).to.equal('Retirada');",
+                                    "});",
+                                    "",
+                                    "pm.test('ErrorCode is 0002 (Updated)', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages[0].errorCode).to.equal('0002');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId}}/retirar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "propuestas",
+                                "{{propuestaId}}",
+                                "retirar"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "04. GET Mis Propuestas (Verify withdrawal)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Withdrawn proposal shows Retirada status', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const items = json.data.items;",
+                                    "    const withdrawn = items.find(p => p.id === pm.collectionVariables.get('propuestaId'));",
+                                    "    pm.expect(withdrawn).to.exist;",
+                                    "    pm.expect(withdrawn.estadoPropuestaNombre).to.equal('Retirada');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/mis-propuestas?estado=4&page=1&pageSize=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "propuestas",
+                                "mis-propuestas"
+                            ],
+                            "query": [
+                                {
+                                    "key": "estado",
+                                    "value": "4"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Propuestas - Validation Errors",
+            "item": [
+                {
+                    "name": "POST 400 - Precio Invalid (zero)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error messages', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    const priceError = json.messages.find(m => m.errorCode === '1009' || m.message.includes('precio'));",
+                                    "    pm.expect(priceError).to.exist;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"precioPropuesto\": 0,\n    \"monedaId\": 1,\n    \"diasEstimados\": 14,\n    \"mensajePropuesta\": \"This is a test proposal with enough characters to pass validation\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/propuestas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}",
+                                "propuestas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST 400 - Mensaje Too Short",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has message length validation error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    const msgError = json.messages.find(m => m.errorCode === '1011' || m.message.includes('20'));",
+                                    "    pm.expect(msgError).to.exist;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"precioPropuesto\": 350.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 14,\n    \"mensajePropuesta\": \"Short msg\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/propuestas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}",
+                                "propuestas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST 400 - Dias Invalid (negative)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error for dias', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"precioPropuesto\": 350.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": -5,\n    \"mensajePropuesta\": \"This is a valid test proposal with enough characters to pass validation\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/propuestas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}",
+                                "propuestas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST 400 - Dias Too Large (> 365)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error for dias exceeding 365', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "    const diasError = json.messages.find(m => m.errorCode === '1002' || m.message.includes('365'));",
+                                    "    pm.expect(diasError).to.exist;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"precioPropuesto\": 350.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 400,\n    \"mensajePropuesta\": \"This is a valid test proposal with enough characters to pass validation\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/propuestas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}",
+                                "propuestas"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Propuestas - Business Rules Errors",
+            "item": [
+                {
+                    "name": "POST 400 - Propuesta Duplicada (Already Proposed)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Has AlreadyProposed error code 4003', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "    const dupError = json.messages.find(m => m.errorCode === '4003');",
+                                    "    pm.expect(dupError).to.exist;",
+                                    "    pm.expect(dupError.message).to.include('propuesta');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"precioPropuesto\": 400.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 10,\n    \"mensajePropuesta\": \"Another proposal attempt that should fail due to duplicate constraint validation\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/propuestas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}",
+                                "propuestas"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Propuestas - Auth Errors",
+            "item": [
+                {
+                    "name": "GET 401 - Sin Token",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "pm.test('Unauthorized response structure', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PATCH 403 - Forbidden (not owner)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const artistaToken = pm.collectionVariables.get('artistaToken');",
+                                    "pm.collectionVariables.set('otherUserToken', artistaToken);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 403 Forbidden', function () {",
+                                    "    pm.response.to.have.status(403);",
+                                    "});",
+                                    "",
+                                    "pm.test('Has Forbidden error code 3002', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "    const forbiddenError = json.messages.find(m => m.errorCode === '3002');",
+                                    "    pm.expect(forbiddenError).to.exist;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{otherUserToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId}}/retirar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "propuestas",
+                                "{{propuestaId}}",
+                                "retirar"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Propuestas - Not Found Errors",
+            "item": [
+                {
+                    "name": "GET 404 - Necesidad Not Found",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 404', function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test('Has NotFound error code 2009', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "    const notFoundError = json.messages.find(m => m.errorCode === '2009');",
+                                    "    pm.expect(notFoundError).to.exist;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/00000000-0000-0000-0000-000000000000",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "00000000-0000-0000-0000-000000000000"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "PATCH 404 - Propuesta Not Found",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 404', function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test('Has NotFound_Propuesta error code 2010', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "    const notFoundError = json.messages.find(m => m.errorCode === '2010');",
+                                    "    pm.expect(notFoundError).to.exist;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{proToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/00000000-0000-0000-0000-000000000000/retirar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "propuestas",
+                                "00000000-0000-0000-0000-000000000000",
+                                "retirar"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "_Teardown",
+            "item": [
+                {
+                    "name": "Delete Necesidad",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Delete completed (200 or 204)', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "crowdsourcing",
+                                "necesidades",
+                                "{{necesidadId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Reward",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Delete completed', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/recompensas/{{rewardId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "recompensas",
+                                "{{rewardId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Delete completed', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Artista",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Delete completed', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{artistaToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/artistas/{{artistaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "artistas",
+                                "{{artistaId}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5001"
+        },
+        {
+            "key": "testPassword",
+            "value": "TestPassword123!"
+        },
+        {
+            "key": "artistaEmail",
+            "value": ""
+        },
+        {
+            "key": "artistaToken",
+            "value": ""
+        },
+        {
+            "key": "artistaId",
+            "value": ""
+        },
+        {
+            "key": "campaniaId",
+            "value": ""
+        },
+        {
+            "key": "rewardId",
+            "value": ""
+        },
+        {
+            "key": "necesidadId",
+            "value": ""
+        },
+        {
+            "key": "necesidadIdDetail",
+            "value": ""
+        },
+        {
+            "key": "proEmail",
+            "value": ""
+        },
+        {
+            "key": "proToken",
+            "value": ""
+        },
+        {
+            "key": "propuestaId",
+            "value": ""
+        }
+    ]
+}

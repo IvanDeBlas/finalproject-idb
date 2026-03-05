@@ -1,0 +1,19 @@
+{
+  "name": "@weplay-rises/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./types": "./types/index.ts",
+    "./constants": "./constants/index.ts",
+    "./utils": "./utils/index.ts",
+    "./schemas": "./schemas/index.ts"
+  },
+  "peerDependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0",
+    "zod": "^3.25.76"
+  }
+}

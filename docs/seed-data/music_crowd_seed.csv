@@ -1,0 +1,32 @@
+id,type,subtype,platform,project_title,project_url,notes
+1,crowdsourcing,collaborative music collection,HitRECord,Move On The Sun,https://hitrecord.org/moveonthesun,Página de colección musical colaborativa; incluye llamadas a unirse a colaboraciones/remixes.
+2,crowdsourcing,remix contest entry,ccMixter,Fort Minor Remix Contest - Remember the name - Fherking mix.mp3,https://ccmixter.org/files/fernando_filgueira/4706,Entrada etiquetada como contest_entry (remix contest).
+3,crowdsourcing,remix contest entry,ccMixter,Fort Minor Remix Contest - Remember the name - Fherking mix 2 .mp3,https://ccmixter.org/files/fernando_filgueira/4709,Entrada etiquetada como contest_entry (remix contest).
+4,crowdsourcing,remix contest entry,ccMixter,Cidade Sol swinging bossa Remix,https://ccmixter.org/files/tigabeatz/10788,Entrada etiquetada como contest_entry (remix).
+5,crowdsourcing,remix contest stems/pack,ccMixter,"Dumbo Gets Mad - You Make You Feel (remix contest, 15 samples + vocals)",https://wwwdig.ccmixter.org/files/badpanda/30656,Paquete de samples/zip para concurso de remixes.
+6,crowdsourcing,remix contest entry,ccMixter,Kill Kill Kill-Talk To Me (Drum & Bass Remix),https://ccmixter.org/files/MatrixAndDappa/9688,Entrada a concurso de remix (DJ Vadim).
+7,crowdsourcing,remix contest stems/pack,ccMixter,Kalte Ohren (Cold Ears) Stem pack,https://ccmixter.org/files/starfrosch/59511,Stems para remix contest.
+8,crowdsourcing,remix contest stems/pack,ccMixter,Just One Ping Remix pack (ogg),https://ccmixter.org/files/vimcortez/25718,Paquete para remix contest.
+9,crowdsourcing,remix contest entry,ccMixter,Noite de Carnaval by Code,https://ccmixter.org/files/Mixro/5337,Entrada etiquetada como contest_entry.
+10,crowdsourcing,remix contest loops/stems,ccMixter,Natchoongi (Loops),https://ccmixter.org/files/salman/10699,Loops para concurso de remix (Salman/Magnatune).
+11,crowdsourcing,remix contest sources page,ccMixter,Fort Minor Remix Contest - Sources,https://ccmixter.org/fortminor_samples,Página de fuentes/muestras del concurso (útil para extraer assets/metadata del reto).
+12,crowdsourcing,collab request thread,Reddit r/BedroomBands,[LFG] Progressive/melodic metal guitarist looking for others to collaborate,https://www.reddit.com/r/BedroomBands/comments/ezyo6o,Hilo de búsqueda de colaboradores (LFG).
+13,crowdsourcing,collab request thread,Reddit r/BedroomBands,[LFG] Singer Looking for band/musicians,https://www.reddit.com/r/BedroomBands/comments/cay6be,Hilo de búsqueda de banda/músicos (LFG).
+14,crowdsourcing,collab request thread,Reddit r/BedroomBands,[LFG] Want to start making music more regularly,https://www.reddit.com/r/BedroomBands/comments/ej2c8w,Hilo de colaboración/remoto (LFG).
+15,crowdsourcing,collab request thread,Reddit r/BedroomBands,[LFG] Looking for Metalcore style vocalist,https://www.reddit.com/r/BedroomBands/comments/fwq4qe,Hilo buscando vocalista para colaboración.
+16,crowdfunding,music crowdfunding campaign,Verkami,French Horn Jazz Project,https://www.verkami.com/projects/24465-french-horn-jazz-project,Proyecto musical en Verkami (ejemplo).
+17,crowdfunding,music crowdfunding campaign,Verkami,"Sedajazz Big Band & Valmuz ""Sinergia""",https://www.verkami.com/locale/en/projects/28206-sedajazz-big-band-valmuz-sinergia,Proyecto musical en Verkami (ejemplo).
+18,crowdfunding,music crowdfunding campaign,Verkami,Herber&CO by Dixie Project,https://www.verkami.com/locale/it/projects/17994-herberco-by-dixie-project,Proyecto musical en Verkami (ejemplo).
+19,crowdfunding,music crowdfunding campaign,Verkami,TRIM (Peixoto / Fariñas / Barroso) - CD+DVD,https://www.verkami.com/locale/de/projects/8417-trim-peixoto-farinas-barroso-lanzamento-cddvd,Proyecto musical en Verkami (ejemplo).
+20,crowdfunding,music crowdfunding campaign,Verkami,LP vinyl Sound System Selection by Good Over Evil,https://www.verkami.com/locale/en/projects/27210-vinilo-lp-sound-system-selection-by-good-over-evil,Proyecto musical en Verkami (ejemplo).
+21,crowdfunding,music crowdfunding campaign,Verkami,"Recording LOON ATTIC new album: ""HABITAT""",https://www.verkami.com/locale/de/projects/9886-grabacion-del-nuevo-album-de-loon-attic-habitat,Proyecto musical en Verkami (ejemplo).
+22,crowdfunding,music crowdfunding campaign,Verkami,Impronunciable - Ares Gratal's first solo album,https://www.verkami.com/locale/en/projects/30709-impronunciable-primer-disco-de-ares-gratal,Proyecto musical en Verkami (ejemplo).
+23,crowdfunding,music crowdfunding campaign,Verkami,Black olives Julia Pigalis new album,https://www.verkami.com/locale/en/projects/27374-black-olives-julia-pigalis-new-album,Proyecto musical en Verkami (ejemplo).
+24,crowdfunding,music crowdfunding campaign,Verkami,Obal - Baile en Massó,https://www.verkami.com/locale/en/projects/22106-obal-baile-en-masso,Proyecto musical en Verkami (ejemplo).
+25,crowdfunding,music crowdfunding campaign,Verkami,(Verkami category listing example) Music / Classic category page,https://www.verkami.com/discover/projects/category/12-clasica,Listado de proyectos (útil para descubrir muchos IDs).
+26,crowdfunding,music crowdfunding campaign,Indiegogo,Raised by Bats- A star-studded Gothrock album from Aurelio Voltaire,https://www.indiegogo.com/projects/raised-by-bats-a-star-studded-gothrock-album-from-aurelio-voltaire,Campaña musical en Indiegogo (ejemplo).
+27,crowdfunding,music crowdfunding campaign,Indiegogo,"Willis McClung - Memorial LP - yes, on vinyl",https://www.indiegogo.com/projects/willis-mcclung-memorial-lp-yes-on-vinyl,Campaña musical en Indiegogo (ejemplo).
+28,crowdfunding,music crowdfunding campaign,Indiegogo,Candy Stone Debut EP,https://www.indiegogo.com/projects/candy-stone-debut-ep,Campaña musical en Indiegogo (ejemplo).
+29,crowdfunding,music crowdfunding campaign,Indiegogo,KEMEROV - 'FMKD' on vinyl!,https://www.indiegogo.com/projects/kemerov-fmkd-on-vinyl,Campaña musical en Indiegogo (ejemplo).
+30,crowdfunding,music crowdfunding campaign,Indiegogo,Let's Make a High Holiday Album,https://www.indiegogo.com/projects/let-s-make-a-high-holiday-album,Campaña musical en Indiegogo (ejemplo).
+31,crowdfunding,self-hosted crowdfunding campaign,Nadishana (self-hosted),"Nadishana, new handpan double album ""Relict""",https://nadishana-crowdfunding.com/,Ejemplo de crowdfunding musical autoalojado (fuera de plataformas clásicas).

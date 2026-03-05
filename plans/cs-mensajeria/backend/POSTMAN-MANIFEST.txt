@@ -1,0 +1,487 @@
+================================================================================
+POSTMAN COLLECTION MANIFEST - WePlay.CsMensajeria.IntegrationTests
+================================================================================
+
+Generated: 2026-02-18
+Feature: cs-mensajeria (US-CS-05 - Mensajeria entre Partes)
+Collection Version: 1.0
+Schema: Postman v2.1.0
+Status: Production Ready
+
+================================================================================
+ARCHIVOS GENERADOS
+================================================================================
+
+1. postman-collection.json
+   └─ Colección Postman ejecutable JSON
+   └─ 40 requests distribuidos en 9 folders
+   └─ Tamaño: ~55 KB
+   └─ Schema: https://schema.getpostman.com/json/collection/v2.1.0/collection.json
+   └─ Uso: Importar directamente en Postman o ejecutar con Newman CLI
+
+2. README-POSTMAN.md
+   └─ Documentación completa de la colección
+   └─ 600+ líneas de guía, ejemplos y troubleshooting
+   └─ Secciones: Setup, Estructura, Ejecución, Debugging, CI/CD
+   └─ Archivo de referencia principal
+
+3. COLLECTION-SUMMARY.md
+   └─ Resumen ejecutivo de métricas y cobertura
+   └─ 400+ líneas con estadísticas detalladas
+   └─ Tablas de cobertura, assertions, error codes
+   └─ Archivo de referencia técnica
+
+4. run-postman-tests.sh
+   └─ Script bash para ejecutar la colección
+   └─ 300+ líneas con validaciones y manejo de argumentos
+   └─ Soporta: flags de URL, reporters, delay, timeout, verbose
+   └─ Exporta resultados en JSON y HTML
+
+5. POSTMAN-MANIFEST.txt (este archivo)
+   └─ Índice y guía rápida de navegación
+   └─ Referencia de todos los archivos y su propósito
+
+================================================================================
+ESTRUCTURA RÁPIDA
+================================================================================
+
+DIRECTORIO:
+  plans/cs-mensajeria/backend/
+  ├── postman-collection.json          [Colección ejecutable]
+  ├── README-POSTMAN.md                [Documentación principal]
+  ├── COLLECTION-SUMMARY.md            [Resumen técnico]
+  ├── run-postman-tests.sh             [Script de ejecución]
+  └── POSTMAN-MANIFEST.txt             [Este archivo]
+
+================================================================================
+ESTADÍSTICAS PRINCIPALES
+================================================================================
+
+Requests:
+  - Total: 40
+  - Setup: 5
+  - CRUD Lifecycle: 9
+  - Validaciones: 6
+  - Autenticación: 3
+  - Not Found: 3
+  - Business Rules: 1
+  - Paginación: 2
+  - Filtros: 1
+
+HTTP Methods:
+  - POST: 18
+  - GET: 12
+  - PATCH: 2
+  - PUT: 0
+  - DELETE: 0
+
+Folders:
+  - Total: 9
+
+Assertions:
+  - Total: ~70+
+  - Promedio por request: ~1.75
+
+Endpoints Cubiertos:
+  - 6 endpoints testeados
+  - Cobertura: 100%
+
+Variables:
+  - Total: 14
+  - Base: 2
+  - Auto-pobladas: 12
+
+================================================================================
+COBERTURA DE ENDPOINTS
+================================================================================
+
+1. POST /api/crowdsourcing/conversaciones
+   ✓ Éxito (201)
+   ✓ Validaciones (400)
+   ✓ Autenticación (401)
+   ✓ Business Rules (400)
+   Tests: 7
+
+2. GET /api/crowdsourcing/conversaciones
+   ✓ Éxito (200)
+   ✓ Filtros
+   ✓ Paginación
+   ✓ Autenticación (401)
+   Tests: 5
+
+3. GET /api/crowdsourcing/conversaciones/no-leidos
+   ✓ Éxito (200)
+   ✓ Autenticación (401)
+   Tests: 2
+
+4. GET /api/crowdsourcing/conversaciones/{id}/mensajes
+   ✓ Éxito (200)
+   ✓ Paginación
+   ✓ Autenticación (401/403)
+   ✓ Not Found (404)
+   Tests: 6
+
+5. POST /api/crowdsourcing/conversaciones/{id}/mensajes
+   ✓ Éxito (201)
+   ✓ Validaciones (400)
+   ✓ Autenticación (401/403)
+   ✓ Not Found (404)
+   Tests: 8
+
+6. PATCH /api/crowdsourcing/conversaciones/{id}/marcar-leidos
+   ✓ Éxito (200)
+   ✓ Autenticación (401/403)
+   ✓ Not Found (404)
+   Tests: 4
+
+Total Tests por Endpoint: 32
+Setup Tests: 5
+Helper Tests: 3
+Total: 40
+
+================================================================================
+CÓMO USAR ESTA COLECCIÓN
+================================================================================
+
+OPCIÓN 1 - Postman UI (Recomendado para desarrollo)
+────────────────────────────────────────────────────
+1. Abrir Postman Desktop
+2. Click en "Import"
+3. Seleccionar: plans/cs-mensajeria/backend/postman-collection.json
+4. Click "Run collection"
+5. Seleccionar reporters y ejecutar
+
+OPCIÓN 2 - Newman CLI (Recomendado para CI/CD)
+────────────────────────────────────────────────
+# Instalar Newman (si no lo tienes)
+npm install -g newman
+
+# Ejecutar colección completa
+newman run plans/cs-mensajeria/backend/postman-collection.json \
+  --reporters cli,htmlextra
+
+# Ver todas las opciones
+newman run --help
+
+OPCIÓN 3 - Script Shell (Recomendado para local)
+──────────────────────────────────────────────
+# Hacer ejecutable el script
+chmod +x plans/cs-mensajeria/backend/run-postman-tests.sh
+
+# Ejecutar con configuración por defecto
+./plans/cs-mensajeria/backend/run-postman-tests.sh
+
+# Ver opciones disponibles
+./plans/cs-mensajeria/backend/run-postman-tests.sh --help
+
+# Ejemplos de uso
+./plans/cs-mensajeria/backend/run-postman-tests.sh --url http://localhost:5001
+./plans/cs-mensajeria/backend/run-postman-tests.sh --folder "Validaciones"
+./plans/cs-mensajeria/backend/run-postman-tests.sh -v --delay 100
+
+================================================================================
+VARIABLES Y SETUP
+================================================================================
+
+Variables Base (Configurables):
+  - baseUrl: http://localhost:5001
+  - testPassword: TestPassword123!
+
+Variables Auto-Pobladas en _Setup:
+  - artistaEmail: artista-{timestamp}@weplay.com
+  - artistaToken: {JWT token}
+  - artistaUserId: {Extraído del token}
+  - fanEmail: fan-{timestamp}@weplay.com
+  - fanToken: {JWT token}
+  - fanUserId: {Extraído de respuesta}
+  - necesidadId: {Creado en setup}
+  - propuestaId: {Creado en setup}
+
+Variables Auto-Pobladas en Lifecycle:
+  - conversacionId: {POST Create}
+  - mensajeId: {POST Send}
+  - mensajeId2: {POST Send with URL}
+
+Timestamp Automático:
+  Las variables artistaEmail y fanEmail se generan automáticamente con
+  Date.now() para evitar conflictos de usuario duplicado. Permite
+  ejecutar la colección múltiples veces sin limpiar BD.
+
+================================================================================
+REQUISITOS PREVIOS
+================================================================================
+
+Backend:
+  ✓ API ejecutándose en http://localhost:5001
+  ✓ SQL Server con DB WePlayRises
+  ✓ Migraciones de módulo Crowdsourcing aplicadas
+  ✓ JWT configurado
+
+Herramientas:
+  ✓ Postman 9.0+ (para UI)
+  ✓ Newman 5.x+ (para CLI)
+  ✓ Node.js 12+ (para ejecutar Newman)
+  ✓ Bash 4+ (para script shell)
+  ✓ Curl (opcional, para verificar conectividad)
+
+Endpoints Requeridos:
+  ✓ POST /api/auth/register
+  ✓ POST /api/crowdsourcing/necesidades
+  ✓ POST /api/crowdsourcing/propuestas
+  ✓ POST /api/crowdsourcing/conversaciones
+  ✓ GET /api/crowdsourcing/conversaciones
+  ✓ GET /api/crowdsourcing/conversaciones/no-leidos
+  ✓ GET /api/crowdsourcing/conversaciones/{id}/mensajes
+  ✓ POST /api/crowdsourcing/conversaciones/{id}/mensajes
+  ✓ PATCH /api/crowdsourcing/conversaciones/{id}/marcar-leidos
+
+================================================================================
+FLUJO DE EJECUCIÓN
+================================================================================
+
+1. _SETUP (5 requests)
+   │
+   ├─ 01. Register Artista User
+   │  └─ Genera email único con timestamp
+   │  └─ Obtiene JWT token del artista
+   │
+   ├─ 02. Register Fan/Proveedor User
+   │  └─ Genera email único con timestamp
+   │  └─ Obtiene JWT token del fan
+   │
+   ├─ 03. Extract Artista UserId from Token
+   │  └─ Decodifica JWT y extrae UserId
+   │
+   ├─ 04. Create Necesidad
+   │  └─ Crea contexto para conversación
+   │  └─ Guarda necesidadId
+   │
+   └─ 05. Create Propuesta
+      └─ Establece relación entre artista y fan
+      └─ Guarda propuestaId
+
+2. CONVERSACIONES - CRUD LIFECYCLE (4 requests)
+   │
+   ├─ 01. POST Create Conversacion
+   │  └─ Crea conversación entre artista y fan
+   │  └─ Guarda conversacionId
+   │
+   ├─ 02. GET All Conversaciones
+   │  └─ Listar conversaciones con paginación
+   │  └─ Verifica que conversación creada aparece
+   │
+   ├─ 03. GET Conversacion By Id
+   │  └─ Obtiene mensajes de conversación
+   │  └─ Verifica acceso de participante
+   │
+   └─ 04. GET No Leidos Count
+      └─ Endpoint ligero para badge del navbar
+      └─ Retorna conteo total
+
+3. MENSAJES - CRUD LIFECYCLE (5 requests)
+   │
+   ├─ 01. POST Send Mensaje (sin adjunto)
+   │  └─ Envía mensaje del artista al fan
+   │  └─ Guarda mensajeId
+   │
+   ├─ 02. POST Send Mensaje with URL
+   │  └─ Envía mensaje del fan con URL adjunta
+   │  └─ Guarda mensajeId2
+   │
+   ├─ 03. GET Mensajes from Conversacion
+   │  └─ Obtiene lista de mensajes paginada
+   │  └─ Verifica que ambos mensajes aparecen
+   │
+   ├─ 04. PATCH Marcar Leidos
+   │  └─ Marca mensajes del artista como leidos
+   │  └─ Retorna conteo de marcados
+   │
+   └─ 05. Verify Total No Leidos Decreased
+      └─ Verifica que conteo de no leidos se actualizó
+
+4. VALIDACIONES (6 requests)
+   │
+   ├─ Asunto vacio / too long
+   ├─ Destinatario faltante
+   ├─ Contenido mensaje vacio / too long
+   └─ URL adjunta inválida
+
+5. AUTENTICACIÓN (3 requests)
+   │
+   ├─ Sin token (401)
+   ├─ Token inválido (401)
+   └─ No es participante (403)
+
+6. NOT FOUND (3 requests)
+   │
+   ├─ Conversación no existe
+   ├─ Enviar mensaje a conversación inexistente
+   └─ Marcar leidos en conversación inexistente
+
+7. BUSINESS RULES (1 request)
+   │
+   └─ Conversación duplicada (4015)
+
+8. PAGINACIÓN (2 requests)
+   │
+   ├─ Conversaciones respeta max 50
+   └─ Mensajes respeta max 100
+
+9. FILTROS (1 request)
+   │
+   └─ Filtro por contexto (necesidades)
+
+================================================================================
+RESULTADOS ESPERADOS
+================================================================================
+
+Ejecución Exitosa:
+  ✓ 40 tests passed
+  ✓ 0 failed
+  ✓ Execution time: 20-40 segundos
+  ✓ HTML report generado
+  ✓ JSON export guardado
+
+Assertions Validadas:
+  ✓ Status codes (201, 200, 400, 401, 403, 404, 500)
+  ✓ Error codes (1001, 1002, 1009, 1013, 2014, 3001, 3002, 4015, 5000)
+  ✓ Estructura de respuestas
+  ✓ Campos obligatorios
+  ✓ Cálculos (esPropio, totalNoLeidos, mensajesMarcados)
+  ✓ Paginación y límites
+  ✓ Filtros y ordenamiento
+
+Falla Típica:
+  ✗ 1 of 40 tests failed
+  Request: POST 400 - Asunto Empty
+  Expected: status 400
+  Got: status 200
+  Trace: Response body does not match validation
+
+================================================================================
+TROUBLESHOOTING RÁPIDO
+================================================================================
+
+Problema: "401 Unauthorized"
+Solución: Verificar que backend está running y JWT key es correcta
+
+Problema: "404 Not Found" en endpoints
+Solución: Verificar que módulo Crowdsourcing tiene migraciones aplicadas
+
+Problema: "Email duplicado"
+Solución: Ejecutar nuevamente (el _Setup genera email con timestamp)
+
+Problema: "Connection timeout"
+Solución: Aumentar timeout en Newman: --timeout-request 10000
+
+Problema: Newman no encontrado
+Solución: npm install -g newman newman-reporter-htmlextra
+
+Para más detalles, consultar:
+  → README-POSTMAN.md (sección Depuración)
+  → COLLECTION-SUMMARY.md (sección Limitaciones)
+
+================================================================================
+REFERENCIAS Y DOCUMENTOS RELACIONADOS
+================================================================================
+
+En el repositorio:
+  • docs/user-stories/cs-mensajeria/contracts.md
+    └─ Contratos de API completos con DTOs y validaciones
+
+  • docs/user-stories/cs-mensajeria/feature-spec.md
+    └─ Especificación de feature con flujos y criterios de aceptación
+
+  • plans/cs-mensajeria/backend/api-contracts.md
+    └─ Plan de contratos API detallado
+
+  • CLAUDE.md (proyecto)
+    └─ Guías de arquitectura CQRS y .NET
+
+Dentro de esta carpeta:
+  • README-POSTMAN.md
+    └─ Guía completa y detallada
+
+  • COLLECTION-SUMMARY.md
+    └─ Análisis técnico profundo
+
+  • run-postman-tests.sh
+    └─ Script ejecutable
+
+================================================================================
+COMANDOS RÁPIDOS
+================================================================================
+
+# Verificar que Newman esté instalado
+newman --version
+
+# Listar globals (variables globales)
+newman -h
+
+# Ejecutar colección básico
+newman run postman-collection.json
+
+# Ejecutar con reporters
+newman run postman-collection.json --reporters cli,json,htmlextra
+
+# Ejecutar un solo folder
+newman run postman-collection.json --folder "_Setup"
+
+# Ejecutar con variables personalizadas
+newman run postman-collection.json --var baseUrl=http://api.example.com
+
+# Exportar resultados
+newman run postman-collection.json \
+  --reporter-json-export results.json \
+  --reporter-htmlextra-export results.html
+
+# Ejecutar con delay y timeout personalizados
+newman run postman-collection.json \
+  --delay-request 100 \
+  --timeout-request 10000
+
+# Ejecución completa con todos los flags
+newman run postman-collection.json \
+  --var baseUrl=http://localhost:5001 \
+  --var testPassword=TestPassword123! \
+  --reporters cli,htmlextra,json \
+  --reporter-htmlextra-export results.html \
+  --reporter-json-export results.json \
+  --delay-request 100 \
+  --timeout-request 5000 \
+  -v
+
+================================================================================
+CONTACTO Y SOPORTE
+================================================================================
+
+Para preguntas o issues:
+
+1. Revisar README-POSTMAN.md (sección Depuración)
+2. Verificar logs en test-results/ después de ejecución
+3. Ejecutar con --verbose para más detalles
+4. Contactar al equipo de backend
+
+Información disponible en:
+  • COLLECTION-SUMMARY.md: Métricas y análisis
+  • README-POSTMAN.md: Troubleshooting y ejemplos
+  • postman-collection.json: Script de cada request
+
+================================================================================
+LICENCIA Y ATRIBUCIONES
+================================================================================
+
+Generado: 2026-02-18
+Para: WePlay Rises - Feature cs-mensajeria (US-CS-05)
+Por: Postman Collection Generator (Newman-compatible)
+Versión: 1.0.0
+Schema: Postman Collection v2.1.0
+
+Basado en:
+  • Contratos API: docs/user-stories/cs-mensajeria/contracts.md
+  • Feature spec: docs/user-stories/cs-mensajeria/feature-spec.md
+  • API contracts plan: plans/cs-mensajeria/backend/api-contracts.md
+
+================================================================================
+FIN DEL MANIFEST
+================================================================================

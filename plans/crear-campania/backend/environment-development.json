@@ -1,0 +1,123 @@
+{
+  "id": "c48b2f1e-dev-env",
+  "name": "WePlay - Development",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:5001",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "identityUrl",
+      "value": "https://localhost:5001",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "weplay-test",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "clientSecret",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "testArtista1Email",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "testArtista1Password",
+      "value": "SecurePassword123!",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "testArtista2Email",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "testArtista2Password",
+      "value": "SecurePassword456!",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "accessToken2",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "artistaId",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "artistaId2",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "campaniaId",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "campaniaIdPublished",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "nonExistentId",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "now",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "futureDate7Days",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "futureDate10Days",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "pastDate",
+      "value": "",
+      "enabled": true,
+      "type": "string"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-02-12T12:00:00.000Z",
+  "_postman_exported_using": "Postman/11.0.0"
+}

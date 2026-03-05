@@ -1,0 +1,1485 @@
+{
+  "info": {
+    "name": "WePlay.PromoTareas.IntegrationTests",
+    "description": "Coleccion de pruebas de integracion para la feature cp-tareas-promocion (US-CP-04). Valida el lifecycle completo de ejecucion y validacion de tareas de promocion: promotor completa tarea con URL de prueba, artista valida o rechaza completados con comentarios obligatorios, acreditacion de recompensas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Login Promotor (usuario1)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('promotorEmail', 'usuario1@mail.com');",
+                  "pm.collectionVariables.set('promotorPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Promotor token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('promotorToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{promotorEmail}}\",\n  \"password\": \"{{promotorPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Login Artista (api-test)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('artistaEmail', 'api-test@mail.com');",
+                  "pm.collectionVariables.set('artistaPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Artista token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('artistaToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{artistaEmail}}\",\n  \"password\": \"{{artistaPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Explorar Programas (Find existing program)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response contains programs list', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    pm.expect(json.data.items.length).to.be.greaterThan(0);",
+                  "});",
+                  "pm.test('First program saved as test data', function () {",
+                  "    const json = pm.response.json();",
+                  "    const programa = json.data.items[0];",
+                  "    pm.expect(programa.id).to.exist;",
+                  "    pm.expect(programa.titulo).to.exist;",
+                  "    pm.collectionVariables.set('programaId', programa.id);",
+                  "    pm.collectionVariables.set('programaTitulo', programa.titulo);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/explorar?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "explorar"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. POST Solicitar Inscripcion en Programa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Inscripcion created', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.exist;",
+                  "    pm.collectionVariables.set('inscripcionId', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripcion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripcion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. PATCH Aprobar Inscripcion (as Artista)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 400 (may already be approved)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 201]);",
+                  "});",
+                  "pm.test('If successful, inscripcion is approved', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (pm.response.code === 200 && json.isSuccess) {",
+                  "        pm.expect(json.data.esAprobado).to.be.true;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones/{{inscripcionId}}/aprobar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones",
+                "{{inscripcionId}}",
+                "aprobar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoTarea - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. GET Mis Tareas (Promotor - list all active tasks)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response contains MisTareasResponseDto structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.programaId).to.equal(pm.collectionVariables.get('programaId'));",
+                  "    pm.expect(json.data.programaTitulo).to.exist;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "});",
+                  "pm.test('Tasks have expected structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data.items.length > 0) {",
+                  "        const tarea = json.data.items[0];",
+                  "        pm.expect(tarea.tareaId).to.exist;",
+                  "        pm.expect(tarea.nombre).to.exist;",
+                  "        pm.expect(tarea.descripcion).to.exist;",
+                  "        pm.expect(tarea.esRepetible).to.be.a('boolean');",
+                  "        pm.expect(tarea.orden).to.be.a('number');",
+                  "        pm.collectionVariables.set('tareaId', tarea.tareaId);",
+                  "        pm.collectionVariables.set('tareaNombre', tarea.nombre);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/mis-tareas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "mis-tareas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. POST Completar Tarea (Promotor - send completion proof)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('proofUrl', 'https://weplay.com/proof-' + timestamp + '.jpg');",
+                  "pm.collectionVariables.set('promotorComment', 'Tarea completada exitosamente con screenshot adjunto');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is CompletarTareaResponseDto', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "});",
+                  "pm.test('Completion record created with status Completada (2)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data;",
+                  "    pm.expect(data.tareaPromotorId).to.exist;",
+                  "    pm.expect(data.estadoTareaId).to.equal(2);",
+                  "    pm.expect(data.estadoTareaNombre).to.equal('Completada');",
+                  "    pm.expect(data.vecesCompletada).to.be.greaterThan(0);",
+                  "    pm.expect(data.fechaUltimaCompletada).to.exist;",
+                  "    pm.collectionVariables.set('tareaPromotorId', data.tareaPromotorId);",
+                  "    pm.collectionVariables.set('vecesCompletada', data.vecesCompletada);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlPruebaCompletado\": \"{{proofUrl}}\",\n  \"comentarioPromotor\": \"{{promotorComment}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas/{{tareaId}}/completar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas",
+                "{{tareaId}}",
+                "completar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Tareas Pendientes (Artista - list completions awaiting validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is TareasPendientesResponseDto with pagination', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    pm.expect(json.data.totalCount).to.be.a('number');",
+                  "    pm.expect(json.data.page).to.equal(1);",
+                  "    pm.expect(json.data.pageSize).to.be.a('number');",
+                  "    pm.expect(json.data.totalPages).to.be.a('number');",
+                  "});",
+                  "pm.test('Pending tasks have expected structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data.items.length > 0) {",
+                  "        const pending = json.data.items[0];",
+                  "        pm.expect(pending.tareaPromotorId).to.exist;",
+                  "        pm.expect(pending.tareaId).to.exist;",
+                  "        pm.expect(pending.tareaNombre).to.exist;",
+                  "        pm.expect(pending.promotorId).to.exist;",
+                  "        pm.expect(pending.promotorNombre).to.exist;",
+                  "        pm.expect(pending.urlPruebaCompletado).to.exist;",
+                  "        pm.expect(pending.vecesCompletada).to.be.a('number');",
+                  "        pm.collectionVariables.set('tareaPromotorId', pending.tareaPromotorId);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas-pendientes?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas-pendientes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. PATCH Validar Tarea (Artista - approve and credit reward)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('validacionComment', 'Excelente trabajo, evidencia clara y complete. Recompensa acreditada.');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is ValidarTareaResponseDto', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "});",
+                  "pm.test('Task status changed to Validada (3)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data;",
+                  "    pm.expect(data.tareaPromotorId).to.exist;",
+                  "    pm.expect(data.estadoTareaId).to.equal(3);",
+                  "    pm.expect(data.estadoTareaNombre).to.equal('Validada');",
+                  "});",
+                  "pm.test('Reward credited (if applicable)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data;",
+                  "    if (data.recompensaAcreditada !== null) {",
+                  "        pm.expect(data.recompensaAcreditada).to.be.a('number');",
+                  "        pm.expect(data.monedaNombre).to.exist;",
+                  "    } else if (data.puntosAcreditados !== null) {",
+                  "        pm.expect(data.puntosAcreditados).to.be.a('number');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comentarioValidacion\": \"{{validacionComment}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas-promotor/{{tareaPromotorId}}/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas-promotor",
+                "{{tareaPromotorId}}",
+                "validar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. POST Completar Tarea AGAIN (for rejection test)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('proofUrl2', 'https://weplay.com/proof-retry-' + timestamp + '.jpg');",
+                  "pm.collectionVariables.set('promotorComment2', 'Completando tarea nuevamente para test de rechazo');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('New completion record created', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.tareaPromotorId).to.exist;",
+                  "    pm.expect(json.data.estadoTareaId).to.equal(2);",
+                  "    pm.collectionVariables.set('tareaPromotorId2', json.data.tareaPromotorId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlPruebaCompletado\": \"{{proofUrl2}}\",\n  \"comentarioPromotor\": \"{{promotorComment2}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas/{{tareaId}}/completar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas",
+                "{{tareaId}}",
+                "completar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "06. PATCH Rechazar Tarea (Artista - reject with mandatory reason)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('rechazoComment', 'La URL de prueba no es valida. La imagen esta borrosa y no se ve clara la accion completada. Enviar de nuevo con prueba mas clara.');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is RechazarTareaResponseDto', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "});",
+                  "pm.test('Task status changed to Rechazada (4)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data;",
+                  "    pm.expect(data.tareaPromotorId).to.exist;",
+                  "    pm.expect(data.estadoTareaId).to.equal(4);",
+                  "    pm.expect(data.estadoTareaNombre).to.equal('Rechazada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comentarioValidacion\": \"{{rechazoComment}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas-promotor/{{tareaPromotorId2}}/rechazar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas-promotor",
+                "{{tareaPromotorId2}}",
+                "rechazar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoTarea - Validation Errors",
+      "item": [
+        {
+          "name": "POST Completar - Missing URL (400 Validation_Required)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('isSuccess is false with validation messages', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const urlError = json.messages.find(m => m.errorCode.includes('1001') || m.message.includes('obligatoria'));",
+                  "    pm.expect(urlError).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlPruebaCompletado\": \"\",\n  \"comentarioPromotor\": \"sin URL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas/{{tareaId}}/completar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas",
+                "{{tareaId}}",
+                "completar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Completar - Invalid URL format (400 Validation_InvalidUrl)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('isSuccess is false with format error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const urlError = json.messages.find(m => m.message.includes('formato'));",
+                  "    pm.expect(urlError).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlPruebaCompletado\": \"not a valid url at all\",\n  \"comentarioPromotor\": \"test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas/{{tareaId}}/completar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas",
+                "{{tareaId}}",
+                "completar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Completar - URL exceeds max length (400 Validation_MaxLength)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const longUrl = 'https://weplay.com/' + 'x'.repeat(2100);",
+                  "pm.collectionVariables.set('longUrl', longUrl);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('isSuccess is false with length error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const lengthError = json.messages.find(m => m.message.includes('2048'));",
+                  "    pm.expect(lengthError).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlPruebaCompletado\": \"{{longUrl}}\",\n  \"comentarioPromotor\": \"test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas/{{tareaId}}/completar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas",
+                "{{tareaId}}",
+                "completar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH Rechazar - Missing comment (400 Validation_Required)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('isSuccess is false - comment is mandatory for rejection', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const requiredError = json.messages.find(m => m.message.includes('obligatorio') || m.errorCode.includes('1001'));",
+                  "    pm.expect(requiredError).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comentarioValidacion\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas-promotor/{{tareaPromotorId}}/rechazar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas-promotor",
+                "{{tareaPromotorId}}",
+                "rechazar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoTarea - Auth Errors",
+      "item": [
+        {
+          "name": "GET Mis Tareas - No token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/mis-tareas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "mis-tareas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Completar - No token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlPruebaCompletado\": \"https://example.com/proof.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas/{{tareaId}}/completar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas",
+                "{{tareaId}}",
+                "completar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Tareas Pendientes - No token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas-pendientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas-pendientes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH Validar - No token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comentarioValidacion\": \"test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas-promotor/{{tareaPromotorId}}/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas-promotor",
+                "{{tareaPromotorId}}",
+                "validar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PromoTarea - Not Found Errors",
+      "item": [
+        {
+          "name": "GET Mis Tareas - Invalid programa ID (404 NotFound)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('isSuccess is false with NotFound message', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/00000000-0000-0000-0000-000000000000/mis-tareas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "00000000-0000-0000-0000-000000000000",
+                "mis-tareas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Completar - Invalid tarea ID (404 NotFound_PromoTarea)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('isSuccess is false with NotFound error code', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const notFoundError = json.messages.find(m => m.errorCode === '2021');",
+                  "    pm.expect(notFoundError).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlPruebaCompletado\": \"https://example.com/proof.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas/00000000-0000-0000-0000-000000000000/completar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas",
+                "00000000-0000-0000-0000-000000000000",
+                "completar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH Validar - Invalid tareaPromotor ID (404 NotFound_TareaPromotor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('isSuccess is false with NotFound_TareaPromotor error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const notFoundError = json.messages.find(m => m.errorCode === '2022');",
+                  "    pm.expect(notFoundError).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comentarioValidacion\": \"test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/tareas-promotor/00000000-0000-0000-0000-000000000000/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "tareas-promotor",
+                "00000000-0000-0000-0000-000000000000",
+                "validar"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "promotorEmail",
+      "value": "usuario1@mail.com",
+      "type": "string"
+    },
+    {
+      "key": "promotorPassword",
+      "value": "123456",
+      "type": "string"
+    },
+    {
+      "key": "promotorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaEmail",
+      "value": "api-test@mail.com",
+      "type": "string"
+    },
+    {
+      "key": "artistaPassword",
+      "value": "123456",
+      "type": "string"
+    },
+    {
+      "key": "artistaToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "programaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "programaTitulo",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "inscripcionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tareaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tareaNombre",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tareaPromotorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tareaPromotorId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "proofUrl",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "proofUrl2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promotorComment",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promotorComment2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "validacionComment",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rechazoComment",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vecesCompletada",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "longUrl",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

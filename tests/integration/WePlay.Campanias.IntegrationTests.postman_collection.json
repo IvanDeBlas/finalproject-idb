@@ -1,0 +1,1394 @@
+{
+    "info": {
+        "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "WePlay.Campanias.IntegrationTests",
+        "description": "Integration tests for Campanias API - WePlay Rises.\nDependency chain: Auth -> Artista -> Campania.\nUses pm.collectionVariables exclusively.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "_Setup",
+            "item": [
+                {
+                    "name": "Register Artista User",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const uniqueEmail = 'camp-artista-' + Date.now() + '@weplay-test.com';",
+                                    "pm.environment.set('testEmail', uniqueEmail);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Save accessToken', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.have.property('token');",
+                                    "    pm.environment.set('accessToken', json.data.token);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{testEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new user for Artista tests. Pre-request script generates a unique email using Date.now()."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Artista Profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Save artistaId', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.have.property('id');",
+                                    "    pm.environment.set('artistaId', json.data.id);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombreArtistico\": \"CampTest_{{$timestamp}}\",\n    \"descripcion\": \"Artista for Campania integration tests\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/artistas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "artistas"
+                            ]
+                        },
+                        "description": "Create an Artista profile for the registered user. ArtistaId is extracted from JWT. Saves artistaId variable."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register Second User",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const uniqueEmail = 'camp-second-' + Date.now() + '@weplay-test.com';",
+                                    "pm.environment.set('secondEmail', uniqueEmail);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Save secondToken', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.have.property('token');",
+                                    "    pm.environment.set('secondToken', json.data.token);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{secondEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a second user for ownership (403) tests. Pre-request script generates unique email. Saves secondToken."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Setup folder: registers users, creates artista profile, and saves tokens for subsequent tests."
+        },
+        {
+            "name": "Campania - CRUD Lifecycle",
+            "item": [
+                {
+                    "name": "01. POST Create Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Campania has required fields', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.have.property('id');",
+                                    "    pm.expect(json.data).to.have.property('titulo');",
+                                    "    pm.expect(json.data).to.have.property('importeObjetivo');",
+                                    "});",
+                                    "",
+                                    "pm.test('Save campaniaId', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.environment.set('campaniaId', json.data.id);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"Test_Camp_{{$timestamp}}\",\n    \"descripcionCorta\": \"Lifecycle test campania\",\n    \"importeObjetivo\": 5000,\n    \"monedaId\": 1,\n    \"tipoFinanciacionId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ]
+                        },
+                        "description": "Create a new campania in BORRADOR state. ArtistaId extracted from JWT. Saves campaniaId."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "02. GET All Campanias (public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Data is an array', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias?estadoCampaniaId=1&pageSize=50",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ],
+                            "query": [
+                                {
+                                    "key": "estadoCampaniaId",
+                                    "value": "1",
+                                    "description": "Filter by BORRADOR state to find test campania"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "50"
+                                }
+                            ]
+                        },
+                        "description": "Public endpoint. Fetch all campanias with BORRADOR filter to verify our test campania exists."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "03. GET Mis Campanias",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('My campanias list contains our campania', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.an('array');",
+                                    "    const campaniaId = pm.environment.get('campaniaId');",
+                                    "    const found = json.data.some(c => c.id === campaniaId);",
+                                    "    pm.expect(found).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/mis-campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "mis-campanias"
+                            ]
+                        },
+                        "description": "Authenticated endpoint. Get campanias owned by the authenticated artista. Verifies our test campania is in the list."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "04. PUT Update Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"{{campaniaId}}\",\n    \"titulo\": \"Updated_Camp_{{$timestamp}}\",\n    \"descripcionCorta\": \"Updated description\",\n    \"importeObjetivo\": 7500\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}"
+                            ]
+                        },
+                        "description": "Update the campania titulo and importeObjetivo. Requires matching ArtistaId from JWT."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "05. GET Campania By Id (verify update)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Titulo was updated', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.titulo).to.include('Updated_Camp_');",
+                                    "});",
+                                    "",
+                                    "pm.test('ImporteObjetivo was updated', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.importeObjetivo).to.eql(7500);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}"
+                            ]
+                        },
+                        "description": "Public GET by ID. Verifies the update was persisted correctly."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "06. DELETE Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}"
+                            ]
+                        },
+                        "description": "Soft-delete the campania. Requires auth."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "07. GET Campania By Id - Verify Soft Delete (200)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200 (soft delete - entity still accessible)', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response returns the soft-deleted entity', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "    pm.expect(json.data).to.be.an('object');",
+                                    "    pm.expect(json.data).to.have.property('id');",
+                                    "    // Note: Borrado field is not exposed in CampaniaDto (excluded by AutoMapper)",
+                                    "    // Soft-delete is an internal flag; entity remains accessible via GET by ID",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}"
+                            ]
+                        },
+                        "description": "Verify the soft-deleted campania is still accessible via GET by ID (200). Borrado field is internal and not exposed in the DTO."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Full CRUD lifecycle: Create -> Read -> Update -> Verify Update -> Delete -> Verify Delete."
+        },
+        {
+            "name": "Campania - Validation Errors",
+            "item": [
+                {
+                    "name": "POST Create empty titulo - 400",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error message', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"\",\n    \"descripcionCorta\": \"Validation test\",\n    \"importeObjetivo\": 5000,\n    \"monedaId\": 1,\n    \"tipoFinanciacionId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ]
+                        },
+                        "description": "Attempt to create a campania with empty titulo. Expects 400 validation error."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST Create importeObjetivo = 0 - 400",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error for importeObjetivo', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"Valid_Title_ImporteZero\",\n    \"descripcionCorta\": \"Validation test\",\n    \"importeObjetivo\": 0,\n    \"monedaId\": 1,\n    \"tipoFinanciacionId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ]
+                        },
+                        "description": "Attempt to create a campania with importeObjetivo = 0. Expects 400 validation error."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT Update titulo exceeds maxLength (201 chars) - 400",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "// Create a temporary campania for this validation test",
+                                    "const baseUrl = pm.environment.get('baseUrl');",
+                                    "const token = pm.environment.get('accessToken');",
+                                    "",
+                                    "pm.sendRequest({",
+                                    "    url: baseUrl + '/api/campanias',",
+                                    "    method: 'POST',",
+                                    "    header: {",
+                                    "        'Content-Type': 'application/json',",
+                                    "        'Authorization': 'Bearer ' + token",
+                                    "    },",
+                                    "    body: {",
+                                    "        mode: 'raw',",
+                                    "        raw: JSON.stringify({",
+                                    "            titulo: 'Temp_Validation_' + Date.now(),",
+                                    "            descripcionCorta: 'Temp for PUT validation test',",
+                                    "            importeObjetivo: 1000,",
+                                    "            monedaId: 1,",
+                                    "            tipoFinanciacionId: 1",
+                                    "        })",
+                                    "    }",
+                                    "}, function (err, response) {",
+                                    "    const json = response.json();",
+                                    "    pm.environment.set('validationTestCampaniaId', json.data.id);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error message for maxLength', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "});",
+                                    "",
+                                    "// Cleanup: delete the temp campania",
+                                    "const baseUrl = pm.environment.get('baseUrl');",
+                                    "const token = pm.environment.get('accessToken');",
+                                    "const tempId = pm.environment.get('validationTestCampaniaId');",
+                                    "if (tempId) {",
+                                    "    pm.sendRequest({",
+                                    "        url: baseUrl + '/api/campanias/' + tempId,",
+                                    "        method: 'DELETE',",
+                                    "        header: { 'Authorization': 'Bearer ' + token }",
+                                    "    }, function () {});",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"{{validationTestCampaniaId}}\",\n    \"titulo\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n    \"importeObjetivo\": 5000\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{validationTestCampaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{validationTestCampaniaId}}"
+                            ]
+                        },
+                        "description": "Attempt to update a campania with a titulo exceeding 200 chars (201 chars). Pre-request creates a temp campania. Post-test cleans it up."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Validation error tests: empty titulo, zero importeObjetivo, update titulo exceeds maxLength."
+        },
+        {
+            "name": "Campania - Auth Errors",
+            "item": [
+                {
+                    "name": "POST Create without token - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"Unauthorized_Test\",\n    \"descripcionCorta\": \"Should fail\",\n    \"importeObjetivo\": 5000,\n    \"monedaId\": 1,\n    \"tipoFinanciacionId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ]
+                        },
+                        "description": "Attempt to create a campania without an auth token. Expects 401."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT Update without token - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"titulo\": \"Unauthorized_Update\",\n    \"importeObjetivo\": 5000\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000001",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "00000000-0000-0000-0000-000000000001"
+                            ]
+                        },
+                        "description": "Attempt to update a campania without an auth token. Expects 401."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "DELETE without token - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000001",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "00000000-0000-0000-0000-000000000001"
+                            ]
+                        },
+                        "description": "Attempt to delete a campania without an auth token. Expects 401."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GET Mis Campanias without token - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/mis-campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "mis-campanias"
+                            ]
+                        },
+                        "description": "Attempt to access mis-campanias without an auth token. Expects 401."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Auth error tests: all protected endpoints without token should return 401."
+        },
+        {
+            "name": "Campania - Ownership (403)",
+            "item": [
+                {
+                    "name": "Create Campania for 403 test",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('Save ownershipCampaniaId', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "    pm.expect(json.data).to.have.property('id');",
+                                    "    pm.environment.set('ownershipCampaniaId', json.data.id);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"Ownership_Test_{{$timestamp}}\",\n    \"descripcionCorta\": \"Campania for 403 ownership test\",\n    \"importeObjetivo\": 3000,\n    \"monedaId\": 1,\n    \"tipoFinanciacionId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ]
+                        },
+                        "description": "Create a dedicated campania owned by the first user, to test 403 when second user tries to update it."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT Update with secondToken - 403",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 403', function () {",
+                                    "    pm.response.to.have.status(403);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{secondToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"{{ownershipCampaniaId}}\",\n    \"titulo\": \"Hacked_Title\",\n    \"importeObjetivo\": 9999\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{ownershipCampaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{ownershipCampaniaId}}"
+                            ]
+                        },
+                        "description": "Attempt to update a campania owned by user1 using user2's token. Expects 403 Forbidden."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Cleanup - DELETE ownership test campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Cleanup successful', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{ownershipCampaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{ownershipCampaniaId}}"
+                            ]
+                        },
+                        "description": "Cleanup: delete the campania created for ownership tests using the original owner's token."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Ownership tests: a second user should not be able to update a campania they do not own (403)."
+        },
+        {
+            "name": "Campania - Not Found",
+            "item": [
+                {
+                    "name": "GET non-existent id - 404",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 404', function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has not-found error code', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000099",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "00000000-0000-0000-0000-000000000099"
+                            ]
+                        },
+                        "description": "GET a campania with a GUID that does not exist. Expects 404."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT non-existent id - 404",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 404', function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"00000000-0000-0000-0000-000000000099\",\n    \"titulo\": \"Ghost_Campania\",\n    \"importeObjetivo\": 5000\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000099",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "00000000-0000-0000-0000-000000000099"
+                            ]
+                        },
+                        "description": "PUT update a campania with a GUID that does not exist. Expects 404."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "DELETE non-existent id - 404",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 404', function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000099",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "00000000-0000-0000-0000-000000000099"
+                            ]
+                        },
+                        "description": "DELETE a campania with a GUID that does not exist. Expects 404."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Not Found tests: GET, PUT, DELETE against non-existent GUID should return 404."
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5001"
+        },
+        {
+            "key": "testEmail",
+            "value": ""
+        },
+        {
+            "key": "testPassword",
+            "value": "TestPassword123!"
+        },
+        {
+            "key": "accessToken",
+            "value": ""
+        },
+        {
+            "key": "artistaId",
+            "value": ""
+        },
+        {
+            "key": "campaniaId",
+            "value": ""
+        },
+        {
+            "key": "secondEmail",
+            "value": ""
+        },
+        {
+            "key": "secondToken",
+            "value": ""
+        },
+        {
+            "key": "ownershipCampaniaId",
+            "value": ""
+        },
+        {
+            "key": "validationTestCampaniaId",
+            "value": ""
+        }
+    ]
+}

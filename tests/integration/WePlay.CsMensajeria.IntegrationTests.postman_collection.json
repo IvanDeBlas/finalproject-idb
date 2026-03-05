@@ -1,0 +1,1659 @@
+{
+  "info": {
+    "name": "WePlay.cs-mensajeria.IntegrationTests",
+    "description": "Colección de tests de integración para la feature cs-mensajeria (Mensajería entre Partes de Crowdsourcing). Auto-inclusiva: crea todas sus dependencias en _Setup.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Register Artista User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'artista-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('artistaEmail', email);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Artista registration successful - Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token and userId', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.data).to.have.property('token');",
+                  "    pm.expect(json.data).to.have.property('userId');",
+                  "    pm.collectionVariables.set('artistaToken', json.data.token);",
+                  "    pm.collectionVariables.set('artistaUserId', json.data.userId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{artistaEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\",\n    \"nombre\": \"Artista\",\n    \"apellidos\": \"Newman Test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Register Fan User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'fan-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('fanEmail', email);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Fan registration successful - Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token and userId', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.data).to.have.property('token');",
+                  "    pm.expect(json.data).to.have.property('userId');",
+                  "    pm.collectionVariables.set('fanToken', json.data.token);",
+                  "    pm.collectionVariables.set('fanUserId', json.data.userId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{fanEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\",\n    \"nombre\": \"Fan\",\n    \"apellidos\": \"Newman Test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. Create Necesidad",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Necesidad created - Status 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has necesidadId', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "    pm.collectionVariables.set('necesidadId', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Necesidad Test Mensajeria\",\n    \"descripcion\": \"Necesidad para tests de mensajeria\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 1,\n    \"presupuestoMin\": 100.00,\n    \"presupuestoMax\": 500.00,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversaciones - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. POST Create Conversacion (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response time < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test('ServiceResponse structure is correct', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json).to.have.property('isSuccess');",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response data contains conversacion fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const conv = json.data;",
+                  "    pm.expect(conv).to.have.property('id');",
+                  "    pm.expect(conv).to.have.property('asunto');",
+                  "    pm.expect(conv).to.have.property('nombreDestinatario');",
+                  "    pm.expect(conv).to.have.property('contextoTipo');",
+                  "    pm.expect(conv).to.have.property('contextoTitulo');",
+                  "    pm.expect(conv).to.have.property('fechaCreacion');",
+                  "    pm.expect(conv.asunto).to.equal('Conversacion de prueba');",
+                  "    pm.expect(conv.contextoTipo).to.equal('necesidad');",
+                  "    pm.collectionVariables.set('conversacionId', conv.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"necesidadId\": \"{{necesidadId}}\",\n    \"userIdDestinatario\": \"{{fanUserId}}\",\n    \"asunto\": \"Conversacion de prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET All Conversaciones (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has paginated data structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.have.property('items');",
+                  "    pm.expect(json.data).to.have.property('totalCount');",
+                  "    pm.expect(json.data).to.have.property('page');",
+                  "    pm.expect(json.data).to.have.property('pageSize');",
+                  "    pm.expect(json.data).to.have.property('totalNoLeidos');",
+                  "});",
+                  "",
+                  "pm.test('Created conversacion appears in list', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    pm.expect(items).to.be.a('array');",
+                  "    pm.expect(items.length).to.be.greaterThan(0);",
+                  "    const created = items.find(c => c.id === pm.collectionVariables.get('conversacionId'));",
+                  "    pm.expect(created).to.exist;",
+                  "    pm.expect(created.asunto).to.equal('Conversacion de prueba');",
+                  "    pm.expect(created.contextoTipo).to.equal('necesidad');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Mensajes (empty initially - 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has paginated messages (initially empty)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.have.property('items');",
+                  "    pm.expect(json.data).to.have.property('totalCount');",
+                  "    pm.expect(json.data).to.have.property('page');",
+                  "    pm.expect(json.data).to.have.property('pageSize');",
+                  "    pm.expect(json.data.items).to.be.a('array');",
+                  "    pm.expect(json.data.totalCount).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes?page=1&pageSize=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. GET No Leidos Count (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has totalNoLeidos', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.have.property('totalNoLeidos');",
+                  "    pm.expect(json.data.totalNoLeidos).to.be.a('number');",
+                  "    pm.expect(json.data.totalNoLeidos).to.be.greaterThanOrEqual(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/no-leidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "no-leidos"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mensajes - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. POST Send Mensaje (no attachment - 201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response time < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje response structure is correct', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const msg = json.data;",
+                  "    pm.expect(msg).to.have.property('id');",
+                  "    pm.expect(msg).to.have.property('contenido');",
+                  "    pm.expect(msg).to.have.property('remitenteNombre');",
+                  "    pm.expect(msg).to.have.property('esPropio');",
+                  "    pm.expect(msg).to.have.property('leido');",
+                  "    pm.expect(msg).to.have.property('fechaCreacion');",
+                  "    pm.expect(msg.contenido).to.equal('Hola, este es un mensaje de prueba');",
+                  "    pm.expect(msg.esPropio).to.be.true;",
+                  "    pm.expect(msg.leido).to.be.false;",
+                  "    pm.collectionVariables.set('mensajeId', msg.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"contenido\": \"Hola, este es un mensaje de prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. POST Send Mensaje with URL attachment (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Mensaje with URL has urlAdjunto', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const msg = json.data;",
+                  "    pm.expect(msg).to.have.property('urlAdjunto');",
+                  "    pm.expect(msg.urlAdjunto).to.not.be.null;",
+                  "    pm.expect(msg.urlAdjunto).to.equal('https://example.com/portfolio.pdf');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"contenido\": \"Mensaje con adjunto\",\n    \"urlAdjunto\": \"https://example.com/portfolio.pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Mensajes from Conversacion (verify creation - 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Both messages appear in list', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.items.length).to.be.greaterThanOrEqual(2);",
+                  "    pm.expect(json.data.totalCount).to.be.greaterThanOrEqual(2);",
+                  "});",
+                  "",
+                  "pm.test('Messages have correct structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    items.forEach(function(msg) {",
+                  "        pm.expect(msg).to.have.property('id');",
+                  "        pm.expect(msg).to.have.property('contenido');",
+                  "        pm.expect(msg).to.have.property('remitenteNombre');",
+                  "        pm.expect(msg).to.have.property('esPropio');",
+                  "        pm.expect(msg).to.have.property('leido');",
+                  "        pm.expect(msg).to.have.property('fechaCreacion');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes?page=1&pageSize=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. PATCH Marcar Leidos (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has mensajesMarcados', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.have.property('mensajesMarcados');",
+                  "    pm.expect(json.data.mensajesMarcados).to.be.a('number');",
+                  "    pm.expect(json.data.mensajesMarcados).to.be.greaterThanOrEqual(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/marcar-leidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "marcar-leidos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. Verify No Leidos Decreased (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Total no leidos still valid number', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.totalNoLeidos).to.be.a('number');",
+                  "    pm.expect(json.data.totalNoLeidos).to.be.greaterThanOrEqual(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/no-leidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "no-leidos"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversaciones - Validation Errors",
+      "item": [
+        {
+          "name": "POST 400 - Asunto Empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error 1001 (Required)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.a('array');",
+                  "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+                  "    const error = json.messages.find(m => m.errorCode === '1001');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"necesidadId\": \"{{necesidadId}}\",\n    \"userIdDestinatario\": \"{{fanUserId}}\",\n    \"asunto\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Asunto Too Long",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error 1002 (MaxLength)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '1002');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"necesidadId\": \"{{necesidadId}}\",\n    \"userIdDestinatario\": \"{{fanUserId}}\",\n    \"asunto\": \"Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Missing Destinatario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error 1001 (Required)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '1001');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"necesidadId\": \"{{necesidadId}}\",\n    \"asunto\": \"Test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Contenido Empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error 1001 (Required)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '1001');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"contenido\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Contenido Too Long",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const longContent = 'a'.repeat(5001);",
+                  "pm.collectionVariables.set('longContent', longContent);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error 1002 (MaxLength)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '1002');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"contenido\": \"{{longContent}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Invalid URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error 1013 (InvalidUrl)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '1013');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"contenido\": \"test\",\n    \"urlAdjunto\": \"not-a-valid-url\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth Errors",
+      "item": [
+        {
+          "name": "GET 401 - Missing Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 401 - Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{randomToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"necesidadId\": \"{{necesidadId}}\",\n    \"userIdDestinatario\": \"{{fanUserId}}\",\n    \"asunto\": \"Test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET 403 - Non-Participant Access Attempt",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'third-user-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('thirdUserEmail', email);",
+                  "",
+                  "// Register third user",
+                  "const registerRequest = {",
+                  "  url: pm.collectionVariables.get('baseUrl') + '/api/auth/register',",
+                  "  method: 'POST',",
+                  "  header: {",
+                  "    'Content-Type': 'application/json'",
+                  "  },",
+                  "  body: {",
+                  "    mode: 'raw',",
+                  "    raw: JSON.stringify({",
+                  "      email: email,",
+                  "      password: pm.collectionVariables.get('testPassword'),",
+                  "      confirmPassword: pm.collectionVariables.get('testPassword'),",
+                  "      nombre: 'Third',",
+                  "      apellidos: 'User'",
+                  "    })",
+                  "  }",
+                  "};",
+                  "",
+                  "pm.sendRequest(registerRequest, function (err, response) {",
+                  "  if (err) {",
+                  "    console.error('Error registering third user:', err);",
+                  "    return;",
+                  "  }",
+                  "  if (response.code === 200) {",
+                  "    const json = response.json();",
+                  "    if (json.data && json.data.token) {",
+                  "      pm.collectionVariables.set('thirdUserToken', json.data.token);",
+                  "    }",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{thirdUserToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Not Found",
+      "item": [
+        {
+          "name": "GET 404 - Conversacion Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response has NotFound error code 2014', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '2014');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "mensajes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 404 - Send to Non-existent Conversacion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response has NotFound error code 2014', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '2014');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"contenido\": \"test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/mensajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "mensajes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH 404 - Marcar Leidos Non-existent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response has NotFound error code 2014', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '2014');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/marcar-leidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "marcar-leidos"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Business Rules",
+      "item": [
+        {
+          "name": "POST 400 - Duplicate Conversacion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has BusinessRule error code 4015', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '4015');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"necesidadId\": \"{{necesidadId}}\",\n    \"userIdDestinatario\": \"{{fanUserId}}\",\n    \"asunto\": \"Conversacion de prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pagination Tests",
+      "item": [
+        {
+          "name": "GET Conversaciones with Large PageSize",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('PageSize is capped at 50', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.pageSize).to.be.lessThanOrEqual(50);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones?page=1&pageSize=999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "999"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Mensajes with Large PageSize",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('PageSize is capped at 100', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.pageSize).to.be.lessThanOrEqual(100);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones/{{conversacionId}}/mensajes?page=1&pageSize=999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones",
+                "{{conversacionId}}",
+                "mensajes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "999"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Filters Tests",
+      "item": [
+        {
+          "name": "GET Filtered by contexto=necesidades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All items have contextoTipo = necesidad', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const items = json.data.items;",
+                  "    items.forEach(function(conv) {",
+                  "        pm.expect(conv.contextoTipo).to.equal('necesidad');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/conversaciones?contexto=necesidades&page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "conversaciones"
+              ],
+              "query": [
+                {
+                  "key": "contexto",
+                  "value": "necesidades"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "TestPassword123!",
+      "type": "string"
+    },
+    {
+      "key": "artistaEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fanEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fanToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fanUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "necesidadId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conversacionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mensajeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "randomToken",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ",
+      "type": "string"
+    },
+    {
+      "key": "thirdUserEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "thirdUserToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "longContent",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

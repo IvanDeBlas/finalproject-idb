@@ -1,0 +1,6 @@
+export { PromotorForm } from './PromotorForm'
+export { PromotorKpiCard } from './PromotorKpiCard'
+export { PromotorPerfilCard } from './PromotorPerfilCard'
+export { PromotorSocialLinks } from './PromotorSocialLinks'
+export { PromotorSocialFields } from './PromotorSocialFields'
+export { PromotorDeactivateDialog } from './PromotorDeactivateDialog'

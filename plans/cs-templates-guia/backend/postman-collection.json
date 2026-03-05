@@ -1,0 +1,873 @@
+{
+  "info": {
+    "name": "WePlay.cs-templates-guia.IntegrationTests",
+    "description": "Integration tests for Crowdsourcing Templates & Professional Catalog feature (US-CS-01)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "Login as Artista (usuario1@mail.com)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login successful - Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has valid ServiceResponse structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Token obtained and saved to collection variable', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('accessToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"usuario1@mail.com\",\n    \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Templates - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. GET /templates - List all templates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response structure is valid ServiceResponse', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response time < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test('Data contains items array with templates', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('items');",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    pm.expect(json.data.items.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test('Each template has required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const template = json.data.items[0];",
+                  "    pm.expect(template).to.have.property('id');",
+                  "    pm.expect(template).to.have.property('nombre');",
+                  "    pm.expect(template).to.have.property('descripcion');",
+                  "    pm.expect(template).to.have.property('icono');",
+                  "    pm.expect(template).to.have.property('orden');",
+                  "    pm.expect(template).to.have.property('precioMinTotal');",
+                  "    pm.expect(template).to.have.property('precioMaxTotal');",
+                  "    pm.expect(template).to.have.property('moneda');",
+                  "    pm.expect(template).to.have.property('cantidadNecesidades');",
+                  "    pm.expect(template).to.have.property('fases');",
+                  "});",
+                  "",
+                  "pm.test('Prices are positive numbers', function () {",
+                  "    const json = pm.response.json();",
+                  "    const template = json.data.items[0];",
+                  "    pm.expect(template.precioMinTotal).to.be.a('number');",
+                  "    pm.expect(template.precioMaxTotal).to.be.a('number');",
+                  "    pm.expect(template.precioMinTotal).to.be.at.least(0);",
+                  "    pm.expect(template.precioMaxTotal).to.be.at.least(template.precioMinTotal);",
+                  "});",
+                  "",
+                  "pm.test('Save first template ID for next tests', function () {",
+                  "    const json = pm.response.json();",
+                  "    const firstTemplate = json.data.items[0];",
+                  "    pm.collectionVariables.set('templateId', firstTemplate.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET /templates/{id} - Template detail with needs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response structure is valid ServiceResponse', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Data contains template with all required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const template = json.data;",
+                  "    pm.expect(template).to.have.property('id');",
+                  "    pm.expect(template).to.have.property('nombre');",
+                  "    pm.expect(template).to.have.property('descripcion');",
+                  "    pm.expect(template).to.have.property('icono');",
+                  "    pm.expect(template).to.have.property('orden');",
+                  "    pm.expect(template).to.have.property('necesidades');",
+                  "    pm.expect(template).to.have.property('resumen');",
+                  "});",
+                  "",
+                  "pm.test('Template has necesidades array', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.necesidades).to.be.an('array');",
+                  "    pm.expect(json.data.necesidades.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test('Each necesidad has required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const necesidad = json.data.necesidades[0];",
+                  "    pm.expect(necesidad).to.have.property('id');",
+                  "    pm.expect(necesidad).to.have.property('fase');",
+                  "    pm.expect(necesidad).to.have.property('titulo');",
+                  "    pm.expect(necesidad).to.have.property('descripcion');",
+                  "    pm.expect(necesidad).to.have.property('rolProfesional');",
+                  "    pm.expect(necesidad).to.have.property('precioMinOrientativo');",
+                  "    pm.expect(necesidad).to.have.property('precioMaxOrientativo');",
+                  "    pm.expect(necesidad).to.have.property('moneda');",
+                  "    pm.expect(necesidad).to.have.property('prioridad');",
+                  "    pm.expect(necesidad).to.have.property('orden');",
+                  "});",
+                  "",
+                  "pm.test('RolProfesional has required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const rol = json.data.necesidades[0].rolProfesional;",
+                  "    pm.expect(rol).to.have.property('id');",
+                  "    pm.expect(rol).to.have.property('nombre');",
+                  "    pm.expect(rol).to.have.property('descripcion');",
+                  "    pm.expect(rol).to.have.property('categoriaRol');",
+                  "    pm.expect(rol).to.have.property('modalidadCobro');",
+                  "});",
+                  "",
+                  "pm.test('Resumen has correct structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    const resumen = json.data.resumen;",
+                  "    pm.expect(resumen).to.have.property('precioMinTotal');",
+                  "    pm.expect(resumen).to.have.property('precioMaxTotal');",
+                  "    pm.expect(resumen).to.have.property('moneda');",
+                  "    pm.expect(resumen).to.have.property('cantidadNecesidadesAlta');",
+                  "    pm.expect(resumen).to.have.property('cantidadNecesidadesMedia');",
+                  "    pm.expect(resumen).to.have.property('cantidadNecesidadesBaja');",
+                  "});",
+                  "",
+                  "pm.test('Prioridad values are valid', function () {",
+                  "    const json = pm.response.json();",
+                  "    const necesidades = json.data.necesidades;",
+                  "    necesidades.forEach(n => {",
+                  "        pm.expect(['Alta', 'Media', 'Baja']).to.include(n.prioridad);",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Save first necesidad ID for generation test', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data.necesidades.length > 0) {",
+                  "        pm.collectionVariables.set('necesidadId', json.data.necesidades[0].id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates/{{templateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates",
+                "{{templateId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET /maestras/roles-profesionales - Professional roles catalog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response structure is valid ServiceResponse', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Data contains items array with professional roles', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('items');",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    pm.expect(json.data.items.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test('Each role has required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const role = json.data.items[0];",
+                  "    pm.expect(role).to.have.property('id');",
+                  "    pm.expect(role).to.have.property('nombre');",
+                  "    pm.expect(role).to.have.property('descripcion');",
+                  "    pm.expect(role).to.have.property('categoriaRol');",
+                  "    pm.expect(role).to.have.property('modalidadCobro');",
+                  "    pm.expect(role).to.have.property('activo');",
+                  "});",
+                  "",
+                  "pm.test('CategoriaRol has required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const categoria = json.data.items[0].categoriaRol;",
+                  "    pm.expect(categoria).to.have.property('id');",
+                  "    pm.expect(categoria).to.have.property('nombre');",
+                  "    pm.expect(categoria).to.have.property('icono');",
+                  "    pm.expect(categoria).to.have.property('orden');",
+                  "});",
+                  "",
+                  "pm.test('Roles are active', function () {",
+                  "    const json = pm.response.json();",
+                  "    const roles = json.data.items;",
+                  "    roles.forEach(r => {",
+                  "        pm.expect(r.activo).to.equal(true);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/maestras/roles-profesionales",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "maestras",
+                "roles-profesionales"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. GET /maestras/categorias-rol - Role categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response structure is valid ServiceResponse', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Data contains items array with role categories', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('items');",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    pm.expect(json.data.items.length).to.equal(4);",
+                  "});",
+                  "",
+                  "pm.test('Each category has required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const categoria = json.data.items[0];",
+                  "    pm.expect(categoria).to.have.property('id');",
+                  "    pm.expect(categoria).to.have.property('nombre');",
+                  "    pm.expect(categoria).to.have.property('icono');",
+                  "    pm.expect(categoria).to.have.property('orden');",
+                  "});",
+                  "",
+                  "pm.test('Categories are ordered correctly', function () {",
+                  "    const json = pm.response.json();",
+                  "    const categorias = json.data.items;",
+                  "    for (let i = 0; i < categorias.length - 1; i++) {",
+                  "        pm.expect(categorias[i].orden).to.be.lessThan(categorias[i + 1].orden);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/maestras/categorias-rol",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "maestras",
+                "categorias-rol"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Templates - Validation Errors",
+      "item": [
+        {
+          "name": "POST 400 - Empty necesidades array",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Get a valid proyecto ID for testing (using dummy GUID)",
+                  "pm.collectionVariables.set('testProyectoId', 'a0000000-0000-0000-0000-000000000001');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has isSuccess false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.equal(false);",
+                  "});",
+                  "",
+                  "pm.test('Response contains error messages', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "    pm.expect(json.messages.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test('Error message references validation issue', function () {",
+                  "    const json = pm.response.json();",
+                  "    const hasValidationError = json.messages.some(m => ",
+                  "        m.message.toLowerCase().includes('necesidad') ||",
+                  "        m.message.toLowerCase().includes('seleccionar') ||",
+                  "        m.errorCode === '1001'",
+                  "    );",
+                  "    pm.expect(hasValidationError).to.equal(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"proyectoArtisticoId\": \"{{testProyectoId}}\",\n    \"necesidadesSeleccionadas\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates/{{templateId}}/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates",
+                "{{templateId}}",
+                "generar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Presupuesto max < min",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has isSuccess false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.equal(false);",
+                  "});",
+                  "",
+                  "pm.test('Error message references presupuesto validation', function () {",
+                  "    const json = pm.response.json();",
+                  "    const hasPresupuestoError = json.messages.some(m => ",
+                  "        m.message.toLowerCase().includes('presupuesto') ||",
+                  "        m.message.toLowerCase().includes('máximo') ||",
+                  "        m.message.toLowerCase().includes('minimo') ||",
+                  "        m.errorCode === '1009'",
+                  "    );",
+                  "    pm.expect(hasPresupuestoError).to.equal(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"proyectoArtisticoId\": \"{{testProyectoId}}\",\n    \"necesidadesSeleccionadas\": [\n        {\n            \"plantillaNecesidadId\": \"{{necesidadId}}\",\n            \"presupuestoMin\": 1000.00,\n            \"presupuestoMax\": 500.00,\n            \"monedaId\": 1\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates/{{templateId}}/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates",
+                "{{templateId}}",
+                "generar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Presupuesto min negativo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has isSuccess false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.equal(false);",
+                  "});",
+                  "",
+                  "pm.test('Error message references negativo validation', function () {",
+                  "    const json = pm.response.json();",
+                  "    const hasNegativoError = json.messages.some(m => ",
+                  "        m.message.toLowerCase().includes('negativo') ||",
+                  "        m.message.toLowerCase().includes('presupuesto') ||",
+                  "        m.errorCode === '1009'",
+                  "    );",
+                  "    pm.expect(hasNegativoError).to.equal(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"proyectoArtisticoId\": \"{{testProyectoId}}\",\n    \"necesidadesSeleccionadas\": [\n        {\n            \"plantillaNecesidadId\": \"{{necesidadId}}\",\n            \"presupuestoMin\": -100.00,\n            \"presupuestoMax\": 500.00,\n            \"monedaId\": 1\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates/{{templateId}}/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates",
+                "{{templateId}}",
+                "generar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Templates - Auth Errors",
+      "item": [
+        {
+          "name": "GET 401 - Missing Authorization header",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates authentication failure', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.equal(false);",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Error code indicates auth failure', function () {",
+                  "    const json = pm.response.json();",
+                  "    const hasAuthError = json.messages.some(m => m.errorCode === '3001');",
+                  "    pm.expect(hasAuthError).to.equal(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 401 - Invalid token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates invalid token', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.equal(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token_here"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"proyectoArtisticoId\": \"{{testProyectoId}}\",\n    \"necesidadesSeleccionadas\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates/{{templateId}}/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates",
+                "{{templateId}}",
+                "generar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Templates - Not Found",
+      "item": [
+        {
+          "name": "GET 404 - Invalid template ID",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('invalidTemplateId', '00000000-0000-0000-0000-000000000000');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates template not found', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.equal(false);",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Error code indicates NotFound (2006)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const hasNotFoundError = json.messages.some(m => m.errorCode === '2006');",
+                  "    pm.expect(hasNotFoundError).to.equal(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates/{{invalidTemplateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates",
+                "{{invalidTemplateId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 404 - Template not found for generation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates template not found', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.equal(false);",
+                  "});",
+                  "",
+                  "pm.test('Error code is 2006 (Template not found)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const hasError = json.messages.some(m => m.errorCode === '2006');",
+                  "    pm.expect(hasError).to.equal(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"proyectoArtisticoId\": \"{{testProyectoId}}\",\n    \"necesidadesSeleccionadas\": [\n        {\n            \"plantillaNecesidadId\": \"{{necesidadId}}\",\n            \"presupuestoMin\": 100.00,\n            \"presupuestoMax\": 500.00,\n            \"monedaId\": 1\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/templates/{{invalidTemplateId}}/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "templates",
+                "{{invalidTemplateId}}",
+                "generar"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "templateId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "necesidadId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProyectoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invalidTemplateId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

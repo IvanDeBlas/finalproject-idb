@@ -1,0 +1,227 @@
+[
+    {
+        "email": "velvetechoes@weplay-test.com",
+        "password": "WePlay2026!",
+        "profile": {
+            "nombreArtistico": "The Velvet Echoes",
+            "generoMusical": "Indie Rock",
+            "descripcion": "Trio de indie rock de Barcelona formado en garajes del Raval. Guitarras lo-fi, letras en ingles y espanol, y una energia en directo que recuerda a los primeros Strokes.",
+            "imagenUrl": "https://placehold.co/400x400/1a1a2e/ab47bc?text=Velvet+Echoes"
+        },
+        "campaign": {
+            "titulo": "Debut Album - Songs from the Underground",
+            "subtitulo": "10 canciones grabadas en el sotano donde todo empezo",
+            "descripcionCorta": "Nuestro primer disco. 10 canciones grabadas en el sotano donde ensayamos. Necesitamos financiar la mezcla y masterizacion para que suene como merece.",
+            "importeObjetivo": 5000,
+            "tipoFinanciacionId": 1,
+            "fechaFinDias": 30,
+            "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ab47bc?text=Velvet+Echoes+Debut"
+        },
+        "rewards": [
+            {
+                "nombre": "Digital Download",
+                "importeMinimo": 5,
+                "descripcion": "Descarga digital del album completo en MP3 y FLAC. Acceso anticipado una semana antes del lanzamiento.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": null
+            },
+            {
+                "nombre": "CD Firmado",
+                "importeMinimo": 20,
+                "descripcion": "CD fisico firmado por los 3 miembros de la banda + descarga digital + stickers exclusivos.",
+                "envioFisico": true,
+                "entregaEstimada": "2 meses",
+                "cantidadMaxima": 200
+            },
+            {
+                "nombre": "Concierto Privado",
+                "importeMinimo": 80,
+                "descripcion": "Concierto privado en Barcelona para ti y 9 amigos. Set acustico de 45 minutos + meet and greet + todo lo anterior.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": 10
+            }
+        ]
+    },
+    {
+        "email": "almalatina@weplay-test.com",
+        "password": "WePlay2026!",
+        "profile": {
+            "nombreArtistico": "Alma Latina Collective",
+            "generoMusical": "World / Latin",
+            "descripcion": "Colectivo de 8 musicos de diferentes paises latinoamericanos residentes en Madrid. Fusionan cumbia, bossa nova, son cubano y jazz contemporaneo.",
+            "imagenUrl": "https://placehold.co/400x400/1a1a2e/ff7043?text=Alma+Latina"
+        },
+        "campaign": {
+            "titulo": "Latin Fusion World Tour Documentary",
+            "subtitulo": "De Buenos Aires a Ciudad de Mexico, grabando con musicos locales",
+            "descripcionCorta": "Queremos documentar nuestra primera gira por Latinoamerica: de Buenos Aires a Ciudad de Mexico, grabando con musicos locales en cada parada. Un documental musical de 60 minutos.",
+            "importeObjetivo": 12000,
+            "tipoFinanciacionId": 2,
+            "fechaFinDias": 40,
+            "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ff7043?text=Alma+Latina+Tour"
+        },
+        "rewards": [
+            {
+                "nombre": "Streaming Documental",
+                "importeMinimo": 8,
+                "descripcion": "Acceso al documental en streaming con subtitulos en espanol, ingles y portugues. Disponible por 1 ano.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": null
+            },
+            {
+                "nombre": "Vinilo Compilacion",
+                "importeMinimo": 30,
+                "descripcion": "Vinilo con las mejores grabaciones de la gira. Cada track grabado en un pais diferente + descarga digital del documental.",
+                "envioFisico": true,
+                "entregaEstimada": "3 meses",
+                "cantidadMaxima": 300
+            },
+            {
+                "nombre": "Tu Nombre en Creditos",
+                "importeMinimo": 75,
+                "descripcion": "Tu nombre en los creditos del documental como patron del proyecto + vinilo + streaming + agradecimiento especial.",
+                "envioFisico": true,
+                "entregaEstimada": "3 meses",
+                "cantidadMaxima": 100
+            }
+        ]
+    },
+    {
+        "email": "silenceandsound@weplay-test.com",
+        "password": "WePlay2026!",
+        "profile": {
+            "nombreArtistico": "Silence and Sound",
+            "generoMusical": "Ambient / Acoustic",
+            "descripcion": "Duo ambient-acustico de Valencia. Graban en iglesias abandonadas, fabricas en desuso y cuevas naturales. Cada espacio es un instrumento mas.",
+            "imagenUrl": "https://placehold.co/400x400/1a1a2e/26a69a?text=Silence+%26+Sound"
+        },
+        "campaign": {
+            "titulo": "Acoustic Sessions in Abandoned Places",
+            "subtitulo": "Piano, cello y la acustica natural de espacios olvidados",
+            "descripcionCorta": "Nuestro proximo album sera grabado integramente en 5 localizaciones abandonadas de la Comunitat Valenciana. Piano, cello y la acustica natural de cada espacio.",
+            "importeObjetivo": 3500,
+            "tipoFinanciacionId": 2,
+            "fechaFinDias": 30,
+            "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/26a69a?text=Silence+Abandoned"
+        },
+        "rewards": [
+            {
+                "nombre": "Album Digital",
+                "importeMinimo": 5,
+                "descripcion": "Descarga digital del album completo en FLAC + fotos de las localizaciones donde se grabo cada tema.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": null
+            },
+            {
+                "nombre": "CD + Mapa Localizaciones",
+                "importeMinimo": 18,
+                "descripcion": "CD fisico en packaging eco + mapa ilustrado con las 5 localizaciones + descarga digital.",
+                "envioFisico": true,
+                "entregaEstimada": "2 meses",
+                "cantidadMaxima": 150
+            },
+            {
+                "nombre": "Asistir a Grabacion",
+                "importeMinimo": 60,
+                "descripcion": "Asistir como oyente a una sesion de grabacion en una de las localizaciones abandonadas. Experiencia unica + todo lo anterior.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": 15
+            }
+        ]
+    },
+    {
+        "email": "djprometheus@weplay-test.com",
+        "password": "WePlay2026!",
+        "profile": {
+            "nombreArtistico": "DJ Prometheus",
+            "generoMusical": "Hip Hop / Classical",
+            "descripcion": "Productor sevillano que fusiona hip hop con musica clasica. Samplea a Bach, Chopin y Debussy sobre beats trap y boom bap. Colabora con MCs y violinistas por igual.",
+            "imagenUrl": "https://placehold.co/400x400/1a1a2e/ffa726?text=DJ+Prometheus"
+        },
+        "campaign": {
+            "titulo": "Hip Hop Meets Classical: The Symphony",
+            "subtitulo": "12 MCs + 12 instrumentistas clasicos = 1 album",
+            "descripcionCorta": "Un album donde cada track es una colaboracion entre un MC y un musico clasico. 12 canciones, 12 MCs, 12 instrumentistas. Grabado en el Conservatorio de Sevilla.",
+            "importeObjetivo": 8000,
+            "tipoFinanciacionId": 1,
+            "fechaFinDias": 35,
+            "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ffa726?text=DJ+Prometheus+Symphony"
+        },
+        "rewards": [
+            {
+                "nombre": "Digital Album",
+                "importeMinimo": 8,
+                "descripcion": "Descarga digital del album completo + video behind-the-scenes de las sesiones en el Conservatorio.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": null
+            },
+            {
+                "nombre": "Vinilo Doble",
+                "importeMinimo": 35,
+                "descripcion": "Doble vinilo con artwork del Conservatorio de Sevilla + descarga digital + poster A3.",
+                "envioFisico": true,
+                "entregaEstimada": "3 meses",
+                "cantidadMaxima": 200
+            },
+            {
+                "nombre": "Masterclass Produccion",
+                "importeMinimo": 100,
+                "descripcion": "Masterclass online de 2 horas con DJ Prometheus sobre produccion hip hop + clasica. Grabacion incluida + todo lo anterior.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": 30
+            }
+        ]
+    },
+    {
+        "email": "laninadcable@weplay-test.com",
+        "password": "WePlay2026!",
+        "profile": {
+            "nombreArtistico": "La Nina del Cable",
+            "generoMusical": "Flamenco / Electronic",
+            "descripcion": "Productora y cantaora madrilena que mezcla flamenco puro con sintetizadores modulares y ritmos electronicos. Un pie en la tradicion, otro en el futuro.",
+            "imagenUrl": "https://placehold.co/400x400/1a1a2e/ec407a?text=La+Nina+del+Cable"
+        },
+        "campaign": {
+            "titulo": "Flamenco Electronico - El Nuevo Compas",
+            "subtitulo": "Bulerias en un secuenciador, soleares en un sampler",
+            "descripcionCorta": "Mi segundo disco explora que pasa cuando metes bulerias en un secuenciador y soleares en un sampler. Grabado entre Jerez y Berlin. Flamenco del siglo XXI.",
+            "importeObjetivo": 6000,
+            "tipoFinanciacionId": 2,
+            "fechaFinDias": 30,
+            "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ec407a?text=Nina+Cable+Flamenco"
+        },
+        "rewards": [
+            {
+                "nombre": "EP Digital",
+                "importeMinimo": 5,
+                "descripcion": "Descarga digital del EP con 5 temas seleccionados del disco + un remix exclusivo.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": null
+            },
+            {
+                "nombre": "Vinilo Color",
+                "importeMinimo": 25,
+                "descripcion": "Vinilo en color rojo flamenco con artwork de abanico y circuitos + descarga digital completa.",
+                "envioFisico": true,
+                "entregaEstimada": "3 meses",
+                "cantidadMaxima": 200
+            },
+            {
+                "nombre": "Clase de Compas + Synth",
+                "importeMinimo": 70,
+                "descripcion": "Taller online de 90 minutos: como programar compases flamencos en un sintetizador modular. Incluye vinilo + digital.",
+                "envioFisico": false,
+                "entregaEstimada": null,
+                "cantidadMaxima": 25
+            }
+        ]
+    }
+]

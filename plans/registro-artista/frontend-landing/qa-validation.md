@@ -1,523 +1,526 @@
 # Validacion QA: Registro Artista (Landing)
 
-**Fecha:** 2026-01-26
+**Fecha:** 2026-02-12
 **Feature:** registro-artista
-**Target:** src/web (Landing)
+**Target:** src/web (Landing - Vite + React 18)
 
 ## 1. Resumen Ejecutivo
 
 | Metrica | Valor |
 |---------|-------|
-| Total Requisitos | 1 |
-| Cubiertos | 1 |
-| Parcialmente Cubiertos | 0 |
-| No Cubiertos | 0 |
-| **Score de Cobertura** | **100%** |
+| Total Requisitos | 10 |
+| Cubiertos | 3 |
+| Parcialmente Cubiertos | 1 |
+| No Cubiertos | 6 |
+| **Score de Cobertura** | **35%** |
 
-**Estado:** APROBADO
+**Estado:** APROBADO CON OBSERVACIONES
+
+**Razon:** La Landing solo implementa visualizacion del perfil publico del artista (AC-01-8). Los demas criterios de aceptacion pertenecen a la app Admin (formularios de registro y creacion de perfil) o al Backend (validaciones, JWT, almacenamiento).
+
+**Nota Critica:** Este score bajo es el comportamiento esperado y correcto. La Landing NO debe implementar registro ni creacion de perfil artista. Esas funcionalidades pertenecen a la app Admin.
+
+---
 
 ## 2. Criterios de Aceptacion
 
 ### Fuente: feature-spec.md
 
-| ID | Criterio | Tipo |
-|----|----------|------|
-| AC-01-8 | Perfil artistico es visible publicamente en `/artistas/{id}` de la landing sin requerir autenticacion | Funcional |
+| ID | Criterio | Tipo | Proyecto |
+|----|----------|------|----------|
+| AC-01-1 | Email debe ser unico en ASP.NET Core Identity | Funcional | Backend |
+| AC-01-2 | Password minimo 8 caracteres, validado frontend (Zod) y backend | Funcional | Backend + Admin |
+| AC-01-3 | Passwords deben coincidir, validacion frontend | Funcional | Admin |
+| AC-01-4 | Nombre artistico obligatorio, validacion Zod | Funcional | Admin + Backend |
+| AC-01-5 | Imagen URL opcional, validacion URL si se proporciona | Funcional | Admin + Backend |
+| AC-01-6 | Sistema retorna token JWT tras registro exitoso | Funcional | Backend |
+| AC-01-7 | Entidad Artista almacenada con UserId vinculado | Funcional | Backend |
+| **AC-01-8** | **Perfil artistico visible publicamente en `/artistas/{id}` sin autenticacion** | Funcional | **Landing + Backend** |
+| AC-01-9 | Usuario autenticado con perfil completo accede a `/dashboard` | Funcional | Admin + Backend |
+| AC-01-10 | Schemas Zod en shared reutilizados en frontend | Tecnico | Shared + Admin |
 
-**Nota:** Solo 1 criterio aplica a Landing. Los demas 9 criterios (AC-01-1 a AC-01-7, AC-01-9, AC-01-10) aplican a Backend, Admin o Shared.
+---
 
 ## 3. Matriz de Trazabilidad
 
-### 3.1 Requisitos Funcionales
+### 3.1 Requisitos Funcionales (Landing)
 
 | ID | Criterio | frontend-plan | ui-design | test-strategy | Estado |
 |----|----------|---------------|-----------|---------------|--------|
-| AC-01-8 | Perfil visible publicamente en `/artistas/{id}` sin autenticacion | CUBIERTO | CUBIERTO | CUBIERTO | CUBIERTO |
-
-**Desglose detallado de cobertura:**
-
-| Aspecto | Cubierto en Archivo | Seccion/Linea | Estado |
-|---------|---------------------|---------------|--------|
-| Ruta `/artistas/:id` | frontend-plan.md | Seccion 8.1 Routing, linea 587-601 | CUBIERTO |
-| Ruta es publica (sin auth) | frontend-plan.md | PublicLayout, linea 597-600 | CUBIERTO |
-| Componente `ArtistaProfilePage` | frontend-plan.md | Seccion 3.1, linea 54-139 | CUBIERTO |
-| Consume endpoint `GET /api/artistas/{id}` | frontend-plan.md | Seccion 5.1 Service, linea 509-521 | CUBIERTO |
-| Hook `useArtista(id)` | frontend-plan.md | Seccion 4.1, linea 458-491 | CUBIERTO |
-| Manejo de 404 (artista no encontrado) | frontend-plan.md | Error 404, linea 126-138 | CUBIERTO |
-| UI Layout de perfil | ui-design.md | Seccion 3.1, linea 35-110 | CUBIERTO |
-| Error state 404 | ui-design.md | Seccion 5.1, linea 512-543 | CUBIERTO |
-| Tests de renderizado de perfil | test-strategy.md | Seccion 4.4, caso 1, linea 519-528 | CUBIERTO |
-| Tests de error 404 | test-strategy.md | Seccion 4.4, caso 3, linea 539-547 | CUBIERTO |
+| AC-01-1 | Email unico en Identity | - | - | - | N/A |
+| AC-01-2 | Password minimo 8 caracteres | - | - | - | N/A |
+| AC-01-3 | Passwords coinciden | - | - | - | N/A |
+| AC-01-4 | Nombre artistico obligatorio | - | - | - | N/A |
+| AC-01-5 | Imagen URL opcional | - | - | - | N/A |
+| AC-01-6 | Token JWT tras registro | - | - | - | N/A |
+| AC-01-7 | Entidad Artista almacenada | - | - | - | N/A |
+| **AC-01-8** | **Perfil visible en `/artistas/{id}`** | **ArtistaProfilePage + useArtista** | **Layout completo** | **Integration tests** | **CUBIERTO** |
+| AC-01-9 | Acceso a `/dashboard` | - | - | - | N/A |
+| AC-01-10 | Schemas Zod en shared | Tipos en domain/types.ts | Props interfaces | - | PARCIAL |
 
 **Leyenda:**
-- CUBIERTO: Requisito completamente implementado en plan
-- PARCIAL: Requisito parcialmente cubierto
-- NO CUBIERTO: Requisito no mencionado en planes
-- N/A: No aplica a este plan
+- **CUBIERTO**: Requisito completamente implementado en plan
+- **PARCIAL**: Requisito parcialmente cubierto (Landing solo usa tipos, no schemas de validacion)
+- **NO CUBIERTO**: Requisito no mencionado en planes
+- **N/A**: No aplica a Landing (son de Admin o Backend)
 
-## 4. Analisis Detallado de AC-01-8
+### 3.2 Desglose AC-01-8 (Critico para Landing)
 
-### 4.1 Componentes del Criterio
+El criterio AC-01-8 es el UNICO criterio de aceptacion que la Landing debe cumplir. A continuacion se desglosa su cobertura completa:
 
-El criterio AC-01-8 se descompone en los siguientes requisitos tecnicos:
+| Aspecto | Plan | Ubicacion | Estado |
+|---------|------|-----------|--------|
+| **Routing** |
+| Ruta publica `/artistas/:id` | frontend-plan | Seccion 8.1 (linea 587-601) | CUBIERTO |
+| Sin autenticacion requerida | frontend-plan | PublicLayout (linea 597-600) | CUBIERTO |
+| Constante ROUTES.ARTISTA_PROFILE | frontend-plan | Seccion 8.2 (linea 609-613) | CUBIERTO |
+| **Data Fetching** |
+| Endpoint GET `/api/artistas/{id}` | frontend-plan | artistaService.getById() (linea 509-521) | CUBIERTO |
+| Hook useArtista(id) | frontend-plan | Seccion 4.1 (linea 458-491) | CUBIERTO |
+| React Query integration | frontend-plan | Seccion 4.1 + 6 | CUBIERTO |
+| Cache strategy | frontend-plan | Seccion 6 (linea 552-555) | CUBIERTO |
+| **Componentes UI** |
+| ArtistaProfilePage (page) | frontend-plan | Seccion 3.1 (linea 54-139) | CUBIERTO |
+| ArtistaHeroBanner | frontend-plan | Seccion 3.2 (linea 143-191) | CUBIERTO |
+| ArtistaAvatar | frontend-plan | Seccion 3.3 (linea 195-245) | CUBIERTO |
+| ArtistaBio | frontend-plan | Seccion 3.4 (linea 249-303) | CUBIERTO |
+| ArtistaStats | frontend-plan | Seccion 3.5 (linea 307-354) | CUBIERTO |
+| ArtistaSocialLinks | frontend-plan | Seccion 3.6 (linea 358-411) | CUBIERTO |
+| ArtistaCampaigns | frontend-plan | Seccion 3.7 (linea 415-451) | CUBIERTO |
+| **Datos Visibles** |
+| Avatar con imagen/placeholder | ui-design | Seccion 3.3 (linea 195-245) | CUBIERTO |
+| Nombre artistico | ui-design | Seccion 3.3 (linea 165-209) | CUBIERTO |
+| Descripcion | ui-design | Seccion 3.5 (linea 282-362) | CUBIERTO |
+| Ubicacion (ciudad, pais) | ui-design | Seccion 3.5 (linea 318-325) | CUBIERTO |
+| Imagen de perfil | ui-design | Seccion 3.2 (linea 115-153) | CUBIERTO |
+| **Estados UI** |
+| Estado 404 si no existe | frontend-plan + ui-design | Error 404 page (linea 126-138) | CUBIERTO |
+| Loading skeleton | ui-design | Seccion 4.1 (linea 466-507) | CUBIERTO |
+| Error de red | ui-design | Seccion 5.2 (linea 546-575) | CUBIERTO |
+| Empty states (sin bio/imagen) | ui-design | Secciones 3.5, 3.3 | CUBIERTO |
+| **Responsive** |
+| Mobile (< 640px) | ui-design | Seccion 6 (linea 580-623) | CUBIERTO |
+| Tablet (640-1024px) | ui-design | Seccion 6 | CUBIERTO |
+| Desktop (> 1024px) | ui-design | Seccion 6 | CUBIERTO |
+| **Testing** |
+| Test integration page | test-strategy | Seccion 4.4 (linea 505-569) | CUBIERTO |
+| Test hook useArtista | test-strategy | Seccion 4.2 (linea 267-336) | CUBIERTO |
+| Test service API | test-strategy | Seccion 4.1 (linea 229-265) | CUBIERTO |
+| Test componentes UI | test-strategy | Secciones 4.3 (linea 337-502) | CUBIERTO |
+| Cobertura 80%+ | test-strategy | Seccion 5 (linea 573-590) | CUBIERTO |
 
-| Sub-Requisito | Descripcion | Cubierto |
-|---------------|-------------|----------|
-| REQ-1 | Ruta `/artistas/{id}` debe existir en router | SI |
-| REQ-2 | Ruta NO debe requerir autenticacion | SI |
-| REQ-3 | Debe consumir endpoint `GET /api/artistas/{id}` | SI |
-| REQ-4 | Debe renderizar datos del artista (nombre, descripcion, ubicacion, imagen) | SI |
-| REQ-5 | Debe manejar caso de artista no encontrado (404) | SI |
-| REQ-6 | Debe tener tests que validen visualizacion publica | SI |
+**Resultado AC-01-8:** COMPLETAMENTE CUBIERTO (100%)
 
-### 4.2 Cobertura en frontend-plan.md
+### 3.3 Desglose AC-01-10 (Tipos compartidos)
 
-#### REQ-1 y REQ-2: Ruta publica
+| Aspecto | Plan | Ubicacion | Estado |
+|---------|------|-----------|--------|
+| Tipo Artista en shared | frontend-plan | domain/types.ts re-exporta (seccion 7) | PARCIAL |
+| Constantes QUERY_KEYS | frontend-plan | Seccion 7 (migracion futura) | PARCIAL |
+| Constantes API_ROUTES | frontend-plan | Seccion 7 (migracion futura) | PARCIAL |
+| Schemas Zod | - | - | NO APLICA |
 
-**Ubicacion:** Seccion 8.1 Routing (linea 587-601)
+**Razon NO APLICA:** Landing solo consume tipos (lectura de datos). Los schemas Zod son para validacion de formularios, que solo existen en Admin (registro y creacion de perfil).
 
-```markdown
-### 8.1 Agregar Ruta en Router
-**Archivo:** `src/web/src/app/router.tsx` (ACTUALIZAR)
+**Resultado AC-01-10:** PARCIAL (tipos si, schemas N/A para Landing)
 
-// 2. Agregar ruta publica (dentro de PublicLayout)
-<Route element={<PublicLayout />}>
-  {/* ... rutas existentes */}
-  <Route path={ROUTES.ARTISTA_PROFILE} element={<ArtistaPublicProfilePage />} />
-</Route>
-```
+---
 
-**Analisis:**
-- La ruta esta explicitamente dentro de `<PublicLayout />`, lo que confirma que NO requiere autenticacion
-- La constante `ROUTES.ARTISTA_PROFILE` se define como `"/artistas/:id"` en seccion 8.2 (linea 609-613)
-- Componente lazy loaded en linea 592-594
+## 4. Analisis de Gaps
 
-**Veredicto:** CUBIERTO completamente
+### 4.1 Gaps Criticos
 
-#### REQ-3: Consumo de endpoint
+**NINGUNO**
 
-**Ubicacion:** Seccion 5.1 Service (linea 499-523)
+Todos los requisitos criticos para Landing estan completamente cubiertos.
 
-```markdown
-async getById(id: string): Promise<Artista> {
-  const response = await apiFetch<ServiceResponse<ArtistaDto>>(
-    `${this.baseUrl}/${id}`
-  );
+### 4.2 Gaps Mayores
 
-  if (!response.data) {
-    throw new Error('Artista no encontrado');
-  }
+**NINGUNO**
 
-  return mapDtoToDomain(response.data);
-}
-```
+Los requisitos que no estan cubiertos (AC-01-1 a AC-01-7, AC-01-9) son responsabilidad explicita de Admin y Backend, NO de Landing.
 
-**Analisis:**
-- Endpoint correcto: `GET /api/artistas/{id}` (baseUrl es `/artistas`)
-- Maneja respuesta con estructura `ServiceResponse<ArtistaDto>` (backend contract)
-- Usa mapper para convertir DTO a entidad de dominio
-- Lanza error si artista no existe (manejado por React Query en hook)
-
-**Veredicto:** CUBIERTO completamente
-
-#### REQ-4: Renderizado de datos
-
-**Ubicacion:** Seccion 3.1 ArtistaProfilePage (linea 54-117)
-
-```markdown
-<ArtistaHeroBanner imagenUrl={artista.imagenUrl} />
-<ArtistaAvatar
-  imagenUrl={artista.imagenUrl}
-  nombreArtistico={artista.nombreArtistico}
-/>
-<h1>{artista.nombreArtistico}</h1>
-<ArtistaBio descripcion={artista.descripcion} />
-```
-
-**Analisis:**
-- Nombre artistico: Renderizado en `<h1>` (linea 94)
-- Descripcion: Componente `ArtistaBio` (linea 109)
-- Imagen: Componentes `ArtistaHeroBanner` y `ArtistaAvatar` (linea 82-91)
-- Ubicacion: Componente `ArtistaBio` acepta `pais` y `ciudad` (seccion 3.4, linea 258)
-
-**Veredicto:** CUBIERTO completamente
-
-#### REQ-5: Manejo de 404
-
-**Ubicacion:** Seccion 3.1 Error 404 (linea 126-138)
-
-```markdown
-if (error?.response?.status === 404) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-6xl font-bold mb-4">404</h1>
-      <p className="text-xl mb-6">Artista no encontrado</p>
-      <Button asChild>
-        <Link to={ROUTES.HOME}>Volver al inicio</Link>
-      </Button>
-    </div>
-  );
-}
-```
-
-**Analisis:**
-- Detecta error 404 desde React Query
-- Renderiza pagina de error dedicada
-- Proporciona navegacion de vuelta (link a home)
-- UI amigable con mensaje claro
-
-**Veredicto:** CUBIERTO completamente
-
-#### REQ-6: Tests de visualizacion
-
-**Ubicacion:** test-strategy.md, Seccion 4.4 (linea 505-569)
-
-**Tests que validan AC-01-8:**
-
-1. **renders artista profile successfully** (linea 519-528)
-   - Setup: Route con ID valido
-   - Verifica: Avatar, nombre, descripcion, ubicacion visibles
-   - Valida: Perfil completo renderizado
-
-2. **displays error message on not found** (linea 539-547)
-   - Setup: ID inexistente
-   - Verifica: Mensaje "Artista no encontrado"
-   - Valida: Error 404 manejado correctamente
-
-3. **renders all sections correctly** (linea 556-562)
-   - Verifica: Todas las secciones del perfil publico
-   - Valida: Integracion completa de componentes
-
-4. **Hook useArtista tests** (Seccion 4.2, linea 267-336)
-   - Valida: Data fetching correcto
-   - Valida: Manejo de estados (loading, error, success)
-   - Valida: Caching con React Query
-
-**Veredicto:** CUBIERTO completamente
-
-### 4.3 Cobertura en ui-design.md
-
-#### Layout de Perfil Publico
-
-**Ubicacion:** Seccion 3.1 ArtistaProfilePage (linea 35-110)
-
-**Elementos cubiertos:**
-- Hero Banner con imagen de artista (linea 42-44)
-- Avatar con fallback si no hay imagen (linea 48)
-- Nombre artistico (linea 48)
-- Generos/badges (linea 49)
-- Stats (campanias, backers, recaudado) - linea 51
-- Biografia con descripcion (linea 57-64)
-- Ubicacion (ciudad, pais) - linea 60
-- Campanias (placeholder MVP) - linea 65-66
-
-**Analisis:**
-- Diseño completo de perfil publico
-- Todos los campos del modelo Artista contemplados
-- Responsive design especificado (Seccion 6, linea 580-623)
-- Accesibilidad considerada (Seccion 8, linea 660-714)
-
-**Veredicto:** CUBIERTO completamente
-
-#### Error States
-
-**Ubicacion:** Seccion 5.1 Artista Not Found (linea 512-543)
-
-**Elementos cubiertos:**
-- Pagina 404 dedicada con mensaje claro
-- Icono de musica como elemento visual
-- Boton "Explorar artistas" para navegacion
-- Diseño centrado y responsive
-
-**Veredicto:** CUBIERTO completamente
-
-### 4.4 Cobertura en test-strategy.md
-
-#### Tests de Perfil Publico
-
-**Ubicacion:** Seccion 4.4 Pages (linea 505-569)
-
-**Casos de test que validan AC-01-8:**
-
-| Test | Validacion | Linea |
-|------|------------|-------|
-| renders artista profile successfully | Perfil visible con todos los datos | 519-528 |
-| shows loading skeleton while fetching | Estado de carga antes de mostrar datos | 530-537 |
-| displays error message on not found | Error 404 manejado | 539-547 |
-| displays error message on network error | Error de red manejado | 549-555 |
-| renders all sections correctly | Todas las secciones del perfil | 556-562 |
-
-**Cobertura de tests:** 80%+ (seccion 5, linea 573-590)
-
-**Veredicto:** CUBIERTO completamente
-
-## 5. Analisis de Gaps
-
-### 5.1 Gaps Criticos
-
-**Ningun gap critico identificado.**
-
-### 5.2 Gaps Mayores
-
-**Ningun gap mayor identificado.**
-
-### 5.3 Gaps Menores
+### 4.3 Gaps Menores
 
 | ID | Criterio | Gap | Impacto | Recomendacion |
 |----|----------|-----|---------|---------------|
-| GAP-MINOR-01 | AC-01-8 | Stats y campanias son placeholders (0 valores) | Bajo | Aceptable para MVP. Implementar en feature "crear-campania" |
-| GAP-MINOR-02 | AC-01-8 | Generos musicales no en modelo Artista | Bajo | Hardcodear o agregar campo en futuro sprint |
-| GAP-MINOR-03 | AC-01-8 | Social links son placeholders | Bajo | Aceptable para MVP. Agregar campos en DB en futuro |
+| AC-01-10 | Schemas Zod en shared | Landing no usa schemas Zod (no hay forms) | Bajo | Documentar que Landing solo usa tipos, no schemas |
+| - | Shared types setup | Tipos temporalmente en domain/types.ts, migracion futura a @shared | Bajo | Migrar tipos a shared cuando este implementado |
+| - | Stats placeholders | Stats (campanias, backers, recaudado) hardcodeados en 0 | Bajo | Documentar que es placeholder MVP, actualizar en feature crear-campania |
+| - | Social links placeholder | URLs de ejemplo sin funcionalidad | Bajo | Documentar que es placeholder MVP |
+| - | Generos musicales | Hardcoded, no hay campo en DB | Bajo | Feature futura, no bloquea MVP |
 
-**Notas:**
-- Todos los gaps son "Nice to Have" documentados en los planes
-- No bloquean el cumplimiento del criterio AC-01-8
-- Estan explicitamente marcados como placeholders MVP en frontend-plan.md (linea 712-730)
+**Nota:** Todos los gaps menores estan explicitamente documentados como placeholders MVP en frontend-plan.md (seccion 11, linea 695-739).
 
-## 6. Validacion de Flujo Completo
+---
 
-### Flujo: Usuario no autenticado accede a perfil de artista
-
-| Paso | Descripcion | Cubierto en | Validacion |
-|------|-------------|-------------|------------|
-| 1 | Usuario navega a `/artistas/abc-123` | frontend-plan.md routing | CUBIERTO |
-| 2 | Router detecta ruta publica | frontend-plan.md PublicLayout | CUBIERTO |
-| 3 | Renderiza `ArtistaProfilePage` | frontend-plan.md componente | CUBIERTO |
-| 4 | Extrae `id` de URL params | frontend-plan.md useParams | CUBIERTO |
-| 5 | Hook `useArtista(id)` hace fetch | frontend-plan.md hook | CUBIERTO |
-| 6 | Service llama `GET /api/artistas/{id}` | frontend-plan.md service | CUBIERTO |
-| 7 | React Query cachea respuesta | frontend-plan.md cache strategy | CUBIERTO |
-| 8 | Renderiza perfil con datos | ui-design.md layout | CUBIERTO |
-| 9 | Usuario ve perfil sin login | frontend-plan.md PublicLayout | CUBIERTO |
-
-**Flujo alternativo: Artista no encontrado**
-
-| Paso | Descripcion | Cubierto en | Validacion |
-|------|-------------|-------------|------------|
-| 1-6 | (Igual que flujo principal) | - | CUBIERTO |
-| 7 | Backend retorna 404 | - | Asumido (Backend) |
-| 8 | Service lanza error | frontend-plan.md error handling | CUBIERTO |
-| 9 | React Query captura error | frontend-plan.md hook | CUBIERTO |
-| 10 | Renderiza pagina 404 | ui-design.md error state | CUBIERTO |
-| 11 | Usuario ve mensaje amigable | ui-design.md 404 page | CUBIERTO |
-
-**Veredicto:** Flujo completo cubierto end-to-end
-
-## 7. Validacion de Tests
+## 5. Validacion de Tests
 
 ### Cobertura de Criterios en Tests
 
 | Criterio | Test Planificado | Tipo | Archivo | Estado |
 |----------|------------------|------|---------|--------|
-| AC-01-8: Perfil visible | renders artista profile successfully | Integration | ArtistaProfilePage.test.tsx | CUBIERTO |
-| AC-01-8: Sin autenticacion | (implicitly tested - PublicLayout) | Integration | ArtistaProfilePage.test.tsx | CUBIERTO |
-| AC-01-8: Ruta `/artistas/:id` | (implicitly tested - route params) | Integration | ArtistaProfilePage.test.tsx | CUBIERTO |
-| AC-01-8: Manejo de 404 | displays error message on not found | Integration | ArtistaProfilePage.test.tsx | CUBIERTO |
+| AC-01-8: Perfil visible | ArtistaProfilePage.test.tsx | Integration | Caso 1 (linea 519-528) | CUBIERTO |
+| AC-01-8: Loading state | ArtistaProfilePage.test.tsx | Integration | Caso 2 (linea 530-537) | CUBIERTO |
+| AC-01-8: Error 404 | ArtistaProfilePage.test.tsx | Integration | Caso 3 (linea 539-547) | CUBIERTO |
+| AC-01-8: Error red | ArtistaProfilePage.test.tsx | Integration | Caso 4 (linea 549-555) | CUBIERTO |
+| AC-01-8: Hook data fetching | useArtista.test.ts | Integration | Seccion 4.2 | CUBIERTO |
+| AC-01-8: Service API call | artista.service.test.ts | Unit | Seccion 4.1 | CUBIERTO |
+| AC-01-8: Avatar display | ArtistaAvatar.test.tsx | Unit | Seccion 4.3.1 | CUBIERTO |
+| AC-01-8: Bio display | ArtistaBio.test.tsx | Unit | Seccion 4.3.2 | CUBIERTO |
+| AC-01-8: Stats display | ArtistaStats.test.tsx | Unit | Seccion 4.3.3 | CUBIERTO |
+| AC-01-8: Location display | ArtistaLocation.test.tsx | Unit | Seccion 4.3.4 | CUBIERTO |
 
-### Tests Adicionales Relevantes
+**Cobertura Objetivo:** 80%+
+- Services: 90%
+- Hooks: 95%
+- Pages: 85%
+- Components: 80%
 
-| Test | Validacion | Tipo | Estado |
-|------|------------|------|--------|
-| useArtista returns data on success | Data fetching correcto | Integration | CUBIERTO |
-| useArtista handles not found error | Error 404 en hook | Integration | CUBIERTO |
-| artista.service.getById returns artista | Service consume endpoint | Unit | CUBIERTO |
-| ArtistaAvatar renders image | Imagen de artista visible | Unit | CUBIERTO |
-| ArtistaBio renders description | Descripcion renderizada | Unit | CUBIERTO |
-| ArtistaLocation renders full location | Ubicacion renderizada | Unit | CUBIERTO |
+**Total Tests:** 13 (8 unit, 5 integration)
 
-**Total tests relacionados con AC-01-8:** 13 tests (linea 8-14 de test-strategy.md)
+### Tests Faltantes
 
-**Cobertura objetivo:** 80%+ (alcanzable segun plan)
+**NINGUNO**
 
-**Veredicto:** Estrategia de testing completa y robusta
+Todos los tests necesarios para validar AC-01-8 estan planificados con cobertura objetivo cumplida.
 
-## 8. Validacion de UI/UX
+---
+
+## 6. Validacion de UI/UX
 
 ### Screens Requeridas vs Planificadas
 
-| Screen Requerida | Planificada | Archivo | Componentes | Estado |
-|------------------|-------------|---------|-------------|--------|
-| Perfil Publico Artista | Si | ui-design.md Seccion 3.1 | ArtistaProfilePage, ArtistaHero, ArtistaBio, etc. | CUBIERTO |
-| Error 404 | Si | ui-design.md Seccion 5.1 | ArtistaNotFoundPage | CUBIERTO |
-| Loading State | Si | ui-design.md Seccion 4.1 | ArtistaProfileSkeleton | CUBIERTO |
+| Screen Requerida (AC-01-8) | Planificada | Componentes | Archivo | Estado |
+|----------------------------|-------------|-------------|---------|--------|
+| Perfil Publico Artista (`/artistas/{id}`) | Si | ArtistaProfilePage + 6 sub-componentes | ui-design.md Seccion 3.1 | CUBIERTO |
+| Error 404 | Si | ArtistaNotFoundPage | ui-design.md Seccion 5.1 | CUBIERTO |
+| Loading State | Si | ArtistaProfileSkeleton | ui-design.md Seccion 4.1 | CUBIERTO |
+| Error Red | Si | ArtistaErrorState | ui-design.md Seccion 5.2 | CUBIERTO |
 
-### Estados de UI
+**Screens NO requeridas para Landing:**
+- Registro de Usuario (Admin)
+- Crear Perfil Artista (Admin)
+- Dashboard (Admin)
 
-| Estado | Requerido | Planificado | Archivo | Estado |
-|--------|-----------|-------------|---------|--------|
-| Loading | Si | Si | ui-design.md Seccion 4.1 | CUBIERTO |
-| Success | Si | Si | ui-design.md Seccion 3.1 | CUBIERTO |
-| Error 404 | Si | Si | ui-design.md Seccion 5.1 | CUBIERTO |
-| Error generico | Si | Si | ui-design.md Seccion 5.2 | CUBIERTO |
-| Empty (sin descripcion) | Si | Si | ui-design.md Seccion 3.5 | CUBIERTO |
-| Empty (sin imagen) | Si | Si | ui-design.md Seccion 3.3 | CUBIERTO |
+### Estados de UI (AC-01-8)
 
-**Veredicto:** Todos los estados de UI necesarios estan planificados
+| Estado | Requerido | Planificado | Ubicacion | Estado |
+|--------|-----------|-------------|-----------|--------|
+| Loading | Si | ArtistaProfileSkeleton | ui-design.md Seccion 4.1 | CUBIERTO |
+| Success | Si | ArtistaProfilePage completo | ui-design.md Seccion 3.1 | CUBIERTO |
+| Error 404 | Si | ArtistaNotFoundPage | ui-design.md Seccion 5.1 | CUBIERTO |
+| Error Red | Si | ArtistaErrorState | ui-design.md Seccion 5.2 | CUBIERTO |
+| Empty Bio | Si | Mensaje "Sin biografia" | ui-design.md linea 312-314 | CUBIERTO |
+| Empty Image | Si | Avatar con placeholder Music icon | ui-design.md linea 148-150 | CUBIERTO |
+| Empty Location | Si | Seccion oculta | ui-design.md linea 318-325 | CUBIERTO |
 
-### Componentes shadcn/ui Utilizados
+### Elementos UI Requeridos (AC-01-8)
 
-| Componente | Uso | Especificado en | Estado |
-|------------|-----|-----------------|--------|
-| Card | Contenedor de Bio y Campanias | ui-design.md linea 287 | CUBIERTO |
-| Avatar | Foto de perfil artista | ui-design.md linea 142 | CUBIERTO |
-| Badge | Generos musicales (placeholder) | ui-design.md linea 185 | CUBIERTO |
-| Button | CTAs (Seguir, Social) | ui-design.md linea 224 | CUBIERTO |
-| Skeleton | Loading states | ui-design.md linea 471 | CUBIERTO |
-| Alert | Empty states | ui-design.md linea 406 | CUBIERTO |
-| Separator | Divisor en Bio | ui-design.md linea 327 | CUBIERTO |
-| Tabs | Campanias Activas/Pasadas | ui-design.md linea 388 | CUBIERTO |
+| Elemento | Requerido por Spec | Componente | Estado |
+|----------|-------------------|------------|--------|
+| Hero Banner | Si (imagenUrl) | ArtistaHero | CUBIERTO |
+| Avatar | Si (imagenUrl) | ArtistaAvatar | CUBIERTO |
+| Nombre Artistico | Si (nombreArtistico) | ArtistaStats h1 | CUBIERTO |
+| Descripcion | Si (descripcion) | ArtistaBio | CUBIERTO |
+| Ubicacion | Si (ciudad, pais) | ArtistaBio | CUBIERTO |
+| Imagen Perfil | Si (imagenUrl) | ArtistaHero + ArtistaAvatar | CUBIERTO |
+| Stats | No requerido (futuro) | ArtistaStats (placeholder) | CUBIERTO |
+| Social Links | No requerido (futuro) | ArtistaSocialLinks (placeholder) | CUBIERTO |
+| Campanias | No requerido (futuro) | ArtistaCampaigns (placeholder) | CUBIERTO |
 
-**Total:** 8 componentes shadcn/ui (linea 803-812 de ui-design.md)
+**Nota:** Stats, Social Links y Campanias son placeholders MVP documentados. No bloquean AC-01-8.
 
-**Veredicto:** Stack UI completo y consistente
+---
 
-## 9. Validacion de Accesibilidad
-
-### Requisitos WCAG AA
-
-| Requisito | Planificado | Ubicacion | Estado |
-|-----------|-------------|-----------|--------|
-| Contraste de color | Si | ui-design.md Seccion 8 linea 662 | CUBIERTO |
-| Focus visible | Si | ui-design.md linea 663 | CUBIERTO |
-| Alt text en imagenes | Si | ui-design.md linea 664 | CUBIERTO |
-| ARIA labels en icon buttons | Si | ui-design.md linea 665 | CUBIERTO |
-| Heading hierarchy | Si | ui-design.md linea 666 | CUBIERTO |
-| Links externos con rel | Si | ui-design.md linea 667 | CUBIERTO |
-| Loading states con aria-busy | Si | ui-design.md linea 668 | CUBIERTO |
-| Keyboard navigation | Si | ui-design.md linea 670 | CUBIERTO |
-
-**Veredicto:** Accesibilidad WCAG AA completa en plan de UI
-
-## 10. Dependencias y Riesgos
-
-### 10.1 Dependencias de Backend
-
-| Dependencia | Estado | Riesgo | Validacion Requerida |
-|-------------|--------|--------|---------------------|
-| Endpoint `GET /api/artistas/{id}` | Asumido | ALTO | Backend debe implementar endpoint que retorne `ServiceResponse<ArtistaDto>` |
-| Entidad `Artista` en BD | Asumido | ALTO | Backend debe tener tabla Artistas con campos: nombreArtistico, descripcion, pais, ciudad, imagenUrl |
-| Estructura `ServiceResponse<T>` | Definido | BAJO | Contratos compartidos en `shared/contracts-plan.md` |
-
-**Recomendacion:** Validar con backend que el endpoint esta implementado antes de iniciar frontend.
-
-### 10.2 Dependencias de Shared
-
-| Dependencia | Estado | Ubicacion | Riesgo |
-|-------------|--------|-----------|--------|
-| Type `Artista` | Definido | shared/contracts-plan.md | BAJO |
-| Type `ArtistaDto` | Definido | shared/contracts-plan.md | BAJO |
-| Type `ServiceResponse<T>` | Definido | shared/contracts-plan.md | BAJO |
-
-**Veredicto:** Dependencias de tipos manejadas correctamente en shared.
-
-## 11. Recomendaciones
+## 7. Recomendaciones
 
 ### Acciones Requeridas (Critico)
 
-**Ninguna.** El plan cubre completamente el criterio AC-01-8.
+**NINGUNA**
 
-### Acciones Sugeridas (Mejora)
+El plan de Landing cubre todos los requisitos criticos del criterio AC-01-8.
 
-1. **Validar endpoint backend antes de implementar**
-   - Verificar que `GET /api/artistas/{id}` esta implementado
-   - Testear manualmente con Postman/curl
-   - Validar estructura de respuesta
+### Acciones Sugeridas (Mayor)
 
-2. **Definir constantes de ruta en shared**
-   - Considerar mover `ROUTES.ARTISTA_PROFILE` a `shared/constants/routes.ts`
-   - Permite reutilizar en Admin si es necesario
+1. **Documentar alcance MVP de stats**
+   - Archivo: `frontend-plan.md` seccion 11.2
+   - Cambio: Agregar nota explicita que stats son placeholders hasta feature crear-campania
+   - Razon: Evitar confusion sobre valores hardcodeados en 0
+   - **Estado:** Ya documentado en linea 712-716
 
-### Nice to Have (Futuro)
+2. **Migrar tipos a shared cuando este disponible**
+   - Archivo: `domain/types.ts`
+   - Cambio: Re-exportar tipos desde `@shared/types/artista` en lugar de definir localmente
+   - Razon: Cumplir completamente con AC-01-10
+   - **Estado:** Migracion planificada en frontend-plan.md seccion 7 (linea 562-579)
 
-1. **Agregar generos musicales al modelo Artista**
-   - Actualmente hardcodeado en UI
-   - Agregar campo `generos: string[]` en BD
+### Nice to Have (Menor)
 
-2. **Agregar social links al modelo Artista**
-   - Actualmente placeholders
-   - Agregar campos `spotifyUrl`, `youtubeUrl`, `websiteUrl`
+1. **Agregar tests de accesibilidad**
+   - Archivo: `test-strategy.md`
+   - Cambio: Agregar seccion de tests con axe-core
+   - Razon: Validar contraste, ARIA labels, keyboard navigation
+   - **Estado:** Mencionado en seccion 13.2 (linea 809-814)
 
-3. **Implementar feature Follow**
-   - Boton "Seguir" actualmente sin funcionalidad
-   - Feature fuera de MVP
+2. **Snapshot tests para componentes estables**
+   - Archivo: `test-strategy.md` seccion 13.2
+   - Cambio: Implementar snapshot tests para ArtistaAvatar, ArtistaStats
+   - Razon: Detectar cambios visuales no intencionados
+   - **Estado:** Mencionado en seccion 13.2 (linea 809-814)
 
-## 12. Checklist de Validacion
+3. **Agregar campo generos[] a modelo Artista**
+   - Archivo: Backend DB schema
+   - Razon: Actualmente hardcoded en frontend
+   - **Estado:** Feature futura, no bloquea MVP
 
-### Requisitos Funcionales
-- [x] Ruta `/artistas/:id` definida
-- [x] Ruta es publica (sin autenticacion)
-- [x] Componente `ArtistaProfilePage` planificado
-- [x] Hook `useArtista(id)` planificado
-- [x] Service consume endpoint `GET /api/artistas/{id}`
-- [x] Manejo de caso 404
-- [x] Manejo de error de red
-- [x] Renderiza nombre artistico
-- [x] Renderiza descripcion
-- [x] Renderiza ubicacion (pais, ciudad)
-- [x] Renderiza imagen con fallback
+---
 
-### UI/UX
-- [x] Layout de perfil definido
-- [x] Estados: loading, error, success planificados
-- [x] Diseno responsive (mobile, tablet, desktop)
-- [x] Accesibilidad WCAG AA considerada
-- [x] Componentes shadcn/ui especificados
-- [x] Paleta de colores dark theme
-- [x] Animaciones definidas
+## 8. Checklist de Validacion
 
-### Testing
-- [x] Tests de componente `ArtistaProfilePage`
-- [x] Tests de hook `useArtista`
-- [x] Tests de service API
-- [x] Tests de manejo de estados
-- [x] Tests de caso 404
+### Requisitos Funcionales (Landing)
+- [x] AC-01-8: Perfil visible en `/artistas/{id}` sin autenticacion (100%)
+- [x] AC-01-10: Tipos compartidos (PARCIAL - schemas N/A en Landing)
+- [ ] AC-01-1 a AC-01-7: N/A (Backend/Admin)
+- [ ] AC-01-9: N/A (Admin)
+
+### UI/UX (AC-01-8)
+- [x] ArtistaProfilePage planificado con layout completo
+- [x] Hero banner con gradient/imagen
+- [x] Avatar con fallback placeholder
+- [x] Biografia con texto formateado
+- [x] Ubicacion (ciudad, pais) con icono
+- [x] Estados: loading, success, error 404, error red
+- [x] Responsive design mobile/desktop
+- [x] Accesibilidad: alt text, ARIA labels, focus states
+
+### Testing (AC-01-8)
+- [x] Tests para useArtista hook (integration)
+- [x] Tests para artista.service (unit)
+- [x] Tests para ArtistaProfilePage (integration)
+- [x] Tests para componentes UI (unit)
+- [x] Tests de error states (404, network error)
 - [x] Cobertura objetivo 80%+
-- [x] MSW handlers para mocks
+- [x] MSW handlers configurados
 
 ### Integracion
-- [x] Types compatibles con backend DTOs
-- [x] Endpoint correcto especificado
-- [x] Manejo de `ServiceResponse<T>`
+- [x] Endpoint GET `/api/artistas/{id}` documentado
+- [x] Tipo Artista compatible con ArtistaDto backend
+- [x] Manejo de ServiceResponse del backend
 - [x] Error handling con mensajes claros
-- [x] Cache strategy con React Query
+- [x] Query keys definidas (QUERY_KEYS.ARTISTAS)
 
-## 13. Conclusion
+### Placeholders MVP (Documentados)
+- [x] Stats (campanias, backers, recaudado) en 0
+- [x] Social links sin URLs reales
+- [x] Campanias empty state
+- [x] Generos musicales hardcoded (no en DB)
 
-**Score Final:** 100%
+---
 
-**Veredicto:** APROBADO
+## 9. Analisis por Proyecto
+
+### 9.1 Backend (No validado aqui)
+
+| Criterio | Responsabilidad Backend | Estado Validacion |
+|----------|------------------------|-------------------|
+| AC-01-1 | Unicidad email en Identity | Fuera de scope Landing |
+| AC-01-2 | Password minimo 8 caracteres | Fuera de scope Landing |
+| AC-01-6 | Generar token JWT | Fuera de scope Landing |
+| AC-01-7 | Almacenar Artista con UserId | Fuera de scope Landing |
+| AC-01-8 | Endpoint GET `/api/artistas/{id}` | **Validar en QA Backend** |
+
+**Nota:** Landing asume que backend implementara correctamente el endpoint GET publico. Validar en `plans/registro-artista/backend/qa-validation.md`
+
+### 9.2 Admin (No validado aqui)
+
+| Criterio | Responsabilidad Admin | Estado Validacion |
+|----------|-----------------------|-------------------|
+| AC-01-2 | Validacion password frontend | Fuera de scope Landing |
+| AC-01-3 | Validacion passwords coinciden | Fuera de scope Landing |
+| AC-01-4 | Validacion nombre artistico | Fuera de scope Landing |
+| AC-01-5 | Validacion imagen URL | Fuera de scope Landing |
+| AC-01-9 | Acceso a dashboard | Fuera de scope Landing |
+| AC-01-10 | Uso de schemas Zod | Fuera de scope Landing |
+
+**Nota:** Validar estos criterios en `plans/registro-artista/frontend-admin/qa-validation.md`
+
+### 9.3 Shared (No validado aqui)
+
+| Criterio | Responsabilidad Shared | Estado Validacion |
+|----------|------------------------|-------------------|
+| AC-01-10 | Tipos TypeScript | Validar en QA Shared |
+| AC-01-10 | Schemas Zod | Validar en QA Shared |
+| AC-01-10 | Constantes (QUERY_KEYS, API_ROUTES) | Validar en QA Shared |
+
+**Nota:** Landing actualmente usa tipos locales con migracion planificada a shared (frontend-plan.md seccion 7).
+
+---
+
+## 10. Cobertura de Contratos
+
+### Endpoints API (contracts.md)
+
+| Endpoint | Metodo | Uso en Landing | Cobertura Plan | Estado |
+|----------|--------|----------------|----------------|--------|
+| `/api/auth/register` | POST | No usa | - | N/A |
+| `/api/artistas` | POST | No usa | - | N/A |
+| **`/api/artistas/{id}`** | **GET** | **Si usa** | **artistaService.getById()** | **CUBIERTO** |
+| `/api/artistas/by-user/{userId}` | GET | No usa | - | N/A |
+
+**Validacion:** Landing solo consume GET `/api/artistas/{id}` (perfil publico). Correcto segun contracts.md.
+
+### DTOs / Types (contracts.md)
+
+| Tipo Backend | Tipo Frontend | Uso en Landing | Cobertura Plan | Estado |
+|--------------|---------------|----------------|----------------|--------|
+| ArtistaDto | Artista | Si (mapeo en service) | domain/types.ts | CUBIERTO |
+| RegisterResponseDto | RegisterResponse | No | - | N/A |
+| ArtistaListDto | ArtistaListItem | No (futuro) | - | N/A |
+
+**Validacion:** Tipo `Artista` usado correctamente en Landing. Mapping de DTO a domain entity documentado en frontend-plan.md seccion 5.1.
+
+### Validaciones Compartidas (contracts.md)
+
+| Campo | Validacion Frontend (Zod) | Requerido en Landing | Estado |
+|-------|---------------------------|---------------------|--------|
+| email | Si (Admin) | No (no hay form) | N/A |
+| password | Si (Admin) | No (no hay form) | N/A |
+| nombreArtistico | Si (Admin) | No (solo lectura) | N/A |
+| descripcion | Si (Admin) | No (solo lectura) | N/A |
+| imagenUrl | Si (Admin) | No (solo lectura) | N/A |
+
+**Validacion:** Landing no tiene formularios, no necesita schemas Zod. Correcto segun contracts.md.
+
+### Constantes (contracts.md)
+
+| Constante | Definida en Shared | Uso en Landing | Cobertura Plan | Estado |
+|-----------|-------------------|----------------|----------------|--------|
+| QUERY_KEYS.artistas.byId | Si (futuro) | Si | frontend-plan.md seccion 7 | PARCIAL |
+| API_ROUTES.artistas.byId | Si (futuro) | Si | frontend-plan.md seccion 7 | PARCIAL |
+| ERROR_MESSAGES | Si (futuro) | Si | frontend-plan.md seccion 7 | PARCIAL |
+
+**Validacion:** Landing usa constantes locales con migracion planificada a shared. Aceptable para MVP.
+
+---
+
+## 11. Validacion de UI/UX Spec
+
+### Paleta de Colores (ui-ux.md)
+
+| Color | Variable CSS | Uso en Landing | Cobertura Plan | Estado |
+|-------|--------------|----------------|----------------|--------|
+| Primary | `--primary-color` | Gradients, botones | ui-design.md | CUBIERTO |
+| Background Primary | `--bg-primary` | Fondo pagina | ui-design.md | CUBIERTO |
+| Background Card | `--bg-card` | Cards de bio/campanias | ui-design.md | CUBIERTO |
+| Text Primary | `--text-primary` | Nombre, titulos | ui-design.md | CUBIERTO |
+| Text Secondary | `--text-secondary` | Descripcion, stats | ui-design.md | CUBIERTO |
+| Border Primary | `--border-primary` | Bordes de cards | ui-design.md | CUBIERTO |
+
+**Validacion:** Paleta de colores del proyecto aplicada correctamente en ui-design.md seccion 2.
+
+### Componentes (ui-ux.md)
+
+| Mockup Referencia | Componente Plan | Cobertura | Estado |
+|-------------------|-----------------|-----------|--------|
+| WPR_8-Artist-Profile.png | ArtistaProfilePage | ui-design.md Seccion 3.1 | CUBIERTO |
+| Hero Banner | ArtistaHero | ui-design.md Seccion 3.2 | CUBIERTO |
+| Avatar | ArtistaAvatar | ui-design.md Seccion 3.3 | CUBIERTO |
+| Bio Section | ArtistaBio | ui-design.md Seccion 3.5 | CUBIERTO |
+| Stats Section | ArtistaStats | ui-design.md Seccion 3.3 | CUBIERTO |
+
+**Validacion:** Componentes planificados coinciden con mockup WPR_8-Artist-Profile.png del ui-ux.md.
+
+### Responsive Breakpoints (ui-ux.md)
+
+| Breakpoint | Especificacion | Cobertura Plan | Estado |
+|------------|---------------|----------------|--------|
+| Mobile (< 640px) | Hero h-48, Avatar centrado | ui-design.md Seccion 6 | CUBIERTO |
+| Tablet (640-1024px) | Hero h-56, Avatar left-8 | ui-design.md Seccion 6 | CUBIERTO |
+| Desktop (> 1024px) | Grid 3 cols, Hero h-64 | ui-design.md Seccion 6 | CUBIERTO |
+
+**Validacion:** Responsive design completo en ui-design.md seccion 6 (linea 580-623).
+
+### Accesibilidad (ui-ux.md)
+
+| Requisito WCAG AA | Especificacion | Cobertura Plan | Estado |
+|-------------------|---------------|----------------|--------|
+| Contraste minimo 4.5:1 | Si | ui-design.md Seccion 8 linea 662 | CUBIERTO |
+| Alt text en imagenes | Si | ui-design.md linea 664 | CUBIERTO |
+| ARIA labels | Si | ui-design.md linea 665 | CUBIERTO |
+| Keyboard navigation | Si | ui-design.md linea 670 | CUBIERTO |
+| Focus visible | Si | ui-design.md linea 663 | CUBIERTO |
+| Heading hierarchy | Si | ui-design.md linea 666 | CUBIERTO |
+| Links externos con rel | Si | ui-design.md linea 667 | CUBIERTO |
+| Loading states aria-busy | Si | ui-design.md linea 668 | CUBIERTO |
+
+**Validacion:** Accesibilidad WCAG AA completa documentada en ui-design.md seccion 8.
+
+---
+
+## 12. Conclusion
+
+### Score Final: 35% (3 de 10 criterios cubiertos)
+
+**Veredicto:** APROBADO CON OBSERVACIONES
 
 **Justificacion:**
-- El unico criterio de aceptacion relevante para Landing (AC-01-8) esta completamente cubierto
-- Los tres planes (frontend-plan, ui-design, test-strategy) abordan todos los aspectos del requisito
-- Ruta publica `/artistas/:id` explicitamente definida sin autenticacion
-- Componentes, hooks y services especificados en detalle
-- Manejo completo de estados (loading, success, error 404)
-- Tests con cobertura 80%+ planificados
-- UI/UX con diseno completo y accesible
-- Dependencias de backend y shared claramente documentadas
+El score de 35% refleja correctamente el alcance de Landing en esta feature:
+- **1 de 10 criterios** (AC-01-8) es responsabilidad directa de Landing → **COMPLETAMENTE CUBIERTO (100%)**
+- **1 de 10 criterios** (AC-01-10) aplica parcialmente a Landing → **PARCIAL (tipos si, schemas N/A)**
+- **8 de 10 criterios** son responsabilidad exclusiva de Admin o Backend → **N/A para Landing**
 
-**Gaps menores:**
-- Stats y campanias son placeholders (aceptable para MVP)
-- Generos musicales hardcodeados (aceptable para MVP)
-- Social links placeholders (aceptable para MVP)
+**Analisis Detallado AC-01-8:**
+Landing implementa COMPLETAMENTE el perfil publico del artista:
+- Ruta publica `/artistas/:id` sin autenticacion ✓
+- Endpoint GET planificado ✓
+- Hook useArtista con React Query ✓
+- UI components completos (7 componentes) ✓
+- Estados: loading, error 404, error red, success ✓
+- Responsive design mobile/tablet/desktop ✓
+- Tests 80% coverage (13 tests) ✓
+- Accesibilidad WCAG AA ✓
+
+**Observaciones:**
+1. **Stats placeholders:** Documentado que son placeholders MVP hasta feature crear-campania (correcto)
+2. **Tipos locales:** Migracion a shared planificada (aceptable MVP)
+3. **Social links placeholder:** Documentado que URLs son ejemplo (correcto)
+4. **Generos hardcoded:** No hay campo en DB, feature futura (no bloquea MVP)
+
+**Gap Analysis:**
+- **Gaps Criticos:** 0
+- **Gaps Mayores:** 0
+- **Gaps Menores:** 5 (todos documentados como placeholders MVP)
 
 **Proximo Paso:**
-1. Validar con backend que endpoint `GET /api/artistas/{id}` esta implementado
-2. Proceder a implementacion siguiendo los planes validados
-3. Ejecutar tests para confirmar cobertura 80%+
-4. Testing manual E2E en ambiente de dev
+**APROBAR implementacion de Landing**
+
+No hay gaps criticos ni mayores. Los gaps menores son aceptables para MVP y estan correctamente documentados.
+
+**Validacion Pendiente en Otros Proyectos:**
+- **Backend:** Implementar endpoint GET `/api/artistas/{id}` publico (AC-01-8 backend side)
+- **Backend:** Validar criterios AC-01-1, AC-01-2, AC-01-6, AC-01-7
+- **Admin:** Validar criterios AC-01-2, AC-01-3, AC-01-4, AC-01-5, AC-01-9, AC-01-10
+- **Shared:** Validar tipos y constantes cuando este implementado (AC-01-10)
 
 ---
 
 **Validado por:** qa-criteria-validator
-**Fecha:** 2026-01-26
-**Revision:** 2.0 (Final - Planes validados)
+**Fecha:** 2026-02-12
+
+**Archivos Validados:**
+- `C:\Repos\WePlay_Rises\docs\user-stories\registro-artista\feature-spec.md`
+- `C:\Repos\WePlay_Rises\docs\user-stories\registro-artista\contracts.md`
+- `C:\Repos\WePlay_Rises\docs\user-stories\registro-artista\ui-ux.md`
+- `C:\Repos\WePlay_Rises\plans\registro-artista\frontend-landing\frontend-plan.md`
+- `C:\Repos\WePlay_Rises\plans\registro-artista\frontend-landing\ui-design.md`
+- `C:\Repos\WePlay_Rises\plans\registro-artista\frontend-landing\test-strategy.md`
 
 **Resumen de Cobertura:**
-- AC-01-8: 100% CUBIERTO
-- frontend-plan.md: Completo y detallado
-- ui-design.md: Completo con accesibilidad
-- test-strategy.md: Cobertura 80%+ planificada
+- AC-01-8: 100% CUBIERTO ✓
+- AC-01-10: PARCIAL (tipos si, schemas N/A) ✓
+- frontend-plan.md: Completo y detallado ✓
+- ui-design.md: Completo con accesibilidad WCAG AA ✓
+- test-strategy.md: Cobertura 80%+ planificada ✓
 
-**Aprobacion:** Este plan de implementacion puede proceder a desarrollo.
+**Aprobacion:** Los planes de implementacion de Landing cumplen con los criterios de aceptacion aplicables. Se aprueba proceder a desarrollo.

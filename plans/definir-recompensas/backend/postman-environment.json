@@ -1,0 +1,49 @@
+{
+    "id": "a8f7c2e1-9d5b-4a3f-b1e6-2c8d9a5f7e3b",
+    "name": "WePlay - Definir Recompensas - Development",
+    "values": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5001",
+            "enabled": true
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "enabled": true
+        },
+        {
+            "key": "testUserId",
+            "value": "",
+            "enabled": true
+        },
+        {
+            "key": "artistaId",
+            "value": "",
+            "enabled": true
+        },
+        {
+            "key": "campaniaId",
+            "value": "",
+            "enabled": true
+        },
+        {
+            "key": "rewardId1",
+            "value": "",
+            "enabled": true
+        },
+        {
+            "key": "rewardId2",
+            "value": "",
+            "enabled": true
+        },
+        {
+            "key": "rewardId3",
+            "value": "",
+            "enabled": true
+        }
+    ],
+    "_postman_variable_scope": "environment",
+    "_postman_exported_at": "2026-02-13T10:30:00.000Z",
+    "_postman_exported_using": "Postman/v11.0.0"
+}
