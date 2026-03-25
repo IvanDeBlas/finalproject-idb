@@ -72,6 +72,9 @@ export function mapCampaniaListItemDtoToDomain(dto: CampaniaListItemDto): Campan
         fechaInicio: dto.fechaInicio,
         fechaFin: dto.fechaFin,
         fechaCreacion: dto.fechaCreacion,
+        proyectoArtisticoId: dto.proyectoArtisticoId,
+        tieneCrowdsourcing: dto.tieneCrowdsourcing ?? false,
+        tieneCrowdpromotion: dto.tieneCrowdpromotion ?? false,
         // Legacy compat
         estado: dto.estado as CampaniaEstado ?? mapEstadoIdToString(estadoCampaniaId),
         imagenUrl: dto.imagenPrincipalUrl ?? dto.imagenUrl,

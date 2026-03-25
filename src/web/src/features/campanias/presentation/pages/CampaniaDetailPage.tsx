@@ -4,9 +4,10 @@ import { useCampania } from "../../application/useCampanias"
 import { useRewardsByCampania } from "../../application/hooks/useRewardsByCampania"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CAMPANIA_ESTADOS_LABELS, CAMPANIA_ESTADOS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { SearchX } from "lucide-react"
+import { SearchX, DollarSign, Lightbulb, Megaphone } from "lucide-react"
 import { CampaniaHero } from "../components/CampaniaHero"
 import { CampaniaStats } from "../components/CampaniaStats"
 import { CampaniaTabs } from "../components/CampaniaTabs"
@@ -110,7 +111,7 @@ export default function CampaniaDetailPage() {
                                 </p>
                             )}
 
-                            <div className="flex items-center gap-3 flex-wrap">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <Badge
                                     variant="outline"
                                     className={cn("text-xs", getEstadoBadgeClasses(estadoCampaniaId))}
@@ -119,6 +120,22 @@ export default function CampaniaDetailPage() {
                                 >
                                     {estadoLabel}
                                 </Badge>
+                                <Badge variant="outline" className="text-xs bg-amber-500/15 text-amber-400 border-amber-500/40 gap-1">
+                                    <DollarSign className="w-3 h-3" />
+                                    Crowdfunding
+                                </Badge>
+                                {campania.proyectoArtisticoId && (
+                                    <>
+                                        <Badge variant="outline" className="text-xs bg-cyan-500/15 text-cyan-400 border-cyan-500/40 gap-1">
+                                            <Lightbulb className="w-3 h-3" />
+                                            Crowdsourcing
+                                        </Badge>
+                                        <Badge variant="outline" className="text-xs bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/40 gap-1">
+                                            <Megaphone className="w-3 h-3" />
+                                            Crowdpromotion
+                                        </Badge>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -144,13 +161,75 @@ export default function CampaniaDetailPage() {
                     </div>
 
                     <div className="lg:col-span-1">
-                        <CampaniaRewardsSection
-                            campaniaId={campania.id}
-                            monedaId={monedaId}
-                            campaniaFinalizada={isFinalizada}
-                            onApoyar={isFinalizada ? undefined : handleApoyar}
-                            onSelectReward={isFinalizada ? undefined : handleSelectReward}
-                        />
+                        <Tabs defaultValue="rewards" className="w-full">
+                            <TabsList className="w-full bg-[#0f1729] border border-[#334155]">
+                                <TabsTrigger value="rewards" className="group/tab flex-1 gap-1.5 data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400 text-[#64748b]">
+                                    <DollarSign className="w-4 h-4 shrink-0" />
+                                    <span className="hidden group-data-[state=active]/tab:inline text-sm">Recompensas</span>
+                                </TabsTrigger>
+                                {campania.proyectoArtisticoId && (
+                                    <TabsTrigger value="sourcing" className="group/tab flex-1 gap-1.5 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 text-[#64748b]">
+                                        <Lightbulb className="w-4 h-4 shrink-0" />
+                                        <span className="hidden group-data-[state=active]/tab:inline text-sm">Necesidades</span>
+                                    </TabsTrigger>
+                                )}
+                                {campania.proyectoArtisticoId && (
+                                    <TabsTrigger value="promo" className="group/tab flex-1 gap-1.5 data-[state=active]:bg-fuchsia-500/20 data-[state=active]:text-fuchsia-400 text-[#64748b]">
+                                        <Megaphone className="w-4 h-4 shrink-0" />
+                                        <span className="hidden group-data-[state=active]/tab:inline text-sm">Promocion</span>
+                                    </TabsTrigger>
+                                )}
+                            </TabsList>
+                            <TabsContent value="rewards">
+                                <CampaniaRewardsSection
+                                    campaniaId={campania.id}
+                                    monedaId={monedaId}
+                                    campaniaFinalizada={isFinalizada}
+                                    onApoyar={isFinalizada ? undefined : handleApoyar}
+                                    onSelectReward={isFinalizada ? undefined : handleSelectReward}
+                                />
+                            </TabsContent>
+                            {campania.proyectoArtisticoId && (
+                                <TabsContent value="sourcing">
+                                    <div className="bg-[#0f1729] border border-[#334155] rounded-lg p-6 space-y-4">
+                                        <h3 className="text-lg font-semibold text-white">Necesidades del proyecto</h3>
+                                        <p className="text-sm text-[#94a3b8]">
+                                            Este proyecto busca profesionales para colaborar. Consulta las necesidades abiertas y envia tu propuesta.
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10"
+                                            asChild
+                                        >
+                                            <Link to="/crowdsourcing/necesidades">
+                                                <Lightbulb className="w-4 h-4 mr-2" />
+                                                Ver necesidades abiertas
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </TabsContent>
+                            )}
+                            {campania.proyectoArtisticoId && (
+                                <TabsContent value="promo">
+                                    <div className="bg-[#0f1729] border border-[#334155] rounded-lg p-6 space-y-4">
+                                        <h3 className="text-lg font-semibold text-white">Programa de promocion</h3>
+                                        <p className="text-sm text-[#94a3b8]">
+                                            Ayuda a difundir este proyecto y gana comisiones por cada backer que refieras.
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full border-fuchsia-500/40 text-fuchsia-400 hover:bg-fuchsia-500/10"
+                                            asChild
+                                        >
+                                            <Link to="/crowdpromotion/explorar">
+                                                <Megaphone className="w-4 h-4 mr-2" />
+                                                Ver programas de promocion
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </TabsContent>
+                            )}
+                        </Tabs>
                     </div>
                 </div>
             </div>

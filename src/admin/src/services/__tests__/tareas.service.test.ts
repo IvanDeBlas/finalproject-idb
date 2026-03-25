@@ -27,7 +27,7 @@ describe("TareasService", () => {
             await tareasService.getTareasPendientes(PROGRAMA_ID)
 
             expect(apiFetch).toHaveBeenCalledWith(
-                `/api/crowdpromotion/programas/${PROGRAMA_ID}/tareas-pendientes`
+                `/crowdpromotion/programas/${PROGRAMA_ID}/tareas-pendientes`
             )
         })
 
@@ -40,7 +40,7 @@ describe("TareasService", () => {
             await tareasService.getTareasPendientes(PROGRAMA_ID, { page: 2, pageSize: 5 })
 
             expect(apiFetch).toHaveBeenCalledWith(
-                `/api/crowdpromotion/programas/${PROGRAMA_ID}/tareas-pendientes?page=2&pageSize=5`
+                `/crowdpromotion/programas/${PROGRAMA_ID}/tareas-pendientes?page=2&pageSize=5`
             )
         })
 
@@ -82,7 +82,7 @@ describe("TareasService", () => {
             })
 
             expect(apiFetch).toHaveBeenCalledWith(
-                `/api/crowdpromotion/programas/${PROGRAMA_ID}/tareas-promotor/${tareaPromotorId}/validar`,
+                `/crowdpromotion/programas/${PROGRAMA_ID}/tareas-promotor/${tareaPromotorId}/validar`,
                 expect.objectContaining({
                     method: "PATCH",
                     data: { comentarioValidacion: "Bien hecho" },
@@ -104,7 +104,7 @@ describe("TareasService", () => {
             })
 
             expect(apiFetch).toHaveBeenCalledWith(
-                `/api/crowdpromotion/programas/${PROGRAMA_ID}/tareas-promotor/${tareaPromotorId}/rechazar`,
+                `/crowdpromotion/programas/${PROGRAMA_ID}/tareas-promotor/${tareaPromotorId}/rechazar`,
                 expect.objectContaining({
                     method: "PATCH",
                     data: { comentarioValidacion: "La URL no corresponde" },

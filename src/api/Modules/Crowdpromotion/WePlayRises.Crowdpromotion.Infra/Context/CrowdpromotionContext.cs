@@ -170,7 +170,7 @@ public class CrowdpromotionContext : CoreDbContext
             entity.Property(e => e.FechaCreacion).HasPrecision(3);
 
             entity.HasMany(e => e.TareasPromotor).WithOne(e => e.Tarea)
-                .HasForeignKey(e => e.TareaId).OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(e => e.TareaId).OnDelete(DeleteBehavior.NoAction);
         });
 
         // PromoTareaPromotor

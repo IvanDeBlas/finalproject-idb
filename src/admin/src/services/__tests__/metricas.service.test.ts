@@ -152,6 +152,6 @@ describe("MetricasService", () => {
         await metricasService.getProgramaMetricas(PROGRAMA_ID)
 
         const calledUrl = mockedApiFetch.mock.calls[0][0] as string
-        expect(calledUrl).toContain(`/api/crowdpromotion/programas/${PROGRAMA_ID}/metricas`)
+        expect(calledUrl).toContain(`/crowdpromotion/programas/${PROGRAMA_ID}/metricas`)
     })
 })

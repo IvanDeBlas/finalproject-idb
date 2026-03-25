@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users } from "lucide-react"
+import { Users, DollarSign, Lightbulb, Megaphone } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CAMPANIA_ESTADOS_LABELS } from "@/lib/constants"
 import { calcularDiasRestantes, calcularPorcentaje, formatCurrency } from "../../application/utils"
@@ -116,7 +116,7 @@ export function CampaniaCard({ campania, variant = "default", className }: Campa
             </div>
 
             <CardHeader className="p-4 pb-2">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <Badge
                         variant="outline"
                         className={cn("text-xs", getEstadoBadgeClasses(campania.estadoCampaniaId))}
@@ -125,6 +125,22 @@ export function CampaniaCard({ campania, variant = "default", className }: Campa
                     >
                         {estadoLabel}
                     </Badge>
+                    <Badge variant="outline" className="text-xs bg-amber-500/15 text-amber-400 border-amber-500/40 gap-1">
+                        <DollarSign className="w-3 h-3" />
+                        Funding
+                    </Badge>
+                    {campania.tieneCrowdsourcing && (
+                        <Badge variant="outline" className="text-xs bg-cyan-500/15 text-cyan-400 border-cyan-500/40 gap-1">
+                            <Lightbulb className="w-3 h-3" />
+                            Sourcing
+                        </Badge>
+                    )}
+                    {campania.tieneCrowdpromotion && (
+                        <Badge variant="outline" className="text-xs bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/40 gap-1">
+                            <Megaphone className="w-3 h-3" />
+                            Promo
+                        </Badge>
+                    )}
                 </div>
                 <CardTitle className="text-lg font-bold text-white line-clamp-2">
                     {campania.titulo}

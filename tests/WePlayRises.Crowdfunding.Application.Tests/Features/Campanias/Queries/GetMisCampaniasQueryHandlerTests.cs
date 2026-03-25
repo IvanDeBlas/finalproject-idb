@@ -16,6 +16,7 @@ namespace WePlayRises.Crowdfunding.Application.Tests.Features.Campanias.Queries;
 public class GetMisCampaniasQueryHandlerTests
 {
     private readonly Mock<ICampaniaService> _serviceMock;
+    private readonly Mock<ICrowdFlagsService> _crowdFlagsServiceMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<ILogger<GetMisCampaniasQueryHandler>> _loggerMock;
     private readonly GetMisCampaniasQueryHandler _sut;
@@ -23,10 +24,17 @@ public class GetMisCampaniasQueryHandlerTests
     public GetMisCampaniasQueryHandlerTests()
     {
         _serviceMock = new Mock<ICampaniaService>();
+        _crowdFlagsServiceMock = new Mock<ICrowdFlagsService>();
         _mapperMock = new Mock<IMapper>();
         _loggerMock = new Mock<ILogger<GetMisCampaniasQueryHandler>>();
+
+        _crowdFlagsServiceMock
+            .Setup(x => x.GetFlagsForProyectosAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, CrowdFlags>());
+
         _sut = new GetMisCampaniasQueryHandler(
             _serviceMock.Object,
+            _crowdFlagsServiceMock.Object,
             _mapperMock.Object,
             _loggerMock.Object);
     }

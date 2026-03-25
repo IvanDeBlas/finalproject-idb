@@ -17,6 +17,7 @@ public class GetCampaniaDetailQueryHandlerTests
 {
     private readonly Mock<ICampaniaService> _campaniaServiceMock;
     private readonly Mock<IRewardService> _rewardServiceMock;
+    private readonly Mock<ICrowdFlagsService> _crowdFlagsServiceMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<ILogger<GetCampaniaDetailQueryHandler>> _loggerMock;
     private readonly GetCampaniaDetailQueryHandler _sut;
@@ -25,12 +26,18 @@ public class GetCampaniaDetailQueryHandlerTests
     {
         _campaniaServiceMock = new Mock<ICampaniaService>();
         _rewardServiceMock = new Mock<IRewardService>();
+        _crowdFlagsServiceMock = new Mock<ICrowdFlagsService>();
         _mapperMock = new Mock<IMapper>();
         _loggerMock = new Mock<ILogger<GetCampaniaDetailQueryHandler>>();
+
+        _crowdFlagsServiceMock
+            .Setup(x => x.GetFlagsForProyectosAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, CrowdFlags>());
 
         _sut = new GetCampaniaDetailQueryHandler(
             _campaniaServiceMock.Object,
             _rewardServiceMock.Object,
+            _crowdFlagsServiceMock.Object,
             _mapperMock.Object,
             _loggerMock.Object);
     }

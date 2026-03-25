@@ -8,6 +8,11 @@ class AuthService {
       data: credentials,
     })
 
+    // Store token before fetching user so the interceptor can attach it
+    if (typeof window !== "undefined" && response.data.token) {
+      localStorage.setItem("token", response.data.token)
+    }
+
     // Get user info after login
     const user = await this.getCurrentUser()
     if (!user) throw new Error("Failed to get user after login")

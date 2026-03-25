@@ -36,8 +36,10 @@ describe("AcuerdoCabecera", () => {
     it("renders importe total formatted with moneda", () => {
         render(<AcuerdoCabecera acuerdo={mockAcuerdoActivo} />)
 
-        expect(screen.getByText(/EUR/)).toBeInTheDocument()
-        expect(screen.getByText(/450/)).toBeInTheDocument()
+        const eurElements = screen.getAllByText(/EUR/)
+        expect(eurElements.length).toBeGreaterThanOrEqual(1)
+        const importeElements = screen.getAllByText(/450,00/)
+        expect(importeElements.length).toBeGreaterThanOrEqual(1)
     })
 
     it("renders estado badge", () => {

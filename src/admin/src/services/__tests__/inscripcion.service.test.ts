@@ -5,9 +5,6 @@ import type { ServiceResponse } from "@shared/types"
 import type {
     InscripcionesListResponse,
     InscripcionAprobada,
-    InscripcionRechazada,
-    InscripcionBloqueada,
-    InscripcionDadaDeBaja,
 } from "@shared/types"
 import {
     mockInscripcionesPendientesResponse,

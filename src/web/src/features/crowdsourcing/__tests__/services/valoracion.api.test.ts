@@ -37,7 +37,7 @@ describe("valoracionApi.create", () => {
 
         expect(apiFetch).toHaveBeenCalledWith(
             expect.stringContaining(
-                `/api/crowdsourcing/acuerdos/${MOCK_ACUERDO_ID}/valoraciones`
+                `/crowdsourcing/acuerdos/${MOCK_ACUERDO_ID}/valoraciones`
             ),
             expect.objectContaining({ method: "POST" })
         )
@@ -104,7 +104,7 @@ describe("valoracionApi.getByUser", () => {
 
         expect(apiFetch).toHaveBeenCalledWith(
             expect.stringContaining(
-                `/api/crowdsourcing/usuarios/${MOCK_USER_ID}/valoraciones`
+                `/crowdsourcing/usuarios/${MOCK_USER_ID}/valoraciones`
             )
         )
     })

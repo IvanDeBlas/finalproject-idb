@@ -31,7 +31,7 @@ describe("WalletService", () => {
 
             expect(result).toEqual(mockWallet)
             expect(mockApiFetch).toHaveBeenCalledWith(
-                "/api/crowdpromotion/promotor/wallet"
+                "/crowdpromotion/promotor/wallet"
             )
         })
 
@@ -140,7 +140,7 @@ describe("WalletService", () => {
 
             expect(result).toEqual(mockSolicitarCobroResponse)
             expect(mockApiFetch).toHaveBeenCalledWith(
-                "/api/crowdpromotion/promotor/wallet/cobro",
+                "/crowdpromotion/promotor/wallet/cobro",
                 { method: "POST", data: { importe: 50, descripcion: "Cobro mensual" } }
             )
         })

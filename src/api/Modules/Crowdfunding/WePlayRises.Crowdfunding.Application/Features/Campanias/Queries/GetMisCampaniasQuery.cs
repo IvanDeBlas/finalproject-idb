@@ -27,15 +27,18 @@ public class GetMisCampaniasQuery : IRequest<ServiceResponse<IEnumerable<Campani
 public class GetMisCampaniasQueryHandler : IRequestHandler<GetMisCampaniasQuery, ServiceResponse<IEnumerable<CampaniaListDto>>>
 {
     private readonly ICampaniaService _service;
+    private readonly ICrowdFlagsService _crowdFlagsService;
     private readonly IMapper _mapper;
     private readonly ILogger<GetMisCampaniasQueryHandler> _logger;
 
     public GetMisCampaniasQueryHandler(
         ICampaniaService service,
+        ICrowdFlagsService crowdFlagsService,
         IMapper mapper,
         ILogger<GetMisCampaniasQueryHandler> logger)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
+        _crowdFlagsService = crowdFlagsService ?? throw new ArgumentNullException(nameof(crowdFlagsService));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -69,9 +72,30 @@ public class GetMisCampaniasQueryHandler : IRequestHandler<GetMisCampaniasQuery,
 
             var dtos = _mapper.Map<IEnumerable<CampaniaListDto>>(paginatedEntities);
 
+            // Enrich with crowd flags
+            var dtoList = dtos.ToList();
+            var proyectoIds = dtoList
+                .Where(d => d.ProyectoArtisticoId.HasValue)
+                .Select(d => d.ProyectoArtisticoId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (proyectoIds.Count > 0)
+            {
+                var flags = await _crowdFlagsService.GetFlagsForProyectosAsync(proyectoIds, cancellationToken);
+                foreach (var dto in dtoList.Where(d => d.ProyectoArtisticoId.HasValue))
+                {
+                    if (flags.TryGetValue(dto.ProyectoArtisticoId!.Value, out var f))
+                    {
+                        dto.TieneCrowdsourcing = f.TieneCrowdsourcing;
+                        dto.TieneCrowdpromotion = f.TieneCrowdpromotion;
+                    }
+                }
+            }
+
             return new ServiceResponse<IEnumerable<CampaniaListDto>>
             {
-                Data = dtos,
+                Data = dtoList,
                 Messages = new List<ServiceResponseMessage>
                 {
                     new()

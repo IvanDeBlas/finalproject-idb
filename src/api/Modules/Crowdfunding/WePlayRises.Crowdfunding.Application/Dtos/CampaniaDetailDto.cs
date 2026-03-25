@@ -28,4 +28,7 @@ public class CampaniaDetailDto
     public List<BackingPublicDto> BackingsRecientes { get; set; } = new();
     public int TotalBackers { get; set; }
     public DateTime FechaCreacion { get; set; }
+    public Guid? ProyectoArtisticoId { get; set; }
+    public bool TieneCrowdsourcing { get; set; }
+    public bool TieneCrowdpromotion { get; set; }
 }

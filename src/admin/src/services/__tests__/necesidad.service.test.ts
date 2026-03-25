@@ -30,7 +30,7 @@ describe("NecesidadService", () => {
 
             expect(result).toEqual(mockData)
             expect(apiFetch).toHaveBeenCalledWith(
-                expect.stringContaining("/api/crowdsourcing/necesidades/mis-necesidades")
+                expect.stringContaining("/crowdsourcing/necesidades/mis-necesidades")
             )
         })
 
@@ -94,7 +94,7 @@ describe("NecesidadService", () => {
 
             expect(result).toEqual(mockResult)
             expect(apiFetch).toHaveBeenCalledWith(
-                expect.stringContaining("/api/crowdsourcing/necesidades"),
+                expect.stringContaining("/crowdsourcing/necesidades"),
                 expect.objectContaining({ method: "POST" })
             )
         })
@@ -113,7 +113,7 @@ describe("NecesidadService", () => {
             })
 
             expect(apiFetch).toHaveBeenCalledWith(
-                expect.stringContaining("/api/crowdsourcing/necesidades/n-1"),
+                expect.stringContaining("/crowdsourcing/necesidades/n-1"),
                 expect.objectContaining({ method: "PUT" })
             )
         })

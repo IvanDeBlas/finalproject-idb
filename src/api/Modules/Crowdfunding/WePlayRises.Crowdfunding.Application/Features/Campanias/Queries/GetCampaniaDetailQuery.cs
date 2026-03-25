@@ -25,17 +25,20 @@ public class GetCampaniaDetailQueryHandler : IRequestHandler<GetCampaniaDetailQu
 {
     private readonly ICampaniaService _campaniaService;
     private readonly IRewardService _rewardService;
+    private readonly ICrowdFlagsService _crowdFlagsService;
     private readonly IMapper _mapper;
     private readonly ILogger<GetCampaniaDetailQueryHandler> _logger;
 
     public GetCampaniaDetailQueryHandler(
         ICampaniaService campaniaService,
         IRewardService rewardService,
+        ICrowdFlagsService crowdFlagsService,
         IMapper mapper,
         ILogger<GetCampaniaDetailQueryHandler> logger)
     {
         _campaniaService = campaniaService ?? throw new ArgumentNullException(nameof(campaniaService));
         _rewardService = rewardService ?? throw new ArgumentNullException(nameof(rewardService));
+        _crowdFlagsService = crowdFlagsService ?? throw new ArgumentNullException(nameof(crowdFlagsService));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -106,6 +109,18 @@ public class GetCampaniaDetailQueryHandler : IRequestHandler<GetCampaniaDetailQu
 
             // Total backers
             dto.TotalBackers = await _campaniaService.GetTotalBackersAsync(id, cancellationToken);
+
+            // Crowd flags
+            if (dto.ProyectoArtisticoId.HasValue)
+            {
+                var flags = await _crowdFlagsService.GetFlagsForProyectosAsync(
+                    new[] { dto.ProyectoArtisticoId.Value }, cancellationToken);
+                if (flags.TryGetValue(dto.ProyectoArtisticoId.Value, out var f))
+                {
+                    dto.TieneCrowdsourcing = f.TieneCrowdsourcing;
+                    dto.TieneCrowdpromotion = f.TieneCrowdpromotion;
+                }
+            }
 
             return new ServiceResponse<CampaniaDetailDto>
             {

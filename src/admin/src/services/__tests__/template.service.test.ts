@@ -26,7 +26,7 @@ describe("TemplateService", () => {
             const result = await templateService.getAll()
 
             expect(result).toEqual(mockData)
-            expect(apiFetch).toHaveBeenCalledWith("/api/crowdsourcing/templates")
+            expect(apiFetch).toHaveBeenCalledWith("/crowdsourcing/templates")
         })
     })
 
@@ -87,7 +87,7 @@ describe("TemplateService", () => {
             })
 
             expect(apiFetch).toHaveBeenCalledWith(
-                "/api/crowdsourcing/templates/t-1",
+                "/crowdsourcing/templates/t-1",
                 expect.objectContaining({ method: "PUT" })
             )
         })
@@ -100,7 +100,7 @@ describe("TemplateService", () => {
             await templateService.delete("t-1")
 
             expect(apiFetch).toHaveBeenCalledWith(
-                "/api/crowdsourcing/templates/t-1",
+                "/crowdsourcing/templates/t-1",
                 expect.objectContaining({ method: "DELETE" })
             )
         })
@@ -113,7 +113,7 @@ describe("TemplateService", () => {
             await templateService.toggleStatus("t-1")
 
             expect(apiFetch).toHaveBeenCalledWith(
-                "/api/crowdsourcing/templates/t-1/toggle-status",
+                "/crowdsourcing/templates/t-1/toggle-status",
                 expect.objectContaining({ method: "PATCH" })
             )
         })

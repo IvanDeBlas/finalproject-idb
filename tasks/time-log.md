@@ -38,6 +38,7 @@ Presupuesto total: **30 horas**
 | 2026-02-25 | 0.5 | Backend | US-CP-02: cp-programas-promocion (Backend) - Domain, Infra, Application (5 handlers, 2 validators, 13 DTOs, 2 profiles), WebApi controller, 45 unit tests, Newman collection |
 | 2026-02-25 | 1.0 | Full-Stack | US-CP-03: cp-inscripcion-programa (Admin) - Service, 5 hooks (3 query + 4 mutation), 6 componentes (3 tabs + dialog + 2 cards), 75 unit tests (7 suites), 17 E2E specs |
 | 2026-03-02 | 1.0 | Full-Stack | US-CP-04: cp-tareas-promocion (Ejecucion de Tareas de Promocion) - Planificacion e implementacion |
+| 2026-03-24 | 3.0 | Full-Stack | Cambios finales, seed data y preparacion entrega - Refactor rutas API, migracion Crowdpromotion, crowd flags Campania DTOs, unit tests UserAccess, credenciales test, mejoras generales |
 
 ---
 
@@ -48,7 +49,7 @@ Presupuesto total: **30 horas**
 | Planning | 3.0 | 10% |
 | Setup | 4.0 | 13% |
 | Backend | 2.5 | 8% |
-| Full-Stack | 15.0 | 45% |
+| Full-Stack | 18.0 | 59% |
 | Frontend | 0 | 0% |
 | Testing | 2.0 | 6% |
 | Deploy | 0 | 0% |
@@ -60,16 +61,16 @@ Presupuesto total: **30 horas**
 
 | Metrica | Valor |
 |---------|-------|
-| **Total invertido** | 27.5 horas |
-| **Presupuesto restante** | 2.5 horas |
-| **Porcentaje usado** | 92% |
+| **Total invertido** | 30.5 horas |
+| **Presupuesto restante** | -0.5 horas |
+| **Porcentaje usado** | 102% |
 
 ---
 
 ## Grafico de Progreso
 
 ```
-[############################] 92% (27.5/30h)
+[##############################] 102% (30.5/30h)
 ```
 
 ---

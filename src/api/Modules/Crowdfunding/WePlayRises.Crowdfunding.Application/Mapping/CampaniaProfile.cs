@@ -27,7 +27,11 @@ public class CampaniaProfile : Profile
             .ForMember(dest => dest.Id,
                        opt => opt.MapFrom(src => src.Id.Value))
             .ForMember(dest => dest.ArtistaId,
-                       opt => opt.MapFrom(src => src.ArtistaId.Value));
+                       opt => opt.MapFrom(src => src.ArtistaId.Value))
+            .ForMember(dest => dest.ProyectoArtisticoId,
+                       opt => opt.MapFrom(src => src.ProyectoArtisticoId.HasValue ? src.ProyectoArtisticoId.Value.Value : (Guid?)null))
+            .ForMember(dest => dest.TieneCrowdsourcing, opt => opt.Ignore())
+            .ForMember(dest => dest.TieneCrowdpromotion, opt => opt.Ignore());
 
         // ---------------------------------------------------------------------
         // Command -> Entity
@@ -40,6 +44,8 @@ public class CampaniaProfile : Profile
                        opt => opt.MapFrom(src => src.Id.Value))
             .ForMember(dest => dest.ArtistaId,
                        opt => opt.MapFrom(src => src.ArtistaId.Value))
+            .ForMember(dest => dest.ProyectoArtisticoId,
+                       opt => opt.MapFrom(src => src.ProyectoArtisticoId.HasValue ? src.ProyectoArtisticoId.Value.Value : (Guid?)null))
             .ForMember(dest => dest.PorcentajeProgreso, opt => opt.Ignore())
             .ForMember(dest => dest.DiasRestantes, opt => opt.Ignore())
             .ForMember(dest => dest.MonedaSimbolo, opt => opt.Ignore())
@@ -48,7 +54,9 @@ public class CampaniaProfile : Profile
             .ForMember(dest => dest.ArtistaImagenUrl, opt => opt.Ignore())
             .ForMember(dest => dest.Rewards, opt => opt.Ignore())
             .ForMember(dest => dest.BackingsRecientes, opt => opt.Ignore())
-            .ForMember(dest => dest.TotalBackers, opt => opt.Ignore());
+            .ForMember(dest => dest.TotalBackers, opt => opt.Ignore())
+            .ForMember(dest => dest.TieneCrowdsourcing, opt => opt.Ignore())
+            .ForMember(dest => dest.TieneCrowdpromotion, opt => opt.Ignore());
 
         // ---------------------------------------------------------------------
         // Command -> Entity

@@ -409,6 +409,31 @@ Ejecutar backend y ambos frontends para realizar pruebas manuales del flujo comp
 
 ---
 
+### WPR-024: Cambios finales, seed y preparacion entrega
+**Prioridad:** Alta | **Estimado:** 3h | **Real:** 3h | **Estado:** ✅ Completada (2026-03-24)
+
+**Descripcion:**
+Sesion final de ajustes, seed data y preparacion para la entrega del proyecto.
+
+**Tareas:**
+- [x] Refactor rutas API: eliminar prefijo '/api' redundante
+- [x] Migracion inicial modulo Crowdpromotion (schema DB)
+- [x] Crowd flags en Campania DTOs y queries
+- [x] Unit tests para UserAccess application features
+- [x] Documentacion credenciales de test
+- [x] Mejoras generales de estructura y legibilidad
+
+**Commits (2026-03-24):**
+- `df44091` refactor: update API routes to remove redundant '/api' prefix
+- `09ed191` feat: add test credentials documentation
+- `992b188` Implement feature X to enhance user experience
+- `288053a` Add initial migration for Crowdpromotion module
+- `009e38a` feat: Add crowd flags functionality to Campania DTOs
+- `fc22fe3` Refactor code structure for improved readability
+- `f0bd0c0` Add unit tests for user access application features
+
+---
+
 ### WPR-023: Documentacion final
 **Prioridad:** Media | **Estimado:** 2h | **Estado:** Pendiente
 
@@ -772,7 +797,7 @@ Ejecutar backend y ambos frontends para realizar pruebas manuales del flujo comp
 |------|-------------|-------|--------|
 | Fase 1: Fundamentos | 7/7 | 7 | ✅ Completada |
 | Fase 2: Historias MVP (Crowdfunding) | 5/5 | 5 | ✅ Completada |
-| Fase 3: Testing/Deploy | 2/4 | 4 | En progreso |
+| Fase 3: Testing/Deploy | 3/4 | 4 | En progreso |
 | Fase 4: Crowdsourcing | 4/6 | 6 | En progreso (2 US pendientes) |
 | Fase 5: CrowdPromotion | 4/6 | 6 | En progreso (US-CP-01 a US-CP-04 completadas) |
 | Fase 6: Content Licensing | 0/6 | 6 | Pendiente (modulo nuevo) |

@@ -19,7 +19,7 @@ const mockNecesidadAbierta: NecesidadCrowdsourcingList = {
     modalidadTrabajoNombre: "Remoto",
     numeroPropuestas: 3,
     fechaCreacion: "2026-02-16T10:00:00Z",
-    fechaLimitePropuestas: "2026-03-15T00:00:00Z",
+    fechaLimitePropuestas: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     fechaActualizacion: null,
 }
 

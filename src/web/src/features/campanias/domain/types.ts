@@ -50,6 +50,9 @@ export interface CampaniaListItem {
     fechaInicio?: string
     fechaFin?: string
     fechaCreacion: string
+    proyectoArtisticoId?: string
+    tieneCrowdsourcing?: boolean
+    tieneCrowdpromotion?: boolean
     // Legacy compat
     estado: CampaniaEstado
     imagenUrl?: string

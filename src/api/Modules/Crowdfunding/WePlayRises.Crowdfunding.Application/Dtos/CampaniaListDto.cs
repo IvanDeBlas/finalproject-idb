@@ -17,4 +17,7 @@ public class CampaniaListDto
     public DateTime? FechaInicio { get; set; }
     public DateTime? FechaFin { get; set; }
     public DateTime FechaCreacion { get; set; }
+    public Guid? ProyectoArtisticoId { get; set; }
+    public bool TieneCrowdsourcing { get; set; }
+    public bool TieneCrowdpromotion { get; set; }
 }
