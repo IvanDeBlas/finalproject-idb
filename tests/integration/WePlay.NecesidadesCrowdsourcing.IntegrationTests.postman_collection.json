@@ -1,0 +1,1093 @@
+{
+  "info": {
+    "name": "WePlay.cs-gestionar-necesidades.IntegrationTests",
+    "description": "Colección de tests de integración para la feature cs-gestionar-necesidades (Gestionar Necesidades de Crowdsourcing). Auto-inclusiva: crea todas sus dependencias en _Setup.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login successful - Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.data).to.have.property('token');",
+                  "    pm.collectionVariables.set('accessToken', json.data.token);",
+                  "    pm.collectionVariables.set('userId', json.data.userId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{testEmail}}\",\n    \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Necesidades - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. POST Create Necesidad (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response time < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test('ServiceResponse structure is correct', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json).to.have.property('messages');",
+                  "    pm.expect(json).to.have.property('isSuccess');",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.messages).to.be.a('array');",
+                  "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "pm.test('Response data contains required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const necesidad = json.data;",
+                  "    pm.expect(necesidad).to.have.property('id');",
+                  "    pm.expect(necesidad).to.have.property('titulo');",
+                  "    pm.expect(necesidad).to.have.property('estadoNecesidadId');",
+                  "    pm.expect(necesidad).to.have.property('estadoNecesidadNombre');",
+                  "    pm.expect(necesidad).to.have.property('fechaCreacion');",
+                  "    pm.expect(necesidad.estadoNecesidadId).to.equal(1);",
+                  "    pm.expect(necesidad.estadoNecesidadNombre).to.equal('Abierta');",
+                  "    pm.collectionVariables.set('necesidadId', necesidad.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Mezcla de pistas para EP de 5 canciones - Newman Test\",\n    \"descripcion\": \"Buscamos un ingeniero de mezcla experimentado en indie rock para mezclar 5 canciones.\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 150.00,\n    \"presupuestoMax\": 800.00,\n    \"monedaId\": 1,\n    \"fechaLimitePropuestas\": \"2026-06-15T00:00:00Z\",\n    \"fechaInicioPrevista\": \"2026-07-01T00:00:00Z\",\n    \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET Mis Necesidades (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has paginated data structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.have.property('items');",
+                  "    pm.expect(json.data).to.have.property('totalCount');",
+                  "    pm.expect(json.data).to.have.property('page');",
+                  "    pm.expect(json.data).to.have.property('pageSize');",
+                  "    pm.expect(json.data).to.have.property('totalPages');",
+                  "});",
+                  "",
+                  "pm.test('Created necesidad appears in list', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    pm.expect(items).to.be.a('array');",
+                  "    pm.expect(items.length).to.be.greaterThan(0);",
+                  "    const created = items.find(n => n.id === pm.collectionVariables.get('necesidadId'));",
+                  "    pm.expect(created).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/mis-necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "mis-necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Mis Necesidades - Filter by Estado Abierta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All items have estado = Abierta (1)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const items = json.data.items;",
+                  "    items.forEach(function(item) {",
+                  "        pm.expect(item.estadoNecesidadId).to.equal(1);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/mis-necesidades?estado=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "mis-necesidades"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. GET Mis Necesidades - Search by Text",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Search returns results', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/mis-necesidades?search=Mezcla",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "mis-necesidades"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Mezcla"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. GET Necesidad By ID (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains complete necesidad detail', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const n = json.data;",
+                  "    pm.expect(n).to.have.property('id');",
+                  "    pm.expect(n).to.have.property('titulo');",
+                  "    pm.expect(n).to.have.property('descripcion');",
+                  "    pm.expect(n).to.have.property('tipoNecesidadId');",
+                  "    pm.expect(n).to.have.property('estadoNecesidadId');",
+                  "    pm.expect(n).to.have.property('modalidadTrabajoId');",
+                  "    pm.expect(n).to.have.property('presupuestoMin');",
+                  "    pm.expect(n).to.have.property('presupuestoMax');",
+                  "    pm.expect(n).to.have.property('monedaId');",
+                  "    pm.expect(n).to.have.property('proyectoArtisticoId');",
+                  "    pm.expect(n).to.have.property('propuestas');",
+                  "    pm.expect(n.propuestas).to.be.a('array');",
+                  "    pm.expect(n.id).to.equal(pm.collectionVariables.get('necesidadId'));",
+                  "    pm.expect(n.estadoNecesidadId).to.equal(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "{{necesidadId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "06. PUT Update Necesidad (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Update response contains updated data', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const n = json.data;",
+                  "    pm.expect(n).to.have.property('id');",
+                  "    pm.expect(n).to.have.property('titulo');",
+                  "    pm.expect(n).to.have.property('estadoNecesidadId');",
+                  "    pm.expect(n).to.have.property('fechaActualizacion');",
+                  "    pm.expect(n.titulo).to.include('ACTUALIZADO');",
+                  "    pm.expect(n.estadoNecesidadId).to.equal(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Mezcla profesional para EP indie rock - ACTUALIZADO\",\n    \"descripcion\": \"Actualizado: Buscamos ingeniero con experiencia en indie rock y folk.\",\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 200.00,\n    \"presupuestoMax\": 900.00,\n    \"monedaId\": 1,\n    \"fechaLimitePropuestas\": \"2026-07-20T00:00:00Z\",\n    \"fechaInicioPrevista\": \"2026-08-05T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "{{necesidadId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "07. GET Necesidad By ID - Verify Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Updated data reflects changes', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const n = json.data;",
+                  "    pm.expect(n.titulo).to.include('ACTUALIZADO');",
+                  "    pm.expect(n.presupuestoMin).to.equal(200.00);",
+                  "    pm.expect(n.presupuestoMax).to.equal(900.00);",
+                  "    pm.expect(n.fechaActualizacion).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "{{necesidadId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "08. PATCH Close Necesidad (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Close response contains correct data', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const r = json.data;",
+                  "    pm.expect(r).to.have.property('id');",
+                  "    pm.expect(r).to.have.property('estadoNecesidadNombre');",
+                  "    pm.expect(r).to.have.property('propuestasRechazadas');",
+                  "    pm.expect(r.estadoNecesidadNombre).to.equal('Cerrada');",
+                  "    pm.expect(r.propuestasRechazadas).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Ya no necesitamos este servicio porque decidimos cambiar el enfoque del proyecto\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/cerrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "{{necesidadId}}",
+                "cerrar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "09. GET Necesidad By ID - Verify Closed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Necesidad is now closed (estado = 3)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    const n = json.data;",
+                  "    pm.expect(n.estadoNecesidadId).to.equal(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "{{necesidadId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Necesidades - Validation Errors",
+      "item": [
+        {
+          "name": "POST 400 - Titulo Vacio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error 1001 (Required)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    pm.expect(json.messages).to.be.a('array');",
+                  "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+                  "    const error = json.messages.find(m => m.errorCode === '1001');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"\",\n    \"descripcion\": \"Descripcion valida pero titulo vacio\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 100.00,\n    \"presupuestoMax\": 500.00,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Titulo Menor a 5 Caracteres",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is 1011 (MinLength)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    const error = json.messages.find(m => m.errorCode === '1011');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Abc\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Presupuesto Max Menor a Min",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is 1009 (InvalidRange)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    const error = json.messages.find(m => m.errorCode === '1009');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Presupuesto invertido test\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 800.00,\n    \"presupuestoMax\": 150.00,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Moneda Requerida si Hay Presupuesto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is 1001 for MonedaId', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    const error = json.messages.find(m => m.errorCode === '1001' && m.propertyName === 'MonedaId');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Sin moneda con presupuesto test\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 100.00,\n    \"presupuestoMax\": 500.00,\n    \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Necesidades - Business Rule Errors",
+      "item": [
+        {
+          "name": "PUT 400 - No Editar Necesidad Cerrada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is 4001 (NotEditable)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    const error = json.messages.find(m => m.errorCode === '4001');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Intento de editar necesidad cerrada\",\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 100.00,\n    \"presupuestoMax\": 500.00,\n    \"monedaId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "{{necesidadId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH 400 - No Cerrar Necesidad Ya Cerrada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is 4002 (NotCloseable)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    const error = json.messages.find(m => m.errorCode === '4002');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Intentando cerrar nuevamente\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}/cerrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "{{necesidadId}}",
+                "cerrar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Necesidades - Auth Errors",
+      "item": [
+        {
+          "name": "GET 401 - Sin Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/mis-necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "mis-necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 401 - Token Invalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token_xyz"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Test sin auth\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"proyectoArtisticoId\": \"00000000-0000-0000-0000-000000000001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Necesidades - Not Found",
+      "item": [
+        {
+          "name": "GET 404 - Necesidad No Existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response indicates resource not found', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    pm.expect(json.messages).to.be.a('array');",
+                  "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+                  "    const error = json.messages.find(m => m.errorCode && m.errorCode.startsWith('20'));",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/11111111-1111-1111-1111-111111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "11111111-1111-1111-1111-111111111111"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT 400 - Update Necesidad No Existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request (validator rejects non-existent)', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is 4001 (validator cannot find entity)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.hasErrors).to.be.true;",
+                  "    const error = json.messages.find(m => m.errorCode === '4001');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Necesidad que no existe test\",\n    \"modalidadTrabajoId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/11111111-1111-1111-1111-111111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdsourcing",
+                "necesidades",
+                "11111111-1111-1111-1111-111111111111"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "testEmail",
+      "value": "usuario1@mail.com",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "123456",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "necesidadId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

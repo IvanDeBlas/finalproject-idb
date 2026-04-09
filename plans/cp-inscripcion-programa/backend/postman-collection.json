@@ -1,0 +1,1153 @@
+{
+  "info": {
+    "name": "WePlay.Inscripcion.IntegrationTests",
+    "description": "Coleccion de pruebas de integracion para la feature cp-inscripcion-programa (US-CP-03). Valida el lifecycle completo de inscripciones de promotores en programas: exploracion, solicitud, aprobacion, rechazo, bloqueo y baja.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Login Promotor (usuario1)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('promotorEmail', 'usuario1@mail.com');",
+                  "pm.collectionVariables.set('promotorPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Promotor token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('promotorToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{promotorEmail}}\",\n  \"password\": \"{{promotorPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Login Artista (api-test)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('artistaEmail', 'api-test@mail.com');",
+                  "pm.collectionVariables.set('artistaPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Artista token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('artistaToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{artistaEmail}}\",\n  \"password\": \"{{artistaPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inscripcion - Happy Path",
+      "item": [
+        {
+          "name": "01. GET Explorar Programas (Promotor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response contains programs list', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    pm.expect(json.data.items.length).to.be.greaterThan(0);",
+                  "});",
+                  "pm.test('First program saved as test data', function () {",
+                  "    const json = pm.response.json();",
+                  "    const programa = json.data.items[0];",
+                  "    pm.expect(programa.id).to.exist;",
+                  "    pm.expect(programa.titulo).to.exist;",
+                  "    pm.collectionVariables.set('programaId', programa.id);",
+                  "    pm.collectionVariables.set('programaTitulo', programa.titulo);",
+                  "    pm.collectionVariables.set('miEstado', programa.miEstado);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/explorar?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "explorar"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. POST Solicitar Inscripcion en Programa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Inscripcion created and pendiente', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.exist;",
+                  "    pm.expect(json.data.esAprobado).to.be.false;",
+                  "    pm.expect(json.data.esBloqueado).to.be.false;",
+                  "    pm.collectionVariables.set('inscripcionId', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripcion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripcion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Mis Inscripciones del Promotor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Promotor inscripciones list retrieved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    const inscripcion = json.data.items.find(i => i.id === pm.collectionVariables.get('inscripcionId'));",
+                  "    pm.expect(inscripcion).to.exist;",
+                  "    pm.expect(inscripcion.estado).to.equal('Pendiente');",
+                  "    pm.expect(inscripcion.esAprobado).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/mis-programas?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "mis-programas"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. GET Inscripciones del Programa (Artista)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Program inscripciones list retrieved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.items).to.be.an('array');",
+                  "    const inscripcion = json.data.items.find(i => i.id === pm.collectionVariables.get('inscripcionId'));",
+                  "    pm.expect(inscripcion).to.exist;",
+                  "    pm.expect(inscripcion.estado).to.equal('Pendiente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. PATCH Aprobar Inscripcion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Inscripcion approved with codigo referido', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.exist;",
+                  "    pm.expect(json.data.esAprobado).to.be.true;",
+                  "    pm.expect(json.data.esBloqueado).to.be.false;",
+                  "    pm.expect(json.data.codigoReferido).to.exist;",
+                  "    pm.collectionVariables.set('codigoReferido', json.data.codigoReferido);",
+                  "    if (json.data.urlTrackingPersonalizada) {",
+                  "        pm.collectionVariables.set('urlTracking', json.data.urlTrackingPersonalizada);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones/{{inscripcionId}}/aprobar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones",
+                "{{inscripcionId}}",
+                "aprobar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "06. GET Mis Inscripciones Verificar Aprobacion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Inscripcion es aprobada con codigo y tareas', function () {",
+                  "    const json = pm.response.json();",
+                  "    const inscripcion = json.data.items.find(i => i.id === pm.collectionVariables.get('inscripcionId'));",
+                  "    pm.expect(inscripcion).to.exist;",
+                  "    pm.expect(inscripcion.estado).to.equal('Aprobado');",
+                  "    pm.expect(inscripcion.esAprobado).to.be.true;",
+                  "    pm.expect(inscripcion.codigoReferido).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/mis-programas?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "mis-programas"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inscripcion - Validaciones",
+      "item": [
+        {
+          "name": "01. POST 400 - Inscripcion Duplicada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error indica inscripcion duplicada', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+                  "    const mensaje = json.messages[0].errorCode;",
+                  "    pm.expect(['4021', '4022']).to.include(mensaje);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripcion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripcion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. POST 404 - Programa No Existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Error programa no encontrado', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages[0].errorCode).to.equal('2019');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/00000000-0000-0000-0000-000000000000/inscripcion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "00000000-0000-0000-0000-000000000000",
+                "inscripcion"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inscripcion - Acciones Artista",
+      "item": [
+        {
+          "name": "01. POST Solicitar Nueva Inscripcion (para Rechazar)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Find a different program to request",
+                  "const json = pm.response.json();",
+                  "if (json.data) {",
+                  "    pm.collectionVariables.set('inscripcionId2', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripcion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripcion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. PATCH Rechazar Inscripcion (Eliminacion Fisica)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "pm.test('Inscripcion rechazada (eliminada)', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (pm.response.code === 200) {",
+                  "        pm.expect(json.isSuccess).to.be.true;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones/{{inscripcionId2}}/rechazar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones",
+                "{{inscripcionId2}}",
+                "rechazar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Verificar Inscripcion Rechazada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rechazada inscripcion no aparece en lista', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.items) {",
+                  "        const found = json.data.items.find(i => i.id === pm.collectionVariables.get('inscripcionId2'));",
+                  "        pm.expect(found).to.not.exist;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones?estado=Pendiente&page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "Pendiente"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inscripcion - Bloqueo y Baja",
+      "item": [
+        {
+          "name": "01. PATCH Bloquear Inscripcion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Inscripcion bloqueada', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.esBloqueado).to.be.true;",
+                  "    pm.collectionVariables.set('inscripcionBloqueada', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones/{{inscripcionId}}/bloquear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones",
+                "{{inscripcionId}}",
+                "bloquear"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET Verificar Inscripcion Bloqueada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Inscripcion aparece como Bloqueada', function () {",
+                  "    const json = pm.response.json();",
+                  "    const inscripcion = json.data.items.find(i => i.id === pm.collectionVariables.get('inscripcionId'));",
+                  "    pm.expect(inscripcion).to.exist;",
+                  "    pm.expect(inscripcion.estado).to.equal('Bloqueado');",
+                  "    pm.expect(inscripcion.esBloqueado).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones?estado=Bloqueado&page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "Bloqueado"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inscripcion - Errores de Autenticacion",
+      "item": [
+        {
+          "name": "01. GET 401 - Sin Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/explorar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "explorar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. PATCH 403 - No Es Propietario del Programa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 o 400', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 403]);",
+                  "});",
+                  "pm.test('Error indica falta de ownership', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{promotorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones/{{inscripcionId}}/aprobar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones",
+                "{{inscripcionId}}",
+                "aprobar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inscripcion - Not Found",
+      "item": [
+        {
+          "name": "01. PATCH 404 - Inscripcion No Existe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Error indica inscripcion no encontrada', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages[0].errorCode).to.equal('2020');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/inscripciones/00000000-0000-0000-0000-000000000000/aprobar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "inscripciones",
+                "00000000-0000-0000-0000-000000000000",
+                "aprobar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET 404 - Programa No Existe (Artista)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Error programa no encontrado', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/00000000-0000-0000-0000-000000000000/inscripciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "00000000-0000-0000-0000-000000000000",
+                "inscripciones"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "promotorEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promotorPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promotorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "programaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "programaTitulo",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "inscripcionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "inscripcionId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "codigoReferido",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "urlTracking",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "miEstado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "inscripcionBloqueada",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

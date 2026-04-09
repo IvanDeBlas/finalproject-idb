@@ -1,0 +1,57 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=WePlayRises2024!
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "WePlayRises2024!" -Q "SELECT 1" -b -C || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  api:
+    build:
+      context: ./src/api
+      dockerfile: Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=WePlayRises;User Id=sa;Password=WePlayRises2024!;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - Jwt__Key=WePlayRisesDockerSecretKey123456789
+      - ApplyMigrations=true
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./src
+      dockerfile: web/Dockerfile
+      args:
+        VITE_API_URL: /api
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+  admin:
+    build:
+      context: ./src
+      dockerfile: admin/Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      - INTERNAL_API_URL=http://api:8080
+    depends_on:
+      - api
+
+volumes:
+  sqlserver-data:

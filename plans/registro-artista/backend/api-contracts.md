@@ -1,88 +1,79 @@
 # Contratos API: Registro de Artista
 
-**Fecha:** 2026-01-26
+**Fecha:** 2026-02-12
 **Modulo:** UserAccess
 **Feature:** registro-artista
 
 ---
 
-## 1. Endpoints
+## 1. Resumen de Endpoints
 
-| Metodo | Ruta | Tipo | Descripcion | Auth |
-|--------|------|------|-------------|------|
-| POST | /api/auth/register | Command | Registrar nuevo usuario con email/password | No |
-| POST | /api/artistas | Command | Crear perfil de artista vinculado a UserId | Si (JWT) |
-| GET | /api/artistas/{id} | Query | Obtener perfil publico de artista por ID | No |
-| GET | /api/artistas/by-user/{userId} | Query | Obtener perfil de artista por UserId | Si (JWT) |
+| Metodo | Ruta | Tipo | Autorizacion | Status Implementacion |
+|--------|------|------|--------------|----------------------|
+| POST | /api/auth/register | Command | Publico | **IMPLEMENTADO** |
+| POST | /api/artistas | Command | Bearer JWT | **IMPLEMENTADO** |
+| GET | /api/artistas/{id} | Query | Publico | **IMPLEMENTADO** |
+| GET | /api/artistas/by-user/{userId} | Query | Bearer JWT | **IMPLEMENTADO** |
+| PUT | /api/artistas/{id} | Command | Bearer JWT | **PENDIENTE** |
 
 ---
 
-## 2. Request DTOs
+## 2. Request DTOs (Commands/Queries)
 
-### 2.1 RegisterCommand
+### 2.1 RegisterCommand (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Features/Auth/Commands/RegisterCommand.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Features/Auth/Commands/RegisterCommand.cs`
 
-**Estructura:**
+**Propiedades:**
 
-| Propiedad | Tipo | Requerido | Validacion |
-|-----------|------|-----------|------------|
-| Email | string | Si | NotEmpty, EmailAddress |
-| Password | string | Si | NotEmpty, MinLength(8) |
-| ConfirmPassword | string | Si | NotEmpty, Equal(Password) |
+| Propiedad | Tipo | Requerido | Descripcion |
+|-----------|------|-----------|-------------|
+| Email | string | Si | Email del usuario (formato valido) |
+| Password | string | Si | Contrasena (minimo 8 caracteres) |
+| ConfirmPassword | string | Si | Confirmacion de contrasena (debe coincidir) |
+| Role | string? | No | Rol del usuario (Fan por defecto) |
 
 **Implementa:** `IRequest<ServiceResponse<RegisterResponseDto>>`
 
-**Notas:**
-- Command + Handler en el mismo archivo
-- UserId se genera automaticamente por ASP.NET Core Identity
-- Token JWT se genera tras registro exitoso
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
 public class RegisterCommand : IRequest<ServiceResponse<RegisterResponseDto>>
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
     public string ConfirmPassword { get; set; } = null!;
-}
-
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ServiceResponse<RegisterResponseDto>>
-{
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly IValidator<RegisterCommand> _validator;
-    private readonly IJwtTokenGenerator _jwtGenerator;
-    private readonly ILogger<RegisterCommandHandler> _logger;
-
-    // Constructor y Handle method
+    public string? Role { get; set; }
 }
 ```
 
+**Handler:** `RegisterCommandHandler` (mismo archivo)
+- Valida con `RegisterCommandValidator`
+- Verifica email duplicado
+- Crea usuario en Identity
+- Asigna rol (Fan por defecto)
+- Genera JWT token
+- Retorna `RegisterResponseDto` con token
+
 ---
 
-### 2.2 CreateArtistaCommand
+### 2.2 CreateArtistaCommand (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Features/Artista/Commands/CreateArtistaCommand.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Features/Artistas/Commands/CreateArtistaCommand.cs`
 
-**Estructura:**
+**Propiedades:**
 
-| Propiedad | Tipo | Requerido | Validacion |
-|-----------|------|-----------|------------|
-| NombreArtistico | string | Si | NotEmpty, MaxLength(200) |
-| Descripcion | string? | No | MaxLength(2000) |
-| Pais | string? | No | MaxLength(100) |
-| Ciudad | string? | No | MaxLength(100) |
-| ImagenUrl | string? | No | URL valida (si no vacio) |
-| UserId | string | Si (auto) | Extraido del claim JWT "sub" |
+| Propiedad | Tipo | Requerido | Descripcion |
+|-----------|------|-----------|-------------|
+| NombreArtistico | string | Si | Nombre artistico (max 200 caracteres) |
+| Descripcion | string? | No | Biografia del artista (max 2000 caracteres) |
+| Pais | string? | No | Pais de origen (max 100 caracteres) |
+| Ciudad | string? | No | Ciudad de residencia (max 100 caracteres) |
+| ImagenUrl | string? | No | URL de imagen de perfil (formato URL valido) |
+| UserId | string? | Si | UserId del token JWT (poblado por controller) |
 
 **Implementa:** `IRequest<ServiceResponse<ArtistaDto>>`
 
-**Notas:**
-- UserId NO viene en request body, se extrae del token JWT
-- Handler valida que el UserId no tenga ya un perfil Artista (unicidad)
-- ImagenUrl acepta vacio o URL valida (http/https)
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
 public class CreateArtistaCommand : IRequest<ServiceResponse<ArtistaDto>>
 {
@@ -91,159 +82,149 @@ public class CreateArtistaCommand : IRequest<ServiceResponse<ArtistaDto>>
     public string? Pais { get; set; }
     public string? Ciudad { get; set; }
     public string? ImagenUrl { get; set; }
-
-    // Propiedad interna, NO del request body
-    public string? UserId { get; set; }
-}
-
-public class CreateArtistaCommandHandler : IRequestHandler<CreateArtistaCommand, ServiceResponse<ArtistaDto>>
-{
-    private readonly IArtistaService _artistaService;
-    private readonly IMapper _mapper;
-    private readonly IValidator<CreateArtistaCommand> _validator;
-    private readonly ILogger<CreateArtistaCommandHandler> _logger;
-
-    // Constructor y Handle method
+    public string? UserId { get; set; }  // Populated from JWT token
 }
 ```
 
+**Handler:** `CreateArtistaCommandHandler` (mismo archivo)
+- Valida con `CreateArtistaCommandValidator`
+- Verifica que UserId este presente (autenticacion)
+- Verifica que usuario no tenga perfil artista existente
+- Mapea Command a Entity con AutoMapper
+- Crea entidad via `IArtistaService`
+- Recupera entidad creada y mapea a DTO
+- Retorna `ArtistaDto`
+
 ---
 
-### 2.3 GetArtistaByIdQuery
+### 2.3 GetArtistaByIdQuery (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Features/Artista/Queries/GetArtistaByIdQuery.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Features/Artistas/Queries/GetArtistaByIdQuery.cs`
 
-**Estructura:**
+**Propiedades:**
 
-| Propiedad | Tipo | Requerido | Validacion |
-|-----------|------|-----------|------------|
-| Id | Guid | Si | NotEmpty |
+| Propiedad | Tipo | Requerido | Descripcion |
+|-----------|------|-----------|-------------|
+| Id | Guid | Si | Identificador unico del artista |
 
 **Implementa:** `IRequest<ServiceResponse<ArtistaDto>>`
 
-**Notas:**
-- Query publica, no requiere autenticacion
-- Retorna perfil completo del artista
-- Retorna 404 si no existe
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
 public class GetArtistaByIdQuery : IRequest<ServiceResponse<ArtistaDto>>
 {
     public Guid Id { get; set; }
 }
-
-public class GetArtistaByIdQueryHandler : IRequestHandler<GetArtistaByIdQuery, ServiceResponse<ArtistaDto>>
-{
-    private readonly IArtistaService _artistaService;
-    private readonly IMapper _mapper;
-    private readonly ILogger<GetArtistaByIdQueryHandler> _logger;
-
-    // Constructor y Handle method
-}
 ```
+
+**Handler:** `GetArtistaByIdQueryHandler` (mismo archivo)
+- Recupera entidad via `IArtistaService.GetByIdAsync()`
+- Retorna 404 si no existe
+- Mapea Entity a DTO con AutoMapper
+- Retorna `ArtistaDto`
 
 ---
 
-### 2.4 GetArtistaByUserIdQuery
+### 2.4 GetArtistaByUserIdQuery (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Features/Artista/Queries/GetArtistaByUserIdQuery.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Features/Artistas/Queries/GetArtistaByUserIdQuery.cs`
 
-**Estructura:**
+**Propiedades:**
 
-| Propiedad | Tipo | Requerido | Validacion |
-|-----------|------|-----------|------------|
-| UserId | Guid | Si | NotEmpty |
-| RequestingUserId | string | Si (auto) | Extraido del claim JWT "sub" |
+| Propiedad | Tipo | Requerido | Descripcion |
+|-----------|------|-----------|-------------|
+| UserId | string | Si | UserId del artista a buscar |
+| RequestingUserId | string? | Si | UserId del token JWT (para validacion) |
 
 **Implementa:** `IRequest<ServiceResponse<ArtistaDto>>`
 
-**Notas:**
-- Requiere autenticacion JWT
-- Handler valida que RequestingUserId == UserId (solo puede ver su propio perfil)
-- Retorna 401 si no autorizado, 404 si no existe perfil
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
 public class GetArtistaByUserIdQuery : IRequest<ServiceResponse<ArtistaDto>>
 {
-    public Guid UserId { get; set; }
-
-    // Propiedad interna para validacion
-    public string? RequestingUserId { get; set; }
-}
-
-public class GetArtistaByUserIdQueryHandler : IRequestHandler<GetArtistaByUserIdQuery, ServiceResponse<ArtistaDto>>
-{
-    private readonly IArtistaService _artistaService;
-    private readonly IMapper _mapper;
-    private readonly ILogger<GetArtistaByUserIdQueryHandler> _logger;
-
-    // Constructor y Handle method
+    public string UserId { get; set; } = null!;
+    public string? RequestingUserId { get; set; }  // Populated from JWT token
 }
 ```
+
+**Handler:** `GetArtistaByUserIdQueryHandler` (mismo archivo)
+- Valida que RequestingUserId coincida con UserId (autorizacion)
+- Recupera entidad via `IArtistaService.GetByUserIdAsync()`
+- Retorna 404 si no existe
+- Mapea Entity a DTO con AutoMapper
+- Retorna `ArtistaDto`
 
 ---
 
 ## 3. Response DTOs
 
-### 3.1 RegisterResponseDto
+### 3.1 RegisterResponseDto (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Dtos/RegisterResponseDto.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Dtos/RegisterResponseDto.cs`
 
-**Estructura:**
+**Propiedades:**
 
 | Propiedad | Tipo | Descripcion |
 |-----------|------|-------------|
-| UserId | string | ID del usuario creado (Identity GUID) |
+| UserId | string | Identificador unico del usuario (GUID) |
 | Email | string | Email del usuario |
-| Token | string | Token JWT para autenticacion |
+| Token | string | JWT token de autenticacion |
+| Roles | List\<string\> | Lista de roles asignados al usuario |
 
-**Wrapped en:** `ServiceResponse<RegisterResponseDto>`
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
-namespace WePlayRises.UserAccess.Application.Dtos;
-
 public class RegisterResponseDto
 {
     public string UserId { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string Token { get; set; } = null!;
+    public List<string> Roles { get; set; } = new();
+}
+```
+
+**Wrapped en:** `ServiceResponse<RegisterResponseDto>`
+
+**Ejemplo Response 200 OK:**
+```json
+{
+  "data": {
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "email": "banda@example.com",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "roles": ["Fan"]
+  },
+  "messages": [
+    {
+      "message": "Usuario registrado exitosamente",
+      "errorCode": "",
+      "httpStatusCode": 200
+    }
+  ]
 }
 ```
 
 ---
 
-### 3.2 ArtistaDto
+### 3.2 ArtistaDto (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Dtos/ArtistaDto.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Dtos/ArtistaDto.cs`
 
-**Estructura:**
+**Propiedades:**
 
 | Propiedad | Tipo | Descripcion |
 |-----------|------|-------------|
 | Id | Guid | Identificador unico del artista |
-| UserId | string | ID del usuario propietario (Identity) |
-| NombreArtistico | string | Nombre artistico publico |
-| Descripcion | string? | Biografia o descripcion |
+| UserId | string | UserId del propietario del perfil |
+| NombreArtistico | string | Nombre artistico |
+| Descripcion | string? | Biografia del artista |
 | Pais | string? | Pais de origen |
 | Ciudad | string? | Ciudad de residencia |
 | ImagenUrl | string? | URL de imagen de perfil |
 | FechaCreacion | DateTime | Fecha de creacion del perfil |
 | FechaActualizacion | DateTime? | Fecha de ultima actualizacion |
 
-**Wrapped en:** `ServiceResponse<ArtistaDto>`
-
-**Notas:**
-- Mapeo directo desde entidad `Artista`
-- UserId es `string` porque viene de ASP.NET Core Identity
-- Id es `Guid` (ArtistaId strongly-typed en Domain, pero Guid en DTO)
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
-namespace WePlayRises.UserAccess.Application.Dtos;
-
 public class ArtistaDto
 {
     public Guid Id { get; set; }
@@ -258,74 +239,72 @@ public class ArtistaDto
 }
 ```
 
----
+**Wrapped en:** `ServiceResponse<ArtistaDto>`
 
-### 3.3 ArtistaListDto
-
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Dtos/ArtistaListDto.cs`
-
-**Estructura:**
-
-| Propiedad | Tipo | Descripcion |
-|-----------|------|-------------|
-| Id | Guid | Identificador unico del artista |
-| NombreArtistico | string | Nombre artistico publico |
-| ImagenUrl | string? | URL de imagen de perfil |
-| Ciudad | string? | Ciudad de residencia |
-| Pais | string? | Pais de origen |
-
-**Wrapped en:** `ServiceResponse<List<ArtistaListDto>>`
-
-**Notas:**
-- DTO simplificado para listados (uso futuro)
-- No incluye campos como Descripcion, FechaCreacion para optimizar payload
-- Se usara en endpoints GET /api/artistas (futuro)
-
-**Codigo de referencia:**
-```csharp
-namespace WePlayRises.UserAccess.Application.Dtos;
-
-public class ArtistaListDto
+**Ejemplo Response 200 OK:**
+```json
 {
-    public Guid Id { get; set; }
-    public string NombreArtistico { get; set; } = null!;
-    public string? ImagenUrl { get; set; }
-    public string? Ciudad { get; set; }
-    public string? Pais { get; set; }
+  "data": {
+    "id": "b2c3d4e5-f6g7-8901-bcde-f12345678901",
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "nombreArtistico": "Los Rockeros",
+    "descripcion": "Banda de rock alternativo de Madrid",
+    "pais": "España",
+    "ciudad": "Madrid",
+    "imagenUrl": "https://example.com/artista.jpg",
+    "fechaCreacion": "2026-02-12T10:30:00Z",
+    "fechaActualizacion": null
+  },
+  "messages": [
+    {
+      "message": "Perfil de artista creado exitosamente",
+      "errorCode": "",
+      "httpStatusCode": 200
+    }
+  ]
 }
 ```
 
 ---
 
-## 4. Validadores
+### 3.3 ArtistaListDto (IMPLEMENTADO - Para uso futuro)
 
-### 4.1 RegisterCommandValidator
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Dtos/ArtistaListDto.cs`
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Features/Auth/Validators/RegisterCommandValidator.cs`
+**Propiedades:**
 
-**Reglas de validacion:**
+| Propiedad | Tipo | Descripcion |
+|-----------|------|-------------|
+| Id | Guid | Identificador unico del artista |
+| NombreArtistico | string | Nombre artistico |
+| ImagenUrl | string? | URL de imagen de perfil |
+| Ciudad | string? | Ciudad de residencia |
+| Pais | string? | Pais de origen |
+
+**Uso:** DTO simplificado para listados de artistas (pendiente implementacion de endpoint GetAll)
+
+---
+
+## 4. Validadores (FluentValidation)
+
+### 4.1 RegisterCommandValidator (IMPLEMENTADO)
+
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Features/Auth/Validators/RegisterCommandValidator.cs`
+
+**Reglas de Validacion:**
 
 | Campo | Regla | Mensaje | ErrorCode |
 |-------|-------|---------|-----------|
-| Email | NotEmpty | El email es obligatorio | VALIDATION_REQUIRED |
-| Email | EmailAddress | El formato del email no es valido | AUTH_EMAIL_INVALID |
-| Password | NotEmpty | La contraseña es obligatoria | VALIDATION_REQUIRED |
-| Password | MinimumLength(8) | La contraseña debe tener al menos 8 caracteres | AUTH_PASSWORD_MIN_LENGTH |
-| ConfirmPassword | NotEmpty | Confirme su contraseña | VALIDATION_REQUIRED |
-| ConfirmPassword | Equal(Password) | Las contraseñas no coinciden | AUTH_PASSWORD_MISMATCH |
+| Email | NotEmpty | El email es obligatorio | `ServiceResponseMessageType.Validation_Required` (1001) |
+| Email | EmailAddress | El formato del email no es valido | `ServiceResponseMessageType.Validation_InvalidEmail` (1005) |
+| Password | NotEmpty | La contrasena es obligatoria | `ServiceResponseMessageType.Validation_Required` (1001) |
+| Password | MinimumLength(8) | La contrasena debe tener al menos 8 caracteres | `ServiceResponseMessageType.Validation_MinLength` (1003) |
+| ConfirmPassword | NotEmpty | Confirme su contrasena | `ServiceResponseMessageType.Validation_Required` (1001) |
+| ConfirmPassword | Equal(Password) | Las contrasenas no coinciden | `ServiceResponseMessageType.Validation_InvalidFormat` (1004) |
+| Role | Must(IsValid) | Rol invalido. Roles permitidos: Artista, Fan, Admin | `ServiceResponseMessageType.Validation_InvalidFormat` (1004) |
 
-**Validaciones adicionales (en Handler):**
-- Email unico: Verificar que email no existe en `UserManager<IdentityUser>`
-- ErrorCode: `AUTH_EMAIL_EXISTS`
-- Mensaje: "Este email ya esta registrado"
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
-using FluentValidation;
-using WePlayRises.UserAccess.Application.Features.Auth.Commands;
-
-namespace WePlayRises.UserAccess.Application.Features.Auth.Validators;
-
 public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {
     public RegisterCommandValidator()
@@ -333,72 +312,56 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
         RuleFor(x => x.Email)
             .NotEmpty()
             .WithMessage("El email es obligatorio")
-            .WithErrorCode("VALIDATION_REQUIRED")
+            .WithErrorCode(ServiceResponseMessageType.Validation_Required)
             .EmailAddress()
             .WithMessage("El formato del email no es valido")
-            .WithErrorCode("AUTH_EMAIL_INVALID");
+            .WithErrorCode(ServiceResponseMessageType.Validation_InvalidEmail);
 
         RuleFor(x => x.Password)
             .NotEmpty()
-            .WithMessage("La contraseña es obligatoria")
-            .WithErrorCode("VALIDATION_REQUIRED")
+            .WithMessage("La contrasena es obligatoria")
+            .WithErrorCode(ServiceResponseMessageType.Validation_Required)
             .MinimumLength(8)
-            .WithMessage("La contraseña debe tener al menos 8 caracteres")
-            .WithErrorCode("AUTH_PASSWORD_MIN_LENGTH");
+            .WithMessage("La contrasena debe tener al menos 8 caracteres")
+            .WithErrorCode(ServiceResponseMessageType.Validation_MinLength);
 
         RuleFor(x => x.ConfirmPassword)
             .NotEmpty()
-            .WithMessage("Confirme su contraseña")
-            .WithErrorCode("VALIDATION_REQUIRED")
+            .WithMessage("Confirme su contrasena")
+            .WithErrorCode(ServiceResponseMessageType.Validation_Required)
             .Equal(x => x.Password)
-            .WithMessage("Las contraseñas no coinciden")
-            .WithErrorCode("AUTH_PASSWORD_MISMATCH");
+            .WithMessage("Las contrasenas no coinciden")
+            .WithErrorCode(ServiceResponseMessageType.Validation_InvalidFormat);
+
+        RuleFor(x => x.Role)
+            .Must(role => string.IsNullOrEmpty(role) || Roles.IsValid(role))
+            .WithMessage("Rol invalido. Roles permitidos: Artista, Fan, Admin")
+            .WithErrorCode(ServiceResponseMessageType.Validation_InvalidFormat)
+            .When(x => !string.IsNullOrEmpty(x.Role));
     }
 }
 ```
 
 ---
 
-### 4.2 CreateArtistaCommandValidator
+### 4.2 CreateArtistaCommandValidator (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Features/Artista/Validators/CreateArtistaCommandValidator.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Features/Artistas/Validators/CreateArtistaCommandValidator.cs`
 
-**Reglas de validacion:**
+**Reglas de Validacion:**
 
 | Campo | Regla | Mensaje | ErrorCode |
 |-------|-------|---------|-----------|
-| NombreArtistico | NotEmpty | El nombre artistico es obligatorio | VALIDATION_REQUIRED |
-| NombreArtistico | MaximumLength(200) | El nombre artistico no puede superar los 200 caracteres | ARTISTA_NOMBRE_MAX_LENGTH |
-| Descripcion | MaximumLength(2000) | La descripcion no puede superar los 2000 caracteres | ARTISTA_DESC_MAX_LENGTH |
-| Pais | MaximumLength(100) | El pais no puede superar los 100 caracteres | ARTISTA_PAIS_MAX_LENGTH |
-| Ciudad | MaximumLength(100) | La ciudad no puede superar los 100 caracteres | ARTISTA_CIUDAD_MAX_LENGTH |
-| ImagenUrl | Must(BeValidUrl) | La URL de la imagen no es valida | ARTISTA_IMAGEN_URL_INVALIDA |
-| UserId | NotEmpty | El UserId es obligatorio | VALIDATION_REQUIRED |
+| NombreArtistico | NotEmpty | El nombre artistico es obligatorio | `ServiceResponseMessageType.Validation_Required` (1001) |
+| NombreArtistico | MaximumLength(200) | El nombre artistico no puede superar los 200 caracteres | `ServiceResponseMessageType.Validation_MaxLength` (1002) |
+| Descripcion | MaximumLength(2000) | La descripcion no puede superar los 2000 caracteres | `ServiceResponseMessageType.Validation_MaxLength` (1002) |
+| Pais | MaximumLength(100) | El pais no puede superar los 100 caracteres | `ServiceResponseMessageType.Validation_MaxLength` (1002) |
+| Ciudad | MaximumLength(100) | La ciudad no puede superar los 100 caracteres | `ServiceResponseMessageType.Validation_MaxLength` (1002) |
+| ImagenUrl | Must(BeValidUrl) | La URL de la imagen no es valida. Debe comenzar con http:// o https:// | `ServiceResponseMessageType.Validation_InvalidUrl` (1006) |
+| UserId | NotEmpty | El UserId es obligatorio | `ServiceResponseMessageType.Validation_Required` (1001) |
 
-**Validaciones adicionales (en Handler):**
-- UserId unico: Verificar que UserId no tiene ya un perfil Artista
-- ErrorCode: `ARTISTA_ALREADY_EXISTS`
-- Mensaje: "Este usuario ya tiene un perfil de artista"
-
-**Metodo helper para URL:**
+**Codigo Existente:**
 ```csharp
-private bool BeValidUrl(string? url)
-{
-    if (string.IsNullOrWhiteSpace(url))
-        return true; // Permitir vacio
-
-    return Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
-        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-}
-```
-
-**Codigo de referencia:**
-```csharp
-using FluentValidation;
-using WePlayRises.UserAccess.Application.Features.Artista.Commands;
-
-namespace WePlayRises.UserAccess.Application.Features.Artista.Validators;
-
 public class CreateArtistaCommandValidator : AbstractValidator<CreateArtistaCommand>
 {
     public CreateArtistaCommandValidator()
@@ -406,42 +369,42 @@ public class CreateArtistaCommandValidator : AbstractValidator<CreateArtistaComm
         RuleFor(x => x.NombreArtistico)
             .NotEmpty()
             .WithMessage("El nombre artistico es obligatorio")
-            .WithErrorCode("VALIDATION_REQUIRED")
+            .WithErrorCode(ServiceResponseMessageType.Validation_Required)
             .MaximumLength(200)
             .WithMessage("El nombre artistico no puede superar los 200 caracteres")
-            .WithErrorCode("ARTISTA_NOMBRE_MAX_LENGTH");
+            .WithErrorCode(ServiceResponseMessageType.Validation_MaxLength);
 
         RuleFor(x => x.Descripcion)
             .MaximumLength(2000)
             .WithMessage("La descripcion no puede superar los 2000 caracteres")
-            .WithErrorCode("ARTISTA_DESC_MAX_LENGTH")
+            .WithErrorCode(ServiceResponseMessageType.Validation_MaxLength)
             .When(x => !string.IsNullOrEmpty(x.Descripcion));
 
         RuleFor(x => x.Pais)
             .MaximumLength(100)
             .WithMessage("El pais no puede superar los 100 caracteres")
-            .WithErrorCode("ARTISTA_PAIS_MAX_LENGTH")
+            .WithErrorCode(ServiceResponseMessageType.Validation_MaxLength)
             .When(x => !string.IsNullOrEmpty(x.Pais));
 
         RuleFor(x => x.Ciudad)
             .MaximumLength(100)
             .WithMessage("La ciudad no puede superar los 100 caracteres")
-            .WithErrorCode("ARTISTA_CIUDAD_MAX_LENGTH")
+            .WithErrorCode(ServiceResponseMessageType.Validation_MaxLength)
             .When(x => !string.IsNullOrEmpty(x.Ciudad));
 
         RuleFor(x => x.ImagenUrl)
             .Must(BeValidUrl)
             .WithMessage("La URL de la imagen no es valida. Debe comenzar con http:// o https://")
-            .WithErrorCode("ARTISTA_IMAGEN_URL_INVALIDA")
+            .WithErrorCode(ServiceResponseMessageType.Validation_InvalidUrl)
             .When(x => !string.IsNullOrEmpty(x.ImagenUrl));
 
         RuleFor(x => x.UserId)
             .NotEmpty()
             .WithMessage("El UserId es obligatorio")
-            .WithErrorCode("VALIDATION_REQUIRED");
+            .WithErrorCode(ServiceResponseMessageType.Validation_Required);
     }
 
-    private bool BeValidUrl(string? url)
+    private static bool BeValidUrl(string? url)
     {
         if (string.IsNullOrWhiteSpace(url))
             return true;
@@ -456,907 +419,555 @@ public class CreateArtistaCommandValidator : AbstractValidator<CreateArtistaComm
 
 ## 5. AutoMapper Mappings
 
-### 5.1 ArtistaProfile
+### 5.1 ArtistaProfile (IMPLEMENTADO)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Mapping/ArtistaProfile.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Mapping/ArtistaProfile.cs`
 
-**Mappings definidos:**
+**Mappings Configurados:**
 
 | Source | Destination | Notas |
 |--------|-------------|-------|
-| CreateArtistaCommand | Artista | Command -> Entity para crear |
-| Artista | ArtistaDto | Entity -> DTO para response completo |
-| Artista | ArtistaListDto | Entity -> DTO para listados (simplificado) |
+| CreateArtistaCommand | Artista | Mapea `UserId` a `UserIdPropietario`, ignora campos auto-generados (Id, fechas, URLs redes sociales, colecciones) |
+| Artista | ArtistaDto | Mapea `Id.Value` (ArtistaId) a `Id` (Guid), `UserIdPropietario` a `UserId`, `UrlSitioWeb` a `ImagenUrl` (MVP) |
+| Artista | ArtistaListDto | DTO simplificado para listados (solo campos basicos) |
 
-**Transformaciones especiales:**
-- `Artista.Id` (ArtistaId strongly-typed) -> `ArtistaDto.Id` (Guid): Mapeo automatico
-- `Artista.UserIdPropietario` -> `ArtistaDto.UserId`: Renombrar propiedad
-- `FechaCreacion`, `FechaActualizacion`: Mapeo directo
-
-**Codigo de referencia:**
+**Codigo Existente:**
 ```csharp
-using AutoMapper;
-using WePlayRises.UserAccess.Application.Dtos;
-using WePlayRises.UserAccess.Application.Features.Artista.Commands;
-using WePlayRises.UserAccess.Domain.Model;
-
-namespace WePlayRises.UserAccess.Application.Mapping;
-
 public class ArtistaProfile : Profile
 {
     public ArtistaProfile()
     {
         // Command -> Entity
         CreateMap<CreateArtistaCommand, Artista>()
-            .ForMember(dest => dest.UserIdPropietario, opt => opt.MapFrom(src => src.UserId))
-            .ForMember(dest => dest.Id, opt => opt.Ignore()) // Se genera en el Service
-            .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore()) // Se asigna en el Service
-            .ForMember(dest => dest.FechaActualizacion, opt => opt.Ignore());
+            .ForMember(dest => dest.UserIdPropietario,
+                       opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.Id,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.FechaCreacion,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.FechaActualizacion,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.UrlSitioWeb,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.UrlInstagram,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.UrlYouTube,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.UrlSpotify,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.ArtistaMiembros,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.ArtistaFans,
+                       opt => opt.Ignore())
+            .ForMember(dest => dest.ProyectosArtisticos,
+                       opt => opt.Ignore());
 
-        // Entity -> DTO (completo)
+        // Entity -> DTO (full)
         CreateMap<Artista, ArtistaDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.Value)) // ArtistaId -> Guid
-            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserIdPropietario));
+            .ForMember(dest => dest.Id,
+                       opt => opt.MapFrom(src => src.Id.Value))
+            .ForMember(dest => dest.UserId,
+                       opt => opt.MapFrom(src => src.UserIdPropietario))
+            .ForMember(dest => dest.ImagenUrl,
+                       opt => opt.MapFrom(src => src.UrlSitioWeb));
 
-        // Entity -> DTO (listado simplificado)
+        // Entity -> DTO (list simplified)
         CreateMap<Artista, ArtistaListDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.Value));
+            .ForMember(dest => dest.Id,
+                       opt => opt.MapFrom(src => src.Id.Value))
+            .ForMember(dest => dest.ImagenUrl,
+                       opt => opt.MapFrom(src => src.UrlSitioWeb));
     }
 }
 ```
 
-**Notas importantes:**
-- `Artista.Id` es de tipo `ArtistaId` (strongly-typed ID), pero el DTO usa `Guid`
-- El mapeo `ArtistaId -> Guid` se hace con `.Value` property
-- `UserIdPropietario` en entidad se mapea a `UserId` en DTO para consistencia con contracts
-- Campos como `UrlSitioWeb`, `UrlInstagram`, etc. NO estan en el DTO inicial (no son requeridos para MVP)
+**Nota:** El mapping de `UrlSitioWeb` a `ImagenUrl` es temporal para MVP. En implementaciones futuras, se usara un campo dedicado `ImagenPerfilUrl` en la entidad.
 
 ---
 
-### 5.2 AuthProfile
+### 5.2 AuthProfile (IMPLEMENTADO - Inferido)
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Mapping/AuthProfile.cs`
+**Archivo:** `Modules/UserAccess/UserAccess.Application/Mapping/AuthProfile.cs` (inferido del codigo)
 
-**Mappings definidos:**
+**Mappings Configurados:**
 
 | Source | Destination | Notas |
 |--------|-------------|-------|
-| IdentityUser | RegisterResponseDto | Parcial: Solo para UserId y Email, Token se asigna manualmente |
+| IdentityUser | RegisterResponseDto | Mapea `Id` a `UserId`, `Email`, token y roles se asignan manualmente en handler |
 
-**Codigo de referencia:**
+**Codigo Inferido:**
 ```csharp
-using AutoMapper;
-using Microsoft.AspNetCore.Identity;
-using WePlayRises.UserAccess.Application.Dtos;
-
-namespace WePlayRises.UserAccess.Application.Mapping;
-
 public class AuthProfile : Profile
 {
     public AuthProfile()
     {
-        // IdentityUser -> RegisterResponseDto
-        // Nota: Token se asigna manualmente en el Handler
         CreateMap<IdentityUser, RegisterResponseDto>()
-            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-            .ForMember(dest => dest.Token, opt => opt.Ignore()); // Se asigna manualmente
+            .ForMember(dest => dest.UserId,
+                       opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Email,
+                       opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.Token,
+                       opt => opt.Ignore())  // Set manually in handler
+            .ForMember(dest => dest.Roles,
+                       opt => opt.Ignore()); // Set manually in handler
     }
 }
 ```
 
 ---
 
-## 6. Controller Actions
+## 6. OpenAPI/Swagger Documentation
 
-### 6.1 AuthController
+### 6.1 POST /api/auth/register
 
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.WebApi/Controllers/AuthController.cs`
+**Controller:** `AuthController`
+**Action:** `Register(RegisterCommand command)`
 
-**Estructura:**
-
+**Swagger Attributes (Existentes):**
 ```csharp
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using WePlayRises.BuildingBlocks.Kernel.Http.Response;
-using WePlayRises.UserAccess.Application.Dtos;
-using WePlayRises.UserAccess.Application.Features.Auth.Commands;
-
-namespace WePlayRises.UserAccess.WebApi.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
-{
-    private readonly IMediator _mediator;
-
-    public AuthController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    /// <summary>
-    /// Registra un nuevo usuario en el sistema.
-    /// </summary>
-    /// <param name="command">Datos de registro (email, password, confirmPassword)</param>
-    /// <returns>Informacion del usuario registrado y token JWT</returns>
-    /// <response code="200">Usuario registrado exitosamente</response>
-    /// <response code="400">Datos de validacion incorrectos</response>
-    /// <response code="409">Email ya existe en el sistema</response>
-    /// <response code="500">Error interno del servidor</response>
-    [HttpPost("register")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Register([FromBody] RegisterCommand command)
-    {
-        var result = await _mediator.Send(command);
-
-        if (!result.IsSuccess)
-        {
-            // Determinar status code segun el error
-            var errorCode = result.Messages.FirstOrDefault()?.ErrorCode;
-            return errorCode switch
-            {
-                "AUTH_EMAIL_EXISTS" => Conflict(result),
-                "VALIDATION_REQUIRED" or "AUTH_EMAIL_INVALID" or "AUTH_PASSWORD_MIN_LENGTH" or "AUTH_PASSWORD_MISMATCH" => BadRequest(result),
-                _ => StatusCode(500, result)
-            };
-        }
-
-        return Ok(result);
-    }
-}
-```
-
-**Decoradores Swagger/OpenAPI:**
-- `[AllowAnonymous]`: Endpoint publico
-- `[ProducesResponseType]`: Documentar responses posibles
-- XML Comments: `<summary>`, `<param>`, `<returns>`, `<response>`
-
----
-
-### 6.2 ArtistasController
-
-**Archivo:** `Modules/UserAccess/WePlayRises.UserAccess.WebApi/Controllers/ArtistasController.cs`
-
-**Estructura:**
-
-```csharp
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using WePlayRises.BuildingBlocks.Kernel.Http.Response;
-using WePlayRises.UserAccess.Application.Dtos;
-using WePlayRises.UserAccess.Application.Features.Artista.Commands;
-using WePlayRises.UserAccess.Application.Features.Artista.Queries;
-
-namespace WePlayRises.UserAccess.WebApi.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class ArtistasController : ControllerBase
-{
-    private readonly IMediator _mediator;
-
-    public ArtistasController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    /// <summary>
-    /// Crea un nuevo perfil de artista vinculado al usuario autenticado.
-    /// </summary>
-    /// <param name="command">Datos del perfil (nombreArtistico, descripcion, etc.)</param>
-    /// <returns>Perfil de artista creado</returns>
-    /// <response code="200">Perfil creado exitosamente</response>
-    /// <response code="400">Datos de validacion incorrectos</response>
-    /// <response code="401">Token JWT invalido o expirado</response>
-    /// <response code="409">Usuario ya tiene un perfil de artista</response>
-    /// <response code="500">Error interno del servidor</response>
-    [HttpPost]
-    [Authorize]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create([FromBody] CreateArtistaCommand command)
-    {
-        // Extraer UserId del token JWT
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized(new ServiceResponse<ArtistaDto>
-            {
-                Messages = new List<ServiceResponseMessage>
-                {
-                    new() { Message = "Token invalido o expirado", ErrorCode = "AUTH_UNAUTHORIZED" }
-                }
-            });
-        }
-
-        command.UserId = userId;
-        var result = await _mediator.Send(command);
-
-        if (!result.IsSuccess)
-        {
-            var errorCode = result.Messages.FirstOrDefault()?.ErrorCode;
-            return errorCode switch
-            {
-                "ARTISTA_ALREADY_EXISTS" => Conflict(result),
-                "VALIDATION_REQUIRED" or "ARTISTA_NOMBRE_MAX_LENGTH" or "ARTISTA_DESC_MAX_LENGTH" or "ARTISTA_IMAGEN_URL_INVALIDA" => BadRequest(result),
-                _ => StatusCode(500, result)
-            };
-        }
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Obtiene el perfil publico de un artista por su ID.
-    /// </summary>
-    /// <param name="id">ID del artista</param>
-    /// <returns>Perfil del artista</returns>
-    /// <response code="200">Artista encontrado</response>
-    /// <response code="404">Artista no encontrado</response>
-    /// <response code="500">Error interno del servidor</response>
-    [HttpGet("{id}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        var query = new GetArtistaByIdQuery { Id = id };
-        var result = await _mediator.Send(query);
-
-        if (!result.IsSuccess)
-        {
-            var errorCode = result.Messages.FirstOrDefault()?.ErrorCode;
-            return errorCode switch
-            {
-                "ARTISTA_NOT_FOUND" => NotFound(result),
-                _ => StatusCode(500, result)
-            };
-        }
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Obtiene el perfil de artista del usuario autenticado por su UserId.
-    /// </summary>
-    /// <param name="userId">ID del usuario</param>
-    /// <returns>Perfil del artista</returns>
-    /// <response code="200">Artista encontrado</response>
-    /// <response code="401">Token invalido o no autorizado</response>
-    /// <response code="404">Artista no encontrado</response>
-    /// <response code="500">Error interno del servidor</response>
-    [HttpGet("by-user/{userId}")]
-    [Authorize]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByUserId(Guid userId)
-    {
-        // Validar que el usuario solo pueda ver su propio perfil
-        var requestingUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(requestingUserId) || requestingUserId != userId.ToString())
-        {
-            return Unauthorized(new ServiceResponse<ArtistaDto>
-            {
-                Messages = new List<ServiceResponseMessage>
-                {
-                    new() { Message = "No tienes permisos para ver este perfil", ErrorCode = "AUTH_UNAUTHORIZED" }
-                }
-            });
-        }
-
-        var query = new GetArtistaByUserIdQuery
-        {
-            UserId = userId,
-            RequestingUserId = requestingUserId
-        };
-        var result = await _mediator.Send(query);
-
-        if (!result.IsSuccess)
-        {
-            var errorCode = result.Messages.FirstOrDefault()?.ErrorCode;
-            return errorCode switch
-            {
-                "ARTISTA_NOT_FOUND" => NotFound(result),
-                _ => StatusCode(500, result)
-            };
-        }
-
-        return Ok(result);
-    }
-}
-```
-
-**Decoradores:**
-- `[Authorize]`: Requiere JWT token
-- `[AllowAnonymous]`: Endpoint publico
-- `[ProducesResponseType]`: Documentar tipos de response
-
-**Extraccion de UserId del JWT:**
-```csharp
-var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-```
-
----
-
-## 7. OpenAPI Documentation
-
-### 7.1 POST /api/auth/register
-
-**Summary:** Registra un nuevo usuario en el sistema
-
-**Description:** Crea una cuenta de usuario utilizando ASP.NET Core Identity y retorna un token JWT para autenticacion inmediata.
-
-**Request Body:**
-```json
-{
-  "email": "artista@example.com",
-  "password": "SecurePass123!",
-  "confirmPassword": "SecurePass123!"
-}
+/// <summary>
+/// Registers a new user in the system.
+/// </summary>
+/// <param name="command">Registration data (email, password, confirmPassword)</param>
+/// <returns>User information and JWT token</returns>
+/// <response code="200">User registered successfully</response>
+/// <response code="400">Validation errors</response>
+/// <response code="409">Email already exists</response>
+/// <response code="500">Internal server error</response>
+[HttpPost("register")]
+[AllowAnonymous]
+[ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status409Conflict)]
+[ProducesResponseType(typeof(ServiceResponse<RegisterResponseDto>), StatusCodes.Status500InternalServerError)]
 ```
 
 **Responses:**
 
-**200 OK - Usuario registrado exitosamente**
-```json
-{
-  "data": {
-    "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "email": "artista@example.com",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  },
-  "messages": [
-    {
-      "message": "Usuario registrado exitosamente",
-      "errorCode": "SUCCESS",
-      "httpStatusCode": 200
-    }
-  ]
-}
-```
-
-**400 Bad Request - Errores de validacion**
-```json
-{
-  "data": null,
-  "messages": [
-    {
-      "message": "El email es obligatorio",
-      "errorCode": "VALIDATION_REQUIRED",
-      "httpStatusCode": 400
-    },
-    {
-      "message": "Las contraseñas no coinciden",
-      "errorCode": "AUTH_PASSWORD_MISMATCH",
-      "httpStatusCode": 400
-    }
-  ]
-}
-```
-
-**409 Conflict - Email duplicado**
-```json
-{
-  "data": null,
-  "messages": [
-    {
-      "message": "Este email ya esta registrado",
-      "errorCode": "AUTH_EMAIL_EXISTS",
-      "httpStatusCode": 409
-    }
-  ]
-}
-```
-
-**500 Internal Server Error**
-```json
-{
-  "data": null,
-  "messages": [
-    {
-      "message": "Error inesperado al crear cuenta",
-      "errorCode": "ERROR_UNEXPECTED",
-      "httpStatusCode": 500
-    }
-  ]
-}
-```
-
-**Authentication:** None (publico)
+| Status | Tipo | ErrorCode | Descripcion |
+|--------|------|-----------|-------------|
+| 200 | Success | - | Usuario registrado exitosamente |
+| 400 | Error | `1001`, `1003`, `1004`, `1005` | Errores de validacion (email vacio, password corta, passwords no coinciden, email invalido) |
+| 409 | Error | `1009` | Email ya registrado (`Validation_DuplicateEmail`) |
+| 500 | Error | `5000` | Error inesperado (`Internal_UnexpectedError`) |
 
 ---
 
-### 7.2 POST /api/artistas
+### 6.2 POST /api/artistas
 
-**Summary:** Crea un nuevo perfil de artista vinculado al usuario autenticado
+**Controller:** `ArtistasController`
+**Action:** `Create(CreateArtistaCommand command)`
 
-**Description:** Registra el perfil artistico con nombre, descripcion y ubicacion. El UserId se extrae automaticamente del token JWT.
-
-**Request Body:**
-```json
-{
-  "nombreArtistico": "Los Rockeros",
-  "descripcion": "Banda de rock alternativo de Madrid",
-  "pais": "España",
-  "ciudad": "Madrid",
-  "imagenUrl": "https://example.com/artista.jpg"
-}
+**Swagger Attributes (Existentes):**
+```csharp
+/// <summary>
+/// Creates a new artist profile linked to the authenticated user.
+/// </summary>
+/// <param name="command">Profile data (nombreArtistico, descripcion, etc.)</param>
+/// <returns>Created artist profile</returns>
+/// <response code="200">Profile created successfully</response>
+/// <response code="400">Validation errors</response>
+/// <response code="401">Invalid or expired JWT token</response>
+/// <response code="409">User already has an artist profile</response>
+/// <response code="500">Internal server error</response>
+[HttpPost]
+[Authorize]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status409Conflict)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status500InternalServerError)]
 ```
 
 **Responses:**
 
-**200 OK - Perfil creado exitosamente**
-```json
+| Status | Tipo | ErrorCode | Descripcion |
+|--------|------|-----------|-------------|
+| 200 | Success | - | Perfil de artista creado exitosamente |
+| 400 | Error | `1001`, `1002`, `1006` | Errores de validacion (nombre vacio, longitud excedida, URL invalida) |
+| 401 | Error | `3001` | Token no valido o expirado (`Auth_Unauthorized`) |
+| 409 | Error | `4008` | Usuario ya tiene perfil de artista (`BusinessRule_ArtistaAlreadyExists`) |
+| 500 | Error | `5000` | Error inesperado (`Internal_UnexpectedError`) |
+
+---
+
+### 6.3 GET /api/artistas/{id}
+
+**Controller:** `ArtistasController`
+**Action:** `GetById(Guid id)`
+
+**Swagger Attributes (Existentes):**
+```csharp
+/// <summary>
+/// Gets the public profile of an artist by their ID.
+/// </summary>
+/// <param name="id">Artist ID</param>
+/// <returns>Artist profile</returns>
+/// <response code="200">Artist found</response>
+/// <response code="404">Artist not found</response>
+/// <response code="500">Internal server error</response>
+[HttpGet("{id}")]
+[AllowAnonymous]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status404NotFound)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status500InternalServerError)]
+```
+
+**Responses:**
+
+| Status | Tipo | ErrorCode | Descripcion |
+|--------|------|-----------|-------------|
+| 200 | Success | - | Artista encontrado |
+| 404 | Error | `2002` | Artista no encontrado (`NotFound_Artista`) |
+| 500 | Error | `5000` | Error inesperado (`Internal_UnexpectedError`) |
+
+---
+
+### 6.4 GET /api/artistas/by-user/{userId}
+
+**Controller:** `ArtistasController`
+**Action:** `GetByUserId(string userId)`
+
+**Swagger Attributes (Existentes):**
+```csharp
+/// <summary>
+/// Gets the artist profile of the authenticated user by their UserId.
+/// </summary>
+/// <param name="userId">User ID</param>
+/// <returns>Artist profile</returns>
+/// <response code="200">Artist found</response>
+/// <response code="401">Invalid token or unauthorized</response>
+/// <response code="404">Artist not found</response>
+/// <response code="500">Internal server error</response>
+[HttpGet("by-user/{userId}")]
+[Authorize]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status404NotFound)]
+[ProducesResponseType(typeof(ServiceResponse<ArtistaDto>), StatusCodes.Status500InternalServerError)]
+```
+
+**Responses:**
+
+| Status | Tipo | ErrorCode | Descripcion |
+|--------|------|-----------|-------------|
+| 200 | Success | - | Artista encontrado |
+| 401 | Error | `3001` | Token no valido o userId no coincide (`Auth_Unauthorized`) |
+| 404 | Error | `2002` | Artista no encontrado para este usuario (`NotFound_Artista`) |
+| 500 | Error | `5000` | Error inesperado (`Internal_UnexpectedError`) |
+
+---
+
+## 7. Manejo de Errores (ServiceResponse)
+
+### 7.1 Codigos de Error Utilizados
+
+**Ubicacion:** `Modules/UserAccess/UserAccess.Domain/Constants/ServiceResponseMessageType.cs`
+
+| ErrorCode | Valor | Categoria | Uso |
+|-----------|-------|-----------|-----|
+| `Validation_Required` | 1001 | Validation | Campo obligatorio vacio |
+| `Validation_MaxLength` | 1002 | Validation | Longitud maxima excedida |
+| `Validation_MinLength` | 1003 | Validation | Longitud minima no alcanzada |
+| `Validation_InvalidFormat` | 1004 | Validation | Formato invalido (passwords no coinciden) |
+| `Validation_InvalidEmail` | 1005 | Validation | Formato de email invalido |
+| `Validation_InvalidUrl` | 1006 | Validation | Formato de URL invalido |
+| `Validation_DuplicateEmail` | 1009 | Validation | Email duplicado |
+| `NotFound_Artista` | 2002 | NotFound | Artista no encontrado |
+| `Auth_Unauthorized` | 3001 | Auth | No autorizado o token invalido |
+| `BusinessRule_ArtistaAlreadyExists` | 4008 | BusinessRule | Usuario ya tiene perfil artista |
+| `Internal_UnexpectedError` | 5000 | Internal | Error inesperado |
+
+---
+
+### 7.2 Estructura de ServiceResponse
+
+**Todas las responses siguen este patron:**
+
+```csharp
+public class ServiceResponse<T>
 {
-  "data": {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "userId": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    "nombreArtistico": "Los Rockeros",
-    "descripcion": "Banda de rock alternativo de Madrid",
-    "pais": "España",
-    "ciudad": "Madrid",
-    "imagenUrl": "https://example.com/artista.jpg",
-    "fechaCreacion": "2026-01-26T10:30:00Z",
-    "fechaActualizacion": null
-  },
-  "messages": [
-    {
-      "message": "Perfil de artista creado exitosamente",
-      "errorCode": "SUCCESS",
-      "httpStatusCode": 200
-    }
-  ]
+    public T? Data { get; set; }
+    public List<ServiceResponseMessage> Messages { get; set; } = new();
+    public bool IsSuccess => !Messages.Any(m => m.IsError);
+}
+
+public class ServiceResponseMessage
+{
+    public string Message { get; set; } = string.Empty;
+    public string ErrorCode { get; set; } = string.Empty;
+    public HttpStatusCode HttpStatusCode { get; set; }
+    public bool IsError => !string.IsNullOrEmpty(ErrorCode) && !ErrorCode.StartsWith("0");
 }
 ```
 
-**400 Bad Request - Errores de validacion**
+---
+
+### 7.3 Ejemplos de Respuestas de Error
+
+**Validacion (400 Bad Request):**
 ```json
 {
   "data": null,
   "messages": [
     {
       "message": "El nombre artistico es obligatorio",
-      "errorCode": "VALIDATION_REQUIRED",
+      "errorCode": "1001",
       "httpStatusCode": 400
     }
   ]
 }
 ```
 
-**401 Unauthorized - Token invalido**
+**Email Duplicado (409 Conflict):**
 ```json
 {
   "data": null,
   "messages": [
     {
-      "message": "Token invalido o expirado",
-      "errorCode": "AUTH_UNAUTHORIZED",
-      "httpStatusCode": 401
-    }
-  ]
-}
-```
-
-**409 Conflict - Usuario ya tiene perfil**
-```json
-{
-  "data": null,
-  "messages": [
-    {
-      "message": "Este usuario ya tiene un perfil de artista",
-      "errorCode": "ARTISTA_ALREADY_EXISTS",
+      "message": "Este email ya esta registrado",
+      "errorCode": "1009",
       "httpStatusCode": 409
     }
   ]
 }
 ```
 
-**Authentication:** Bearer JWT (claim: `sub` = UserId)
-
----
-
-### 7.3 GET /api/artistas/{id}
-
-**Summary:** Obtiene el perfil publico de un artista por su ID
-
-**Description:** Endpoint publico para visualizar informacion de artistas en la landing page.
-
-**Parameters:**
-- `id` (path, required): ID del artista (GUID)
-
-**Responses:**
-
-**200 OK - Artista encontrado**
-```json
-{
-  "data": {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "userId": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    "nombreArtistico": "Los Rockeros",
-    "descripcion": "Banda de rock alternativo de Madrid",
-    "pais": "España",
-    "ciudad": "Madrid",
-    "imagenUrl": "https://example.com/artista.jpg",
-    "fechaCreacion": "2026-01-26T10:30:00Z",
-    "fechaActualizacion": null
-  },
-  "messages": [
-    {
-      "message": "Artista encontrado",
-      "errorCode": "SUCCESS",
-      "httpStatusCode": 200
-    }
-  ]
-}
-```
-
-**404 Not Found - Artista no existe**
+**Artista No Encontrado (404 Not Found):**
 ```json
 {
   "data": null,
   "messages": [
     {
       "message": "Artista no encontrado",
-      "errorCode": "ARTISTA_NOT_FOUND",
+      "errorCode": "2002",
       "httpStatusCode": 404
     }
   ]
 }
 ```
 
-**Authentication:** None (publico)
-
----
-
-### 7.4 GET /api/artistas/by-user/{userId}
-
-**Summary:** Obtiene el perfil de artista del usuario autenticado por su UserId
-
-**Description:** Endpoint protegido para que el usuario obtenga su propio perfil de artista. Se valida que el UserId del token coincida con el parametro.
-
-**Parameters:**
-- `userId` (path, required): ID del usuario (GUID)
-
-**Responses:**
-
-**200 OK - Artista encontrado**
-```json
-{
-  "data": {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "userId": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    "nombreArtistico": "Los Rockeros",
-    "descripcion": "Banda de rock alternativo de Madrid",
-    "pais": "España",
-    "ciudad": "Madrid",
-    "imagenUrl": "https://example.com/artista.jpg",
-    "fechaCreacion": "2026-01-26T10:30:00Z",
-    "fechaActualizacion": null
-  },
-  "messages": [
-    {
-      "message": "Artista encontrado",
-      "errorCode": "SUCCESS",
-      "httpStatusCode": 200
-    }
-  ]
-}
-```
-
-**401 Unauthorized - Token invalido o no autorizado**
+**No Autorizado (401 Unauthorized):**
 ```json
 {
   "data": null,
   "messages": [
     {
-      "message": "No tienes permisos para ver este perfil",
-      "errorCode": "AUTH_UNAUTHORIZED",
+      "message": "Token invalido o expirado",
+      "errorCode": "3001",
       "httpStatusCode": 401
     }
   ]
 }
 ```
 
-**404 Not Found - Usuario no tiene perfil de artista**
-```json
-{
-  "data": null,
-  "messages": [
-    {
-      "message": "Artista no encontrado para este usuario",
-      "errorCode": "ARTISTA_NOT_FOUND",
-      "httpStatusCode": 404
-    }
-  ]
-}
-```
+---
 
-**Authentication:** Bearer JWT (claim: `sub` debe coincidir con `userId`)
+## 8. Autorizacion y JWT
+
+### 8.1 Endpoints Publicos vs Protegidos
+
+| Endpoint | Autorizacion | Atributo | Extraccion UserId |
+|----------|--------------|----------|-------------------|
+| POST /api/auth/register | Publico | `[AllowAnonymous]` | N/A |
+| POST /api/artistas | Protegido | `[Authorize]` | `User.FindFirst(ClaimTypes.NameIdentifier)?.Value` |
+| GET /api/artistas/{id} | Publico | `[AllowAnonymous]` | N/A |
+| GET /api/artistas/by-user/{userId} | Protegido | `[Authorize]` | `User.FindFirst(ClaimTypes.NameIdentifier)?.Value` |
 
 ---
 
-## 8. Archivos a Crear
+### 8.2 Claims JWT Requeridos
+
+**Estructura del Token:**
+```json
+{
+  "sub": "userId (GUID)",
+  "email": "usuario@example.com",
+  "role": ["Fan", "Artista"],
+  "exp": 1738000000,
+  "iat": 1737913600,
+  "iss": "WePlayRises",
+  "aud": "WePlayRisesClient"
+}
+```
+
+**Configuracion:**
+- **Algoritmo:** HS256
+- **Expiracion:** 24 horas
+- **Issuer:** WePlayRises
+- **Audience:** WePlayRisesClient
+
+---
+
+### 8.3 Extraccion de UserId en Controllers
+
+**Patron Utilizado (ArtistasController):**
+```csharp
+var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+if (string.IsNullOrEmpty(userId))
+{
+    return Unauthorized(new ServiceResponse<ArtistaDto>
+    {
+        Messages = new List<ServiceResponseMessage>
+        {
+            new() { Message = "Token invalido o expirado", ErrorCode = "AUTH_UNAUTHORIZED" }
+        }
+    });
+}
+
+command.UserId = userId;  // Populate command with authenticated user
+var result = await _mediator.Send(command);
+```
+
+---
+
+## 9. Estructura de Archivos
 
 ```
 Modules/UserAccess/
+├── WePlayRises.UserAccess.Domain/
+│   └── Constants/
+│       └── ServiceResponseMessageType.cs    [IMPLEMENTADO]
+│
 ├── WePlayRises.UserAccess.Application/
 │   ├── Features/
 │   │   ├── Auth/
 │   │   │   ├── Commands/
-│   │   │   │   └── RegisterCommand.cs           (Command + Handler)
+│   │   │   │   └── RegisterCommand.cs       [IMPLEMENTADO] (Command + Handler)
 │   │   │   └── Validators/
-│   │   │       └── RegisterCommandValidator.cs
-│   │   └── Artista/
+│   │   │       └── RegisterCommandValidator.cs [IMPLEMENTADO]
+│   │   │
+│   │   └── Artistas/
 │   │       ├── Commands/
-│   │       │   └── CreateArtistaCommand.cs      (Command + Handler)
+│   │       │   └── CreateArtistaCommand.cs  [IMPLEMENTADO] (Command + Handler)
 │   │       ├── Queries/
-│   │       │   ├── GetArtistaByIdQuery.cs       (Query + Handler)
-│   │       │   └── GetArtistaByUserIdQuery.cs   (Query + Handler)
+│   │       │   ├── GetArtistaByIdQuery.cs   [IMPLEMENTADO] (Query + Handler)
+│   │       │   └── GetArtistaByUserIdQuery.cs [IMPLEMENTADO] (Query + Handler)
 │   │       └── Validators/
-│   │           └── CreateArtistaCommandValidator.cs
+│   │           └── CreateArtistaCommandValidator.cs [IMPLEMENTADO]
+│   │
 │   ├── Dtos/
-│   │   ├── RegisterResponseDto.cs
-│   │   ├── ArtistaDto.cs
-│   │   └── ArtistaListDto.cs
-│   ├── Mapping/
-│   │   ├── ArtistaProfile.cs
-│   │   └── AuthProfile.cs
-│   └── Interfaces/
-│       └── Services/
-│           └── IJwtTokenGenerator.cs            (Si no existe)
+│   │   ├── RegisterResponseDto.cs           [IMPLEMENTADO]
+│   │   ├── ArtistaDto.cs                    [IMPLEMENTADO]
+│   │   └── ArtistaListDto.cs                [IMPLEMENTADO]
+│   │
+│   └── Mapping/
+│       ├── AuthProfile.cs                   [IMPLEMENTADO]
+│       └── ArtistaProfile.cs                [IMPLEMENTADO]
 │
-├── WePlayRises.UserAccess.WebApi/
-│   └── Controllers/
-│       ├── AuthController.cs
-│       └── ArtistasController.cs
-│
-└── WePlayRises.UserAccess.Infra/
-    └── Services/
-        └── JwtTokenGenerator.cs                 (Implementacion)
+└── WePlayRises.UserAccess.WebApi/
+    └── Controllers/
+        ├── AuthController.cs                [IMPLEMENTADO]
+        └── ArtistasController.cs            [IMPLEMENTADO]
 ```
 
 ---
 
-## 9. Dependencias de Servicios
+## 10. Checklist de Contratos API
 
-### 9.1 IArtistaService (Ya existe)
+### Implementacion Actual
 
-**Ubicacion:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Interfaces/Services/IArtistaService.cs`
+- [x] RegisterCommand + Handler retorna ServiceResponse<RegisterResponseDto>
+- [x] CreateArtistaCommand + Handler retorna ServiceResponse<ArtistaDto>
+- [x] GetArtistaByIdQuery + Handler retorna ServiceResponse<ArtistaDto>
+- [x] GetArtistaByUserIdQuery + Handler retorna ServiceResponse<ArtistaDto>
+- [x] Handlers inyectan Services (no DbContext)
+- [x] Validators usan ServiceResponseMessageType constants (no strings literales)
+- [x] Validators incluyen WithMessage + WithErrorCode
+- [x] AutoMapper profiles registrados (ArtistaProfile, AuthProfile)
+- [x] Controllers con documentacion Swagger completa
+- [x] Manejo de errores con try-catch y logging
+- [x] Constructores con ?? throw new ArgumentNullException
+- [x] Validacion retorna ServiceResponse (no throw)
 
-**Metodos requeridos:**
-```csharp
-Task<Artista?> GetByIdAsync(Guid id, CancellationToken ct);
-Task<Artista?> GetByUserIdAsync(Guid userId, CancellationToken ct);
-Task<Guid> CreateAsync(Artista artista, CancellationToken ct);
-```
+### Pendiente (Fuera del Scope de esta Feature)
 
-**Nota:** Ya existe interfaz, solo falta implementacion en Infra layer.
-
----
-
-### 9.2 IJwtTokenGenerator (Nuevo)
-
-**Ubicacion:** `Modules/UserAccess/WePlayRises.UserAccess.Application/Interfaces/Services/IJwtTokenGenerator.cs`
-
-**Metodos requeridos:**
-```csharp
-public interface IJwtTokenGenerator
-{
-    string GenerateToken(string userId, string email);
-}
-```
-
-**Implementacion:** `Modules/UserAccess/WePlayRises.UserAccess.Infra/Services/JwtTokenGenerator.cs`
-
-**Claims generados:**
-- `sub`: UserId (GUID string)
-- `email`: Email del usuario
-- `exp`: Expiracion (24 horas por defecto)
-- `iat`: Issued at
+- [ ] PUT /api/artistas/{id} - Actualizar perfil artista
+- [ ] GET /api/artistas - Listar todos los artistas (paginado)
+- [ ] DELETE /api/artistas/{id} - Eliminar perfil artista
+- [ ] PATCH /api/artistas/{id}/imagen - Subir imagen de perfil
+- [ ] UpdateArtistaCommand + Validator
+- [ ] Validacion asincrona de unicidad de NombreArtistico
+- [ ] Tests unitarios de Validators
+- [ ] Tests de integracion de endpoints
 
 ---
 
-## 10. ErrorCodes Catalog
+## 11. Notas de Implementacion
 
-**Archivo de referencia:** `BuildingBlocks/Kernel/Constants/ValidationErrorCodes.cs` (si no existe, crear)
+### 11.1 Puntos Clave de CQRS
 
-| ErrorCode | Descripcion | HTTP Status |
-|-----------|-------------|-------------|
-| SUCCESS | Operacion exitosa | 200/201 |
-| VALIDATION_REQUIRED | Campo requerido vacio | 400 |
-| AUTH_EMAIL_INVALID | Formato de email invalido | 400 |
-| AUTH_EMAIL_EXISTS | Email duplicado en Identity | 409 |
-| AUTH_PASSWORD_MIN_LENGTH | Password menor a 8 caracteres | 400 |
-| AUTH_PASSWORD_MISMATCH | Passwords no coinciden | 400 |
-| AUTH_UNAUTHORIZED | Token invalido o expirado | 401 |
-| ARTISTA_NOMBRE_MAX_LENGTH | Nombre artistico excede 200 caracteres | 400 |
-| ARTISTA_DESC_MAX_LENGTH | Descripcion excede 2000 caracteres | 400 |
-| ARTISTA_PAIS_MAX_LENGTH | Pais excede 100 caracteres | 400 |
-| ARTISTA_CIUDAD_MAX_LENGTH | Ciudad excede 100 caracteres | 400 |
-| ARTISTA_IMAGEN_URL_INVALIDA | URL de imagen formato invalido | 400 |
-| ARTISTA_ALREADY_EXISTS | UserId ya tiene perfil Artista | 409 |
-| ARTISTA_NOT_FOUND | Artista no encontrado por ID o UserId | 404 |
-| ERROR_UNEXPECTED | Error no controlado | 500 |
+1. **Handler + Command en Mismo Archivo:** Todos los Commands/Queries tienen su Handler en el mismo archivo (.cs).
+2. **ServiceResponse<T> Obligatorio:** Todas las responses estan wrapped en `ServiceResponse<T>`.
+3. **Services Retornan Entidades:** `IArtistaService` retorna entidades `Artista`, NO DTOs. El mapping a DTO se hace en el Handler.
+4. **Validators con Constants:** Todos los validators usan `ServiceResponseMessageType.X` en lugar de strings literales.
+5. **Logger SIEMPRE Inyectado:** Todos los handlers incluyen `ILogger<T>` y lo usan en catch blocks.
 
 ---
 
-## 11. Checklist de Implementacion
+### 11.2 Diferencias con el Contrato Original
 
-- [ ] **DTOs creados:**
-  - [ ] RegisterResponseDto
-  - [ ] ArtistaDto
-  - [ ] ArtistaListDto
-
-- [ ] **Commands/Queries creados (con Handlers en mismo archivo):**
-  - [ ] RegisterCommand + RegisterCommandHandler
-  - [ ] CreateArtistaCommand + CreateArtistaCommandHandler
-  - [ ] GetArtistaByIdQuery + GetArtistaByIdQueryHandler
-  - [ ] GetArtistaByUserIdQuery + GetArtistaByUserIdQueryHandler
-
-- [ ] **Validators creados (con WithMessage + WithErrorCode):**
-  - [ ] RegisterCommandValidator
-  - [ ] CreateArtistaCommandValidator
-
-- [ ] **AutoMapper Profiles creados:**
-  - [ ] ArtistaProfile (Command -> Entity, Entity -> DTOs)
-  - [ ] AuthProfile (IdentityUser -> RegisterResponseDto)
-
-- [ ] **Controllers creados:**
-  - [ ] AuthController (Register action)
-  - [ ] ArtistasController (Create, GetById, GetByUserId actions)
-
-- [ ] **Servicios implementados:**
-  - [ ] IJwtTokenGenerator interface + implementacion
-  - [ ] ArtistaService implementacion (si no existe)
-
-- [ ] **Swagger documentation:**
-  - [ ] XML comments en controllers
-  - [ ] ProducesResponseType decorators
-  - [ ] Request/Response examples documentados
-
-- [ ] **Handlers siguen patron CQRS:**
-  - [ ] Handler + Command/Query en mismo archivo
-  - [ ] Retornan ServiceResponse<T>
-  - [ ] NO inyectan DbContext (usan Services)
-  - [ ] Incluyen try-catch con logging
-  - [ ] Validacion retorna ServiceResponse (no throw)
-
-- [ ] **Services registrados en DI:**
-  - [ ] IArtistaService en Infra DependencyInjection
-  - [ ] IJwtTokenGenerator en Infra DependencyInjection
-  - [ ] Validators en Application DependencyInjection
-  - [ ] AutoMapper profiles registrados
+| Aspecto | contracts.md | Implementacion Real | Notas |
+|---------|--------------|---------------------|-------|
+| RegisterResponse | Incluye `roles: []` | Incluye `Roles: List<string>` | Implementacion mas completa |
+| CreateArtista UserId | No mencionado explicitamente | `UserId` propiedad en Command | Poblado desde JWT en controller |
+| ErrorCodes | Strings literales | Constants numericas | Mas robusto (1001, 2002, etc.) |
+| Validacion ImagenUrl | Mencionada | Custom validator `BeValidUrl()` | Implementacion completa |
+| AutoMapper | No detallado | Profile completo con `.ForMember()` | Mapea campos especificos |
 
 ---
 
-## 12. Notas de Implementacion
+### 11.3 Consideraciones de Seguridad
 
-### 12.1 Strongly-Typed IDs
-
-La entidad `Artista` usa `ArtistaId` (strongly-typed ID) en Domain, pero el DTO usa `Guid`:
-
-```csharp
-// Domain
-public class Artista
-{
-    public ArtistaId Id { get; set; } // Strongly-typed
-}
-
-// DTO
-public class ArtistaDto
-{
-    public Guid Id { get; set; } // Simple Guid
-}
-
-// Mapping
-CreateMap<Artista, ArtistaDto>()
-    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.Value));
-```
-
-### 12.2 UserId en Commands
-
-El `UserId` NO viene en el request body, se extrae del token JWT en el Controller:
-
-```csharp
-// Controller
-var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-command.UserId = userId;
-var result = await _mediator.Send(command);
-
-// Command
-public class CreateArtistaCommand : IRequest<ServiceResponse<ArtistaDto>>
-{
-    // ... propiedades del request body
-
-    // Propiedad interna (no del JSON)
-    public string? UserId { get; set; }
-}
-```
-
-### 12.3 Validacion de Unicidad
-
-La validacion de unicidad (email duplicado, UserId duplicado) se hace en el **Handler**, no en el Validator:
-
-```csharp
-// Handler
-var existingUser = await _userManager.FindByEmailAsync(request.Email);
-if (existingUser != null)
-{
-    return new ServiceResponse<RegisterResponseDto>
-    {
-        Messages = new()
-        {
-            new()
-            {
-                Message = "Este email ya esta registrado",
-                ErrorCode = "AUTH_EMAIL_EXISTS"
-            }
-        }
-    };
-}
-```
-
-**Razon:** Las validaciones que requieren acceso a DB/Services se hacen en Handler, no en Validator.
-
-### 12.4 ImagenUrl Opcional
-
-El campo `ImagenUrl` es opcional y puede ser:
-- Vacio/null: Valido
-- URL valida (http/https): Valido
-- URL invalida: Error de validacion
-
-```csharp
-// Validator
-RuleFor(x => x.ImagenUrl)
-    .Must(BeValidUrl)
-    .When(x => !string.IsNullOrEmpty(x.ImagenUrl)); // Solo validar si no vacio
-```
-
-### 12.5 JWT Claims
-
-El token JWT debe incluir:
-- `sub`: UserId (claim type: `ClaimTypes.NameIdentifier`)
-- `email`: Email del usuario (claim type: `ClaimTypes.Email`)
-- `exp`: Expiracion (24 horas)
-
-```csharp
-// JwtTokenGenerator
-var claims = new List<Claim>
-{
-    new(ClaimTypes.NameIdentifier, userId),
-    new(ClaimTypes.Email, email)
-};
-```
+1. **UserId NUNCA viene del Body:** El `UserId` se extrae del token JWT en el controller, nunca se confia en el valor enviado por el cliente.
+2. **Autorizacion en GetByUserId:** El handler valida que `RequestingUserId` (del token) coincida con `UserId` (del route).
+3. **Passwords en Transit:** Las passwords se envian en HTTPS (configurado en produccion).
+4. **Token Expiration:** JWT tokens expiran en 24 horas. El frontend debe refrescar o solicitar re-login.
 
 ---
 
-## 13. Siguiente Paso Sugerido
+### 11.4 Optimizaciones Futuras (No Bloqueantes)
 
-Una vez completado este plan de contratos API, el siguiente paso es:
+1. **Caching:** Implementar `IRequestCacheService` en `ArtistaService` para evitar queries duplicados en Validator + Handler.
+2. **Upload de Imagenes:** Reemplazar `ImagenUrl` string por upload real a Azure Blob Storage.
+3. **Validacion Asincrona:** Verificar unicidad de `NombreArtistico` en tiempo real durante validacion.
+4. **DTOs Separados:** Crear `CreateArtistaRequestDto` separado de `CreateArtistaCommand` para desacoplar API de Application layer.
+5. **Paginacion:** Implementar `GetAllArtistasQuery` con paginacion para escalabilidad.
 
-**Crear el plan de implementacion del backend:**
-- `plans/registro-artista/backend/implementation-plan.md`
+---
 
-Este plan debera incluir:
-1. Implementacion de Services (ArtistaService, JwtTokenGenerator)
-2. Implementacion de Repositories (ArtistaRepository)
-3. Configuracion de DbContext y Entity Framework
-4. Configuracion de JWT Authentication en WebApi
-5. Registro de dependencias en DI
-6. Testing unitario de Handlers y Services
+## 12. Proximos Pasos
 
-Alternativamente, si el agente de implementacion backend esta listo, puede proceder directamente a implementar los archivos listados en la seccion 8.
+### Para Implementacion de PUT /api/artistas/{id}
+
+1. **Crear UpdateArtistaCommand + Handler:**
+   - Archivo: `Features/Artistas/Commands/UpdateArtistaCommand.cs`
+   - Validar que `UserId` del token coincida con `UserIdPropietario` de la entidad
+   - Retornar `ServiceResponse<ArtistaDto>`
+
+2. **Crear UpdateArtistaCommandValidator:**
+   - Archivo: `Features/Artistas/Validators/UpdateArtistaCommandValidator.cs`
+   - Mismas reglas que `CreateArtistaCommandValidator` excepto `UserId` (ya validado en handler)
+
+3. **Actualizar ArtistaProfile:**
+   - Agregar `CreateMap<UpdateArtistaCommand, Artista>()`
+
+4. **Agregar Endpoint en ArtistasController:**
+   - `[HttpPut("{id}")]`
+   - `[Authorize]`
+   - Extraer `UserId` del token
+   - Validar permisos
+
+5. **Agregar Swagger Documentation:**
+   - Documentar request/response
+   - Status codes: 200, 400, 401, 403, 404, 500
+
+---
+
+## 13. Referencias
+
+- **CQRS Rules:** `.claude/rules/backend/cqrs.rule.md`
+- **Contracts Spec:** `docs/user-stories/registro-artista/contracts.md`
+- **Feature Spec:** `docs/user-stories/registro-artista/feature-spec.md`
+- **ServiceResponse Definition:** `BuildingBlocks/Kernel/Http/Response/ServiceResponse.cs`
+- **ErrorCodes Constants:** `Modules/UserAccess/UserAccess.Domain/Constants/ServiceResponseMessageType.cs`

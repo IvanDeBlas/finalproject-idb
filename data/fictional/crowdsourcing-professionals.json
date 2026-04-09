@@ -1,0 +1,82 @@
+[
+    {
+        "id": "P1",
+        "nombre": "Lucia Fernandez",
+        "email": "lucia.fernandez@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 8,
+        "rolPrincipalNombre": "Ingeniero de mezcla",
+        "especializacion": "Mezcla y mastering de rock alternativo. 10 anos de experiencia en estudios de Londres y Madrid.",
+        "ubicacion": "Madrid"
+    },
+    {
+        "id": "P2",
+        "nombre": "Marco Rossi",
+        "email": "marco.rossi@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 1,
+        "rolPrincipalNombre": "Productor musical",
+        "especializacion": "Produccion de pop y urban latino. Ha trabajado con sellos independientes en Barcelona y Milan.",
+        "ubicacion": "Barcelona"
+    },
+    {
+        "id": "P3",
+        "nombre": "Sarah Chen",
+        "email": "sarah.chen@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 12,
+        "rolPrincipalNombre": "Disenadora grafica",
+        "especializacion": "Portadas de discos, merch y branding musical. Estilo neo-retro y collage digital.",
+        "ubicacion": "Berlin"
+    },
+    {
+        "id": "P4",
+        "nombre": "Andres Molina",
+        "email": "andres.molina@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 14,
+        "rolPrincipalNombre": "Director de videoclip",
+        "especializacion": "Videoclips narrativos y documentales musicales. Ganador de premios en festivales indie.",
+        "ubicacion": "Sevilla"
+    },
+    {
+        "id": "P5",
+        "nombre": "Yuki Tanaka",
+        "email": "yuki.tanaka@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 5,
+        "rolPrincipalNombre": "Musico de sesion",
+        "especializacion": "Multi-instrumentista (violin, cello, piano). Formacion clasica con 15 anos en musica de camara.",
+        "ubicacion": "Londres"
+    },
+    {
+        "id": "P6",
+        "nombre": "Carmen Diaz",
+        "email": "carmen.diaz@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 19,
+        "rolPrincipalNombre": "Community manager",
+        "especializacion": "Marketing digital musical. Especialista en lanzamientos en Spotify y redes sociales.",
+        "ubicacion": "Valencia"
+    },
+    {
+        "id": "P7",
+        "nombre": "David Okafor",
+        "email": "david.okafor@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 13,
+        "rolPrincipalNombre": "Fotografo",
+        "especializacion": "Fotografia de conciertos y retratos artisticos. Blanco y negro analogico y digital.",
+        "ubicacion": "Amsterdam"
+    },
+    {
+        "id": "P8",
+        "nombre": "Elena Petrova",
+        "email": "elena.petrova@weplay-test.com",
+        "password": "WePlay2026!",
+        "rolPrincipalId": 16,
+        "rolPrincipalNombre": "Animadora / Motion graphics",
+        "especializacion": "Visuales para conciertos, lyric videos y motion graphics para redes. Estilo psicodelico.",
+        "ubicacion": "Lisboa"
+    }
+]

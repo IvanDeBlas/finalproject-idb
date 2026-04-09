@@ -1,0 +1,632 @@
+{
+    "agreements": [
+        {
+            "id": "A1",
+            "necesidadId": "N1",
+            "necesidadTitulo": "Diseno de portada para Will of the People II",
+            "artistaEmail": "muse.official@weplay-test.com",
+            "artistaNombre": "MUSE",
+            "profesionalId": "P3",
+            "profesionalNombre": "Sarah Chen",
+            "profesionalEmail": "sarah.chen@weplay-test.com",
+            "montoAcordado": 2200,
+            "moneda": "EUR",
+            "fechaInicioDiasRelativo": -45,
+            "fechaFinDiasRelativo": -24,
+            "estadoId": 2,
+            "estadoNombre": "Completado"
+        },
+        {
+            "id": "A2",
+            "necesidadId": "N3",
+            "necesidadTitulo": "Musico de sesion - Violin para MOTOMAMI Unplugged Sessions",
+            "artistaEmail": "rosalia.official@weplay-test.com",
+            "artistaNombre": "Rosalia",
+            "profesionalId": "P5",
+            "profesionalNombre": "Yuki Tanaka",
+            "profesionalEmail": "yuki.tanaka@weplay-test.com",
+            "montoAcordado": 1200,
+            "moneda": "EUR",
+            "fechaInicioDiasRelativo": -30,
+            "fechaFinDiasRelativo": -16,
+            "estadoId": 2,
+            "estadoNombre": "Completado"
+        },
+        {
+            "id": "A3",
+            "necesidadId": "N8",
+            "necesidadTitulo": "Community manager para campana sinfonica Cable a Tierra",
+            "artistaEmail": "vetustamorla.official@weplay-test.com",
+            "artistaNombre": "Vetusta Morla",
+            "profesionalId": "P6",
+            "profesionalNombre": "Carmen Diaz",
+            "profesionalEmail": "carmen.diaz@weplay-test.com",
+            "montoAcordado": 900,
+            "moneda": "EUR",
+            "fechaInicioDiasRelativo": -50,
+            "fechaFinDiasRelativo": 10,
+            "estadoId": 2,
+            "estadoNombre": "Completado"
+        },
+        {
+            "id": "A4",
+            "necesidadId": "N2",
+            "necesidadTitulo": "Direccion de videoclip promocional DtMF Collector's Box",
+            "artistaEmail": "badbunny.official@weplay-test.com",
+            "artistaNombre": "Bad Bunny",
+            "profesionalId": "P4",
+            "profesionalNombre": "Andres Molina",
+            "profesionalEmail": "andres.molina@weplay-test.com",
+            "montoAcordado": 7500,
+            "moneda": "EUR",
+            "fechaInicioDiasRelativo": -10,
+            "fechaFinDiasRelativo": 25,
+            "estadoId": 1,
+            "estadoNombre": "Activo"
+        },
+        {
+            "id": "A5",
+            "necesidadId": "N4",
+            "necesidadTitulo": "Fotografo documental para WE Tour - Intimate Documentary",
+            "artistaEmail": "arcadefire.official@weplay-test.com",
+            "artistaNombre": "Arcade Fire",
+            "profesionalId": "P7",
+            "profesionalNombre": "David Okafor",
+            "profesionalEmail": "david.okafor@weplay-test.com",
+            "montoAcordado": 3200,
+            "moneda": "EUR",
+            "fechaInicioDiasRelativo": -5,
+            "fechaFinDiasRelativo": 30,
+            "estadoId": 1,
+            "estadoNombre": "Activo"
+        },
+        {
+            "id": "A6",
+            "necesidadId": "N5",
+            "necesidadTitulo": "Ingeniero de grabacion - Live at Las Ventas",
+            "artistaEmail": "ctangana.official@weplay-test.com",
+            "artistaNombre": "C. Tangana",
+            "profesionalId": "P1",
+            "profesionalNombre": "Lucia Fernandez",
+            "profesionalEmail": "lucia.fernandez@weplay-test.com",
+            "montoAcordado": 4500,
+            "moneda": "EUR",
+            "fechaInicioDiasRelativo": -40,
+            "fechaFinDiasRelativo": -30,
+            "estadoId": 3,
+            "estadoNombre": "Cancelado",
+            "motivoCancelacion": "Concierto pospuesto a nueva fecha por determinar. Se retomara el acuerdo cuando se confirme la nueva fecha."
+        }
+    ],
+    "milestones": [
+        {
+            "id": "M1",
+            "acuerdoId": "A1",
+            "titulo": "Concepto y bocetos",
+            "monto": 600,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": -38,
+            "estado": "Completado"
+        },
+        {
+            "id": "M2",
+            "acuerdoId": "A1",
+            "titulo": "Diseno final + adaptaciones",
+            "monto": 1600,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": -24,
+            "estado": "Completado"
+        },
+        {
+            "id": "M3",
+            "acuerdoId": "A2",
+            "titulo": "Sesiones de grabacion (5 tracks)",
+            "monto": 1200,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": -16,
+            "estado": "Completado"
+        },
+        {
+            "id": "M4",
+            "acuerdoId": "A3",
+            "titulo": "Mes 1 - Lanzamiento campana",
+            "monto": 450,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": -20,
+            "estado": "Completado"
+        },
+        {
+            "id": "M5",
+            "acuerdoId": "A3",
+            "titulo": "Mes 2 - Mantenimiento y cierre",
+            "monto": 450,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": 10,
+            "estado": "Completado"
+        },
+        {
+            "id": "M6",
+            "acuerdoId": "A4",
+            "titulo": "Pre-produccion y storyboard",
+            "monto": 2000,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": 5,
+            "estado": "En progreso"
+        },
+        {
+            "id": "M7",
+            "acuerdoId": "A4",
+            "titulo": "Rodaje + post-produccion",
+            "monto": 5500,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": 25,
+            "estado": "Pendiente"
+        },
+        {
+            "id": "M8",
+            "acuerdoId": "A5",
+            "titulo": "Cobertura 3 conciertos + edicion",
+            "monto": 3200,
+            "moneda": "EUR",
+            "deadlineDiasRelativo": 30,
+            "estado": "En progreso"
+        }
+    ],
+    "deliverables": [
+        {
+            "id": "E1",
+            "milestoneId": "M1",
+            "acuerdoId": "A1",
+            "titulo": "3 propuestas de concepto visual (PDF)",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E2",
+            "milestoneId": "M1",
+            "acuerdoId": "A1",
+            "titulo": "Moodboard de referencias y paleta de color",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E3",
+            "milestoneId": "M2",
+            "acuerdoId": "A1",
+            "titulo": "Portada principal 3000x3000px (PSD + PNG)",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E4",
+            "milestoneId": "M2",
+            "acuerdoId": "A1",
+            "titulo": "Booklet interior 8 paginas (PDF print-ready)",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E5",
+            "milestoneId": "M2",
+            "acuerdoId": "A1",
+            "titulo": "Adaptaciones streaming (Spotify banner, YouTube thumbnail)",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E6",
+            "milestoneId": "M3",
+            "acuerdoId": "A2",
+            "titulo": "Tracks de violin grabados - Sesion 1 a 3 (WAV 96kHz)",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E7",
+            "milestoneId": "M3",
+            "acuerdoId": "A2",
+            "titulo": "Tracks de violin grabados - Sesion 4 y 5 (WAV 96kHz)",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E8",
+            "milestoneId": "M4",
+            "acuerdoId": "A3",
+            "titulo": "Report mes 1: 45 publicaciones, +180% engagement, 2.3K nuevos followers",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E9",
+            "milestoneId": "M5",
+            "acuerdoId": "A3",
+            "titulo": "Report mes 2: 38 publicaciones, campana al 85% del objetivo, hashtag trending",
+            "estadoId": 2,
+            "estadoNombre": "Aprobado"
+        },
+        {
+            "id": "E10",
+            "milestoneId": "M6",
+            "acuerdoId": "A4",
+            "titulo": "Storyboard completo (15 escenas)",
+            "estadoId": 1,
+            "estadoNombre": "Entregado"
+        },
+        {
+            "id": "E11",
+            "milestoneId": "M6",
+            "acuerdoId": "A4",
+            "titulo": "Lista de localizaciones y plan de rodaje",
+            "estadoId": 1,
+            "estadoNombre": "Entregado"
+        },
+        {
+            "id": "E12",
+            "milestoneId": "M8",
+            "acuerdoId": "A5",
+            "titulo": "Preview concierto 1 - 30 fotos seleccion (JPEG)",
+            "estadoId": 1,
+            "estadoNombre": "Entregado"
+        }
+    ],
+    "conversations": [
+        {
+            "id": "Conv1",
+            "acuerdoId": "A1",
+            "participantes": ["MUSE", "Sarah Chen"],
+            "contexto": "Acuerdo A1 - portada",
+            "mensajes": [
+                {
+                    "remitente": "MUSE",
+                    "remitenteEmail": "muse.official@weplay-test.com",
+                    "mensaje": "Hola Sarah, nos encanto tu portfolio. Queremos algo que combine el estilo Drones con una estetica mas limpia. Que opinas?",
+                    "timestampDiasRelativo": -46
+                },
+                {
+                    "remitente": "Sarah Chen",
+                    "remitenteEmail": "sarah.chen@weplay-test.com",
+                    "mensaje": "Gracias! Estoy familiarizada con toda la discografia visual de MUSE. Propongo un enfoque minimalista con un unico elemento central poderoso, como hicieron con Origin of Symmetry. Os preparo 3 conceptos para el primer milestone.",
+                    "timestampDiasRelativo": -46
+                },
+                {
+                    "remitente": "MUSE",
+                    "remitenteEmail": "muse.official@weplay-test.com",
+                    "mensaje": "Perfecto. Matt quiere que haya algun elemento que remita al espacio pero sin ser literal. Algo mas abstracto y emocional.",
+                    "timestampDiasRelativo": -45
+                },
+                {
+                    "remitente": "Sarah Chen",
+                    "remitenteEmail": "sarah.chen@weplay-test.com",
+                    "mensaje": "Entendido. Voy a trabajar con nebulosas estilizadas y texturas metalicas. Os envio los bocetos en una semana.",
+                    "timestampDiasRelativo": -44
+                }
+            ]
+        },
+        {
+            "id": "Conv2",
+            "acuerdoId": "A2",
+            "participantes": ["Rosalia", "Yuki Tanaka"],
+            "contexto": "Acuerdo A2 - violin",
+            "mensajes": [
+                {
+                    "remitente": "Rosalia",
+                    "remitenteEmail": "rosalia.official@weplay-test.com",
+                    "mensaje": "Hola Yuki! Tu experiencia con Paco de Lucia Jr me convencio. Necesito alguien que entienda el compas flamenco pero pueda improvisar.",
+                    "timestampDiasRelativo": -31
+                },
+                {
+                    "remitente": "Yuki Tanaka",
+                    "remitenteEmail": "yuki.tanaka@weplay-test.com",
+                    "mensaje": "Encantada! El flamenco tiene una riqueza ritmica que me fascina. He estado estudiando bulerias y tangos. Cuando empezamos las sesiones?",
+                    "timestampDiasRelativo": -31
+                },
+                {
+                    "remitente": "Rosalia",
+                    "remitenteEmail": "rosalia.official@weplay-test.com",
+                    "mensaje": "La semana que viene en el estudio de Madrid. Te paso la direccion por privado. Trae el violin acustico y si tienes uno electrico tambien.",
+                    "timestampDiasRelativo": -30
+                }
+            ]
+        },
+        {
+            "id": "Conv3",
+            "acuerdoId": "A4",
+            "participantes": ["Bad Bunny", "Andres Molina"],
+            "contexto": "Acuerdo A4 - video",
+            "mensajes": [
+                {
+                    "remitente": "Bad Bunny",
+                    "remitenteEmail": "badbunny.official@weplay-test.com",
+                    "mensaje": "Bro, necesito que el video tenga esa vibra retro de los 90s pero con toques futuristas. Como un VHS del futuro.",
+                    "timestampDiasRelativo": -11
+                },
+                {
+                    "remitente": "Andres Molina",
+                    "remitenteEmail": "andres.molina@weplay-test.com",
+                    "mensaje": "Entiendo perfectamente. Estoy pensando en filtros CRT, scanlines y glitch pero con elementos 3D holograficos. El unboxing del vinyl box sera el hilo conductor.",
+                    "timestampDiasRelativo": -11
+                },
+                {
+                    "remitente": "Bad Bunny",
+                    "remitenteEmail": "badbunny.official@weplay-test.com",
+                    "mensaje": "Me gusta. Agrega unas escenas en un estudio de grabacion vintage, como si estuvieramos en los 90s haciendo reggaeton underground.",
+                    "timestampDiasRelativo": -10
+                },
+                {
+                    "remitente": "Andres Molina",
+                    "remitenteEmail": "andres.molina@weplay-test.com",
+                    "mensaje": "Brutal. Voy a buscar un local que tenga esa estetica. Te mando el storyboard completo esta semana.",
+                    "timestampDiasRelativo": -10
+                },
+                {
+                    "remitente": "Bad Bunny",
+                    "remitenteEmail": "badbunny.official@weplay-test.com",
+                    "mensaje": "Dale, estoy esperando. Quiero ver las 15 escenas antes de confirmar localizaciones.",
+                    "timestampDiasRelativo": -9
+                }
+            ]
+        },
+        {
+            "id": "Conv4",
+            "acuerdoId": "A3",
+            "participantes": ["Vetusta Morla", "Carmen Diaz"],
+            "contexto": "Acuerdo A3 - CM",
+            "mensajes": [
+                {
+                    "remitente": "Vetusta Morla",
+                    "remitenteEmail": "vetustamorla.official@weplay-test.com",
+                    "mensaje": "Carmen, necesitamos empezar con fuerza. La campana se lanza en 3 dias y queremos crear expectativa.",
+                    "timestampDiasRelativo": -53
+                },
+                {
+                    "remitente": "Carmen Diaz",
+                    "remitenteEmail": "carmen.diaz@weplay-test.com",
+                    "mensaje": "Perfecto. He preparado un calendario editorial con 3 fases: teaser (3 dias), lanzamiento (1 semana), y mantenimiento. Incluye behind-the-scenes de los ensayos con la orquesta.",
+                    "timestampDiasRelativo": -53
+                },
+                {
+                    "remitente": "Vetusta Morla",
+                    "remitenteEmail": "vetustamorla.official@weplay-test.com",
+                    "mensaje": "Genial. Puedes usar fotos de nuestro archivo? Tenemos material inedito de los ensayos.",
+                    "timestampDiasRelativo": -52
+                },
+                {
+                    "remitente": "Carmen Diaz",
+                    "remitenteEmail": "carmen.diaz@weplay-test.com",
+                    "mensaje": "Si! Eso va a funcionar genial para los teasers. Tambien propongo un hashtag: #CableATierraSinfonica. Lo puedo activar manana?",
+                    "timestampDiasRelativo": -52
+                }
+            ]
+        },
+        {
+            "id": "Conv5",
+            "acuerdoId": "A5",
+            "participantes": ["Arcade Fire", "David Okafor"],
+            "contexto": "Acuerdo A5 - foto",
+            "mensajes": [
+                {
+                    "remitente": "Arcade Fire",
+                    "remitenteEmail": "arcadefire.official@weplay-test.com",
+                    "mensaje": "David, el primer concierto es el viernes en Paris. Te mandamos los passes de backstage. Necesitamos que documentes TODO: desde el soundcheck hasta que se van los ultimos fans.",
+                    "timestampDiasRelativo": -6
+                },
+                {
+                    "remitente": "David Okafor",
+                    "remitenteEmail": "david.okafor@weplay-test.com",
+                    "mensaje": "Perfecto. Mi enfoque sera completamente documentalista: nada posado, todo espontaneo. Usare una Leica M10 para mantener un perfil bajo. Blanco y negro para backstage, color para el show.",
+                    "timestampDiasRelativo": -6
+                },
+                {
+                    "remitente": "Arcade Fire",
+                    "remitenteEmail": "arcadefire.official@weplay-test.com",
+                    "mensaje": "Nos encanta la idea del B&W para backstage. Win tiene un lado muy cinematografico que quedara genial.",
+                    "timestampDiasRelativo": -5
+                }
+            ]
+        },
+        {
+            "id": "Conv6",
+            "acuerdoId": "A6",
+            "participantes": ["C. Tangana", "Lucia Fernandez"],
+            "contexto": "Acuerdo A6 - cancelado",
+            "mensajes": [
+                {
+                    "remitente": "C. Tangana",
+                    "remitenteEmail": "ctangana.official@weplay-test.com",
+                    "mensaje": "Lucia, malas noticias. Tenemos que posponer Las Ventas. Problemas de agenda con la orquesta de camara.",
+                    "timestampDiasRelativo": -35
+                },
+                {
+                    "remitente": "Lucia Fernandez",
+                    "remitenteEmail": "lucia.fernandez@weplay-test.com",
+                    "mensaje": "Vaya, lo siento. Tenia todo el equipo preparado. Cuando seria la nueva fecha?",
+                    "timestampDiasRelativo": -35
+                },
+                {
+                    "remitente": "C. Tangana",
+                    "remitenteEmail": "ctangana.official@weplay-test.com",
+                    "mensaje": "Todavia no lo sabemos. Te aviso en cuanto tengamos fecha. Vamos a cancelar el acuerdo por ahora y lo retomamos. Disculpa las molestias.",
+                    "timestampDiasRelativo": -34
+                }
+            ]
+        },
+        {
+            "id": "Conv7",
+            "necesidadId": "N9",
+            "participantes": ["DJ Prometheus", "Yuki Tanaka"],
+            "contexto": "Acuerdo via N9 - violin hip-hop",
+            "mensajes": [
+                {
+                    "remitente": "DJ Prometheus",
+                    "remitenteEmail": "djprometheus@weplay-test.com",
+                    "mensaje": "Yuki! Vi que has trabajado con DJ Shadow. Justo ese tipo de fusion es lo que busco, pero con un rollo mas flamenco y sevillano.",
+                    "timestampDiasRelativo": -22
+                },
+                {
+                    "remitente": "Yuki Tanaka",
+                    "remitenteEmail": "yuki.tanaka@weplay-test.com",
+                    "mensaje": "Me encanta la idea. He escuchado tus beats y tienen una base clasica muy solida. Puedo aportar arreglos de violin que dialoguen con los samples de Bach.",
+                    "timestampDiasRelativo": -22
+                },
+                {
+                    "remitente": "Yuki Tanaka",
+                    "remitenteEmail": "yuki.tanaka@weplay-test.com",
+                    "mensaje": "Una pregunta: las sesiones son en el Conservatorio? Porque el ambiente acustico de alli es increible para violin.",
+                    "timestampDiasRelativo": -21
+                },
+                {
+                    "remitente": "DJ Prometheus",
+                    "remitenteEmail": "djprometheus@weplay-test.com",
+                    "mensaje": "Si! El Conservatorio nos presta la sala grande 3 dias. Vamos a grabar ahi con mics de ambiente + close mics. Va a sonar epico.",
+                    "timestampDiasRelativo": -21
+                }
+            ]
+        },
+        {
+            "id": "Conv8",
+            "necesidadId": "N1",
+            "participantes": ["MUSE", "David Okafor"],
+            "contexto": "Propuesta rechazada",
+            "mensajes": [
+                {
+                    "remitente": "David Okafor",
+                    "remitenteEmail": "david.okafor@weplay-test.com",
+                    "mensaje": "Hola, he visto vuestra necesidad de portada. Aunque soy fotografo, hago trabajo conceptual que podria servir como base visual.",
+                    "timestampDiasRelativo": -44
+                },
+                {
+                    "remitente": "MUSE",
+                    "remitenteEmail": "muse.official@weplay-test.com",
+                    "mensaje": "Gracias David, pero buscamos un enfoque mas ilustrativo/digital. Tu propuesta fotografica es interesante pero no encaja con lo que tenemos en mente para este disco.",
+                    "timestampDiasRelativo": -43
+                }
+            ]
+        },
+        {
+            "id": "Conv9",
+            "necesidadId": "N2",
+            "participantes": ["Bad Bunny", "Elena Petrova"],
+            "contexto": "Propuesta rechazada",
+            "mensajes": [
+                {
+                    "remitente": "Elena Petrova",
+                    "remitenteEmail": "elena.petrova@weplay-test.com",
+                    "mensaje": "Hola! Mi propuesta de animacion 3D completa podria ser mas impactante que un rodaje tradicional. Aqui un reel de mis trabajos con Bjork.",
+                    "timestampDiasRelativo": -23
+                },
+                {
+                    "remitente": "Bad Bunny",
+                    "remitenteEmail": "badbunny.official@weplay-test.com",
+                    "mensaje": "Esta brutal tu trabajo, pero para este video necesitamos tomas reales. El unboxing tiene que verse fisico, tangible. Quiza para otro proyecto.",
+                    "timestampDiasRelativo": -22
+                }
+            ]
+        },
+        {
+            "id": "Conv10",
+            "necesidadId": "N7",
+            "participantes": ["Billie Eilish", "Elena Petrova"],
+            "contexto": "Acuerdo via propuesta aceptada",
+            "mensajes": [
+                {
+                    "remitente": "Billie Eilish",
+                    "remitenteEmail": "billieeilish.official@weplay-test.com",
+                    "mensaje": "Elena, tus visualizers de Bjork son exactamente la vibra que busco. Dark, organico, con esos momentos de glitch.",
+                    "timestampDiasRelativo": -8
+                },
+                {
+                    "remitente": "Elena Petrova",
+                    "remitenteEmail": "elena.petrova@weplay-test.com",
+                    "mensaje": "Gracias! Para tus remixes estoy pensando en un concepto unificado: elementos naturales (agua, humo, flores) que se distorsionan y se reconstruyen. Cada visualizer representaria un remix diferente pero con el mismo lenguaje visual.",
+                    "timestampDiasRelativo": -8
+                },
+                {
+                    "remitente": "Billie Eilish",
+                    "remitenteEmail": "billieeilish.official@weplay-test.com",
+                    "mensaje": "Me encanta. Quiero que sea lo mas organico posible, nada CGI artificial. Que parezca real pero imposible.",
+                    "timestampDiasRelativo": -7
+                }
+            ]
+        }
+    ],
+    "ratings": [
+        {
+            "id": "V1",
+            "acuerdoId": "A1",
+            "valoradorNombre": "MUSE",
+            "valoradorEmail": "muse.official@weplay-test.com",
+            "valoradoNombre": "Sarah Chen",
+            "valoradoEmail": "sarah.chen@weplay-test.com",
+            "puntuacion": 5,
+            "comentario": "Trabajo excepcional. Sarah capturo perfectamente la esencia de lo que buscabamos. Entrego antes del plazo y las adaptaciones para streaming fueron impecables."
+        },
+        {
+            "id": "V2",
+            "acuerdoId": "A1",
+            "valoradorNombre": "Sarah Chen",
+            "valoradorEmail": "sarah.chen@weplay-test.com",
+            "valoradoNombre": "MUSE",
+            "valoradoEmail": "muse.official@weplay-test.com",
+            "puntuacion": 5,
+            "comentario": "Clientes fantasticos. Brief muy claro, feedback rapido y constructivo. Un placer trabajar con artistas que saben lo que quieren."
+        },
+        {
+            "id": "V3",
+            "acuerdoId": "A2",
+            "valoradorNombre": "Rosalia",
+            "valoradorEmail": "rosalia.official@weplay-test.com",
+            "valoradoNombre": "Yuki Tanaka",
+            "valoradoEmail": "yuki.tanaka@weplay-test.com",
+            "puntuacion": 5,
+            "comentario": "Yuki es una violinista increible. Su sensibilidad para el flamenco me sorprendio. Las sesiones fueron magicas, capturo exactamente el sentimiento que buscaba."
+        },
+        {
+            "id": "V4",
+            "acuerdoId": "A2",
+            "valoradorNombre": "Yuki Tanaka",
+            "valoradorEmail": "yuki.tanaka@weplay-test.com",
+            "valoradoNombre": "Rosalia",
+            "valoradoEmail": "rosalia.official@weplay-test.com",
+            "puntuacion": 4,
+            "comentario": "Trabajar con Rosalia fue un sueno. Muy exigente pero con razon. La unica pega: algunos cambios de ultima hora en los arreglos que complicaron la planificacion."
+        },
+        {
+            "id": "V5",
+            "acuerdoId": "A3",
+            "valoradorNombre": "Vetusta Morla",
+            "valoradorEmail": "vetustamorla.official@weplay-test.com",
+            "valoradoNombre": "Carmen Diaz",
+            "valoradoEmail": "carmen.diaz@weplay-test.com",
+            "puntuacion": 5,
+            "comentario": "Carmen supero nuestras expectativas. El engagement se disparo, el hashtag fue trending y la campana alcanzo el 85% del objetivo gracias en parte a su trabajo."
+        },
+        {
+            "id": "V6",
+            "acuerdoId": "A3",
+            "valoradorNombre": "Carmen Diaz",
+            "valoradorEmail": "carmen.diaz@weplay-test.com",
+            "valoradoNombre": "Vetusta Morla",
+            "valoradoEmail": "vetustamorla.official@weplay-test.com",
+            "puntuacion": 5,
+            "comentario": "Vetusta Morla es un referente. Me dieron total libertad creativa, compartieron material inedito y respondieron siempre rapido. La campana fue un exito rotundo."
+        }
+    ],
+    "summary": {
+        "totalAcuerdos": 6,
+        "completados": 3,
+        "activos": 2,
+        "cancelados": 1,
+        "totalMilestones": 8,
+        "milestonesCompletados": 5,
+        "milestonesEnProgreso": 2,
+        "milestonesPendientes": 1,
+        "totalEntregables": 12,
+        "entregablesAprobados": 9,
+        "entregablesEntregados": 3,
+        "totalConversaciones": 10,
+        "totalMensajes": 38,
+        "totalValoraciones": 6,
+        "volumenTotalEUR": 19500
+    }
+}

@@ -1,0 +1,5 @@
+# Documentacion de API
+
+Carpeta para documentacion de la API:
+- openapi.yaml - Especificacion OpenAPI/Swagger
+- postman-collection.json - Coleccion de Postman

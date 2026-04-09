@@ -1,0 +1,146 @@
+{
+    "fans": [
+        {
+            "email": "maria.garcia@weplay-test.com",
+            "password": "Test123!",
+            "name": "Maria Garcia",
+            "backings": [
+                {
+                    "campaignTitle": "Will of the People II - Fan-Funded Album",
+                    "rewardName": "Vinyl Edicion Limitada",
+                    "monto": 35,
+                    "mensaje": "Desde el Wembley 2007 soy fan. Esto es un sueno hecho realidad."
+                },
+                {
+                    "campaignTitle": "MOTOMAMI Unplugged Sessions",
+                    "rewardName": "LP Transparente Fisico",
+                    "monto": 40,
+                    "mensaje": "MOTOMAMI en acustico va a ser una locura absoluta"
+                },
+                {
+                    "campaignTitle": "Cable a Tierra - Version Orquesta Sinfonica",
+                    "rewardName": "Partitura Firmada",
+                    "monto": 25,
+                    "mensaje": "Copenhague con orquesta... voy a llorar"
+                }
+            ]
+        },
+        {
+            "email": "carlos.lopez@weplay-test.com",
+            "password": "Test123!",
+            "name": "Carlos Lopez",
+            "backings": [
+                {
+                    "campaignTitle": "DtMF - Vinyl Collectors Box",
+                    "rewardName": "Box Set Holografico",
+                    "monto": 45,
+                    "mensaje": "El box set va directo a la vitrina, Benito crack"
+                },
+                {
+                    "campaignTitle": "Pangea 2 - El Documental",
+                    "rewardName": "Camiseta Pangea 2",
+                    "monto": 25,
+                    "mensaje": "Omar crack, vamos Pan Bendito!"
+                },
+                {
+                    "campaignTitle": "El Madrileno - Live at Las Ventas",
+                    "rewardName": "Vinilo Numerado Live",
+                    "monto": 35,
+                    "mensaje": "El Madrileno en Las Ventas va a ser historico"
+                }
+            ]
+        },
+        {
+            "email": "emma.wilson@weplay-test.com",
+            "password": "Test123!",
+            "name": "Emma Wilson",
+            "backings": [
+                {
+                    "campaignTitle": "Tranquility Base - B-Sides Collection",
+                    "rewardName": "7 inch Singles Pack",
+                    "monto": 30,
+                    "mensaje": "Alex Turner B-sides are better than most bands A-sides"
+                },
+                {
+                    "campaignTitle": "HIT ME HARD AND SOFT - Remix Album",
+                    "rewardName": "Hoodie Exclusiva + Album",
+                    "monto": 65,
+                    "mensaje": "The hoodie with UV art is genius, cant wait"
+                },
+                {
+                    "campaignTitle": "Songs for the Deaf - Acoustic Sessions",
+                    "rewardName": "Cassette Edicion Desierto",
+                    "monto": 25,
+                    "mensaje": "Desert rock on cassette with real sand. Perfect."
+                }
+            ]
+        },
+        {
+            "email": "pablo.ruiz@weplay-test.com",
+            "password": "Test123!",
+            "name": "Pablo Ruiz",
+            "backings": [
+                {
+                    "campaignTitle": "WE Tour - Intimate Documentary",
+                    "rewardName": "Poster Firmado + Screener",
+                    "monto": 30,
+                    "mensaje": "Arcade Fire en directo cambio mi vida en 2014"
+                },
+                {
+                    "campaignTitle": "Cable a Tierra - Version Orquesta Sinfonica",
+                    "rewardName": "Ensayo Abierto",
+                    "monto": 80,
+                    "mensaje": "Ver a Vetusta con orquesta en el Nacional es un sueno"
+                },
+                {
+                    "campaignTitle": "Will of the People II - Fan-Funded Album",
+                    "rewardName": "Meet and Greet Virtual",
+                    "monto": 100,
+                    "mensaje": "Llevo 20 anos esperando conocer a Matt Bellamy"
+                }
+            ]
+        },
+        {
+            "email": "ana.martinez@weplay-test.com",
+            "password": "Test123!",
+            "name": "Ana Martinez",
+            "backings": [
+                {
+                    "campaignTitle": "MOTOMAMI Unplugged Sessions",
+                    "rewardName": "Clase de Cante Online",
+                    "monto": 200,
+                    "mensaje": "Aprender cante de Rosalia no tiene precio"
+                },
+                {
+                    "campaignTitle": "DtMF - Vinyl Collectors Box",
+                    "rewardName": "Backstage Pass Virtual",
+                    "monto": 120,
+                    "mensaje": "Benito es el artista de nuestra generacion"
+                },
+                {
+                    "campaignTitle": "Pangea 2 - El Documental",
+                    "rewardName": "Mencion en Creditos",
+                    "monto": 60,
+                    "mensaje": "Fan desde Alocao, Omar es puro corazon"
+                }
+            ]
+        }
+    ],
+    "summary": {
+        "totalFans": 5,
+        "totalBackingsFamous": 15,
+        "totalMontoFamous": 915,
+        "backingsByCampaign": {
+            "MUSE - WOTP II": { "count": 2, "total": 135, "fans": ["Maria Garcia", "Pablo Ruiz"] },
+            "QOTSA - Acoustic": { "count": 1, "total": 25, "fans": ["Emma Wilson"] },
+            "Arcade Fire - Documentary": { "count": 1, "total": 30, "fans": ["Pablo Ruiz"] },
+            "Bad Bunny - DtMF": { "count": 2, "total": 165, "fans": ["Carlos Lopez", "Ana Martinez"] },
+            "Omar Montes - Pangea 2": { "count": 2, "total": 85, "fans": ["Carlos Lopez", "Ana Martinez"] },
+            "Rosalia - Unplugged": { "count": 2, "total": 240, "fans": ["Maria Garcia", "Ana Martinez"] },
+            "C. Tangana - Las Ventas": { "count": 1, "total": 35, "fans": ["Carlos Lopez"] },
+            "Arctic Monkeys - B-Sides": { "count": 1, "total": 30, "fans": ["Emma Wilson"] },
+            "Billie Eilish - Remixes": { "count": 1, "total": 65, "fans": ["Emma Wilson"] },
+            "Vetusta Morla - Sinfonica": { "count": 2, "total": 105, "fans": ["Maria Garcia", "Pablo Ruiz"] }
+        }
+    }
+}

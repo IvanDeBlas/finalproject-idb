@@ -1,741 +1,624 @@
-# Validacion QA: Registro Artista (Admin)
+# Validacion QA: Registro de Artista (Admin)
 
-**Fecha:** 2026-01-26
+**Fecha:** 2026-02-12
 **Feature:** registro-artista
-**Target:** src/admin (Next.js 14 + App Router)
+**Target:** src/admin (Next.js 14 Dashboard)
+
+---
 
 ## 1. Resumen Ejecutivo
 
 | Metrica | Valor |
 |---------|-------|
-| Total Requisitos | 6 |
-| Cubiertos | 6 |
-| Parcialmente Cubiertos | 0 |
+| Total Requisitos | 10 |
+| Cubiertos | 9 |
+| Parcialmente Cubiertos | 1 |
 | No Cubiertos | 0 |
-| **Score de Cobertura** | **100%** |
+| **Score de Cobertura** | **95%** |
 
-**Estado:** APROBADO
+**Estado:** ✅ **APROBADO**
 
-**Veredicto:** Los planes de implementacion cubren completamente todos los criterios de aceptacion relevantes para Admin. La arquitectura propuesta, validaciones Zod, UI/UX design y estrategia de testing cumplen con las especificaciones tecnicas y funcionales definidas en feature-spec.md.
+**Conclusion:** Los planes de implementacion cumplen con el 95% de los criterios de aceptacion definidos para la aplicacion Admin. Existe un gap menor relacionado con el banner persistente en el dashboard para usuarios sin perfil completo, pero no bloquea el flujo principal.
+
+---
 
 ## 2. Criterios de Aceptacion
 
 ### Fuente: feature-spec.md
 
-| ID | Criterio | Tipo | Relevante Admin |
-|----|----------|------|-----------------|
-| AC-01-2 | Password debe tener minimo 8 caracteres, validado en frontend (Zod) y backend (Identity) | Funcional | SI |
-| AC-01-3 | Passwords deben coincidir, validacion en frontend impide envio si no coinciden | Funcional | SI |
-| AC-01-4 | Nombre artistico es obligatorio, validacion Zod impide envio de formulario sin este campo | Funcional | SI |
-| AC-01-5 | Imagen URL es opcional. Si se proporciona, debe ser URL valida. Campo acepta vacio | Funcional | SI |
-| AC-01-9 | Usuario autenticado con perfil completo puede acceder a /dashboard | Funcional | SI |
-| AC-01-10 | Schemas Zod para registro y perfil estan definidos en shared y son reutilizados en frontend | Tecnico | SI |
+| ID | Criterio | Tipo | Aplicabilidad Admin |
+|----|----------|------|---------------------|
+| AC-01-1 | Email unico en Identity, error descriptivo si duplicado | Funcional | Si |
+| AC-01-2 | Password minimo 8 caracteres validado frontend y backend | Funcional | Si |
+| AC-01-3 | Passwords deben coincidir, validacion frontend impide envio | Funcional | Si |
+| AC-01-4 | Nombre artistico obligatorio, validacion Zod impide envio | Funcional | Si |
+| AC-01-5 | Imagen URL opcional, URL valida si se proporciona | Funcional | Si |
+| AC-01-6 | JWT retornado tras registro, permite acceso a /api/artistas | Funcional | Si |
+| AC-01-7 | Artista almacenado con UserId vinculado | Funcional | Si (verificacion indirecta) |
+| AC-01-8 | Perfil visible en `/artistas/{id}` landing sin autenticacion | Funcional | No (Landing) |
+| AC-01-9 | Usuario autenticado con perfil completo accede a `/dashboard` | Funcional | Si |
+| AC-01-10 | Schemas Zod en shared reutilizados en frontend | Tecnico | Si |
 
-**Criterios Backend/Landing (no validados en este plan):**
-- AC-01-1: Email unico en Identity (Backend)
-- AC-01-6: Token JWT valido (Backend)
-- AC-01-7: Entidad Artista en BD (Backend)
-- AC-01-8: Perfil visible publicamente (Landing)
+---
 
 ## 3. Matriz de Trazabilidad
 
 ### 3.1 Requisitos Funcionales
 
-| ID | Criterio | frontend-plan | ui-design | test-strategy | shared/contracts | Estado |
-|----|----------|---------------|-----------|---------------|------------------|--------|
-| AC-01-2 | Password min 8 chars validado en frontend | Sec. 10.1 - registerSchema | Sec. 4.1 - PasswordInput validation | Linea 665 - registerSchema tests | Linea 96 - registerSchema `.min(8)` | CUBIERTO |
-| AC-01-3 | Passwords deben coincidir | Sec. 10.1 - `.refine()` match | Sec. 4.1 - Confirm password field | Linea 360 - passwords match test | Linea 101 - `.refine()` logic | CUBIERTO |
-| AC-01-4 | Nombre artistico obligatorio | Sec. 10.2 - nombreArtistico required | Sec. 4.2 - Required asterisk | Linea 505 - validation test | Linea 122 - `.min(1)` required | CUBIERTO |
-| AC-01-5 | Imagen URL opcional y validada | Sec. 10.2 - `.url().optional()` | Sec. 4.2 - ImagePreview component | Linea 517 - imagenUrl test | Linea 139 - `.url().optional()` | CUBIERTO |
-| AC-01-9 | Usuario con perfil accede a dashboard | Sec. 3.2 - useEffect guard | Sec. 3.2 - Redirect logic | Linea 1121 - E2E test flujo | N/A (frontend logic) | CUBIERTO |
-| AC-01-10 | Schemas Zod en shared reutilizados | Sec. 9 - Imports desde @shared | N/A (architectural) | Linea 1062 - shared schema validation | Lineas 89-145 - Schemas definition | CUBIERTO |
+| ID | Criterio | frontend-plan | ui-design | test-strategy | Estado |
+|----|----------|---------------|-----------|---------------|--------|
+| AC-01-1 | Email unico, error si duplicado | useRegister mutation + toast | Toast notification con mensaje | MSW handler 409 + error toast test | ✅ CUBIERTO |
+| AC-01-2 | Password min 8 chars frontend | registerSchema (Zod) | Input con validacion onBlur | RegisterForm.test - min length error | ✅ CUBIERTO |
+| AC-01-3 | Passwords deben coincidir | registerSchema refine() | Mensaje error en confirmPassword | RegisterForm.test - mismatch error | ✅ CUBIERTO |
+| AC-01-4 | Nombre artistico obligatorio | createArtistaSchema | Label con asterisco (*) | CreateArtistaForm.test - empty error | ✅ CUBIERTO |
+| AC-01-5 | Imagen URL opcional, valida | createArtistaSchema + ImagePreview | Input URL + preview con fallback | ImagePreview.test - valid/invalid URL | ✅ CUBIERTO |
+| AC-01-6 | JWT retornado tras registro | useRegister guarda token localStorage | N/A (logica interna) | useRegister.test - stores token | ✅ CUBIERTO |
+| AC-01-7 | Artista vinculado a UserId | useCreateArtista POST /api/artistas | N/A (backend logic) | useCreateArtista.test - sends JWT | ✅ CUBIERTO |
+| AC-01-8 | Perfil publico visible landing | N/A | N/A | N/A | N/A (Landing) |
+| AC-01-9 | Dashboard accesible con perfil | Verificacion en CreateArtistaProfilePage | N/A | N/A | ⚠️ PARCIAL |
+| AC-01-10 | Schemas Zod en shared | Importados desde @shared/schemas | N/A | N/A | ✅ CUBIERTO |
 
 **Leyenda:**
-- CUBIERTO: Requisito completamente implementado en plan con seccion/linea especifica
-- PARCIAL: Requisito parcialmente cubierto
-- NO CUBIERTO: Requisito no mencionado en planes
-- N/A: No aplica a este plan
+- ✅ CUBIERTO: Requisito completamente implementado en plan
+- ⚠️ PARCIAL: Requisito parcialmente cubierto
+- ❌ NO CUBIERTO: Requisito no mencionado en planes
+- N/A: No aplica a este plan (Landing o Backend)
 
 ### 3.2 Requisitos No Funcionales
 
-| ID | Criterio | Cobertura | Archivo/Seccion | Estado |
-|----|----------|-----------|-----------------|--------|
-| NFR-01 | Formularios responsive mobile | ui-design.md Sec. 7.2 - Responsive breakpoints y layouts | RegisterForm + CreateArtistaForm con grid responsive | CUBIERTO |
-| NFR-02 | Accesibilidad WCAG AA | ui-design.md Sec. 8 - Accesibilidad completa | ARIA labels, focus states, keyboard nav, contraste 4.5:1 | CUBIERTO |
-| NFR-03 | Feedback visual en validaciones | ui-design.md Sec. 5 - Estados UI (Error, Loading, Success) | Border rojo, mensajes error, toast notifications | CUBIERTO |
-| NFR-04 | Estados loading/error/success | frontend-plan.md Sec. 11 - Error handling + ui-design Sec. 5 | isPending states, toast sonner, skeleton loaders | CUBIERTO |
-
-## 4. Analisis Detallado de Criterios
-
-### AC-01-2: Password minimo 8 caracteres
-
-**Cobertura:** CUBIERTA
-
-**Evidencia en planes:**
-
-1. **frontend-plan.md - Seccion 10.1 (Validacion)**
-   ```typescript
-   // Linea 1016-1025
-   const form = useForm<RegisterFormData>({
-     resolver: zodResolver(registerSchema),
-     mode: 'onBlur',
-   });
-   ```
-
-2. **shared/contracts-plan.md - Linea 96 (Schema Zod)**
-   ```typescript
-   password: z
-     .string()
-     .min(1, 'La contraseña es obligatoria')
-     .min(8, 'La contraseña debe tener al menos 8 caracteres'),
-   ```
-
-3. **ui-design.md - Linea 195-220 (Componente PasswordInput con validacion)**
-   - Input con placeholder "Minimo 8 caracteres"
-   - Error message `<p role="alert">` cuando password < 8 chars
-   - Validacion onBlur con feedback inmediato
-
-4. **test-strategy.md - Linea 365-367 (Test especifico)**
-   ```markdown
-   4. shows password min length error
-      - Type password "pass" (< 8 chars)
-      - Assert: mensaje "La contraseña debe tener al menos 8 caracteres" visible
-   ```
-
-**Gaps:** Ninguno. Cobertura completa en validacion, UI feedback, y testing.
+| ID | Criterio | Cobertura | Estado |
+|----|----------|-----------|--------|
+| NFR-01 | Responsive mobile (< 640px) | ui-design: mobile layouts definidos (grid-cols-1, w-full buttons, padding reducido) | ✅ CUBIERTO |
+| NFR-02 | Accesibilidad WCAG AA | ui-design: ARIA labels, focus states, contraste 4.5:1, keyboard navigation | ✅ CUBIERTO |
+| NFR-03 | Validacion frontend (UX) | registerSchema y createArtistaSchema con mensajes en español | ✅ CUBIERTO |
+| NFR-04 | Manejo de errores backend | getErrorMessage() mapea error codes a mensajes + Toast notifications | ✅ CUBIERTO |
+| NFR-05 | Loading states | isPending en botones + inputs disabled + spinner | ✅ CUBIERTO |
 
 ---
 
-### AC-01-3: Passwords deben coincidir
+## 4. Analisis de Gaps
 
-**Cobertura:** CUBIERTA
+### 4.1 Gaps Criticos
 
-**Evidencia en planes:**
+**Ninguno identificado.** Todos los requisitos criticos estan cubiertos.
 
-1. **shared/contracts-plan.md - Linea 101-104 (Validacion .refine())**
-   ```typescript
-   }).refine((data) => data.password === data.confirmPassword, {
-     message: 'Las contraseñas no coinciden',
-     path: ['confirmPassword'],
-   });
-   ```
+### 4.2 Gaps Mayores
 
-2. **frontend-plan.md - Linea 266-279 (Componente RegisterForm)**
-   - Campo `confirmPassword` con validacion de matching
-   - Error message especifico en path `['confirmPassword']`
-   - Submit bloqueado si passwords no coinciden
+**Ninguno identificado.** Los flujos principales estan completamente planificados.
 
-3. **ui-design.md - Linea 227-263 (Confirm Password Field con toggle y error)**
-   - Campo separado "Confirmar Contraseña"
-   - Error message `<p id="confirm-password-error" role="alert">`
-   - Toggle de visibilidad independiente
+### 4.3 Gaps Menores
 
-4. **test-strategy.md - Linea 356-361 (Test de passwords mismatch)**
-   ```markdown
-   3. shows password mismatch error
-      - Type password "password123"
-      - Type confirmPassword "password456"
-      - Assert: mensaje "Las contraseñas no coinciden" visible
-   ```
+| ID | Criterio | Gap | Impacto | Recomendacion |
+|----|----------|-----|---------|---------------|
+| AC-01-9 | Dashboard accesible con perfil | Falta banner persistente "Completa tu perfil" en dashboard si usuario omitio creacion de perfil (FA-05) | Bajo | Agregar componente Banner en `/dashboard/page.tsx` que verifique `useArtistaByUserId()` y muestre CTA si es null |
 
-**Gaps:** Ninguno. Validacion con `.refine()`, UI clara, y test especifico implementados.
+**Detalle del Gap:**
 
----
+El `frontend-plan.md` menciona:
 
-### AC-01-4: Nombre artistico obligatorio
+> **Actualización necesaria en `/dashboard/page.tsx`:**
+> ```typescript
+> const { data: artista } = useArtistaByUserId(userId);
+> if (!artista) {
+>   return (
+>     <Banner variant="warning">
+>       Completa tu perfil de artista para empezar a crear campañas.
+>       <Link href="/artista/perfil/crear">Completar ahora</Link>
+>     </Banner>
+>   );
+> }
+> ```
 
-**Cobertura:** CUBIERTA
-
-**Evidencia en planes:**
-
-1. **shared/contracts-plan.md - Linea 122-124 (Schema required)**
-   ```typescript
-   nombreArtistico: z
-     .string()
-     .min(1, 'El nombre artístico es obligatorio')
-     .max(200, 'El nombre artístico no puede superar los 200 caracteres'),
-   ```
-
-2. **frontend-plan.md - Linea 455-480 (CreateArtistaForm)**
-   - Campo `nombreArtistico` con validacion required
-   - Label con asterisco indicador: `after:content-['*'] after:text-red-500`
-   - Submit bloqueado si vacio
-
-3. **ui-design.md - Linea 408-409 (Label required marker)**
-   ```tsx
-   <Label className="after:content-['*'] after:text-red-500 after:ml-1">
-     Nombre artístico
-   </Label>
-   ```
-
-4. **test-strategy.md - Linea 495-498 (Test validacion campo vacio)**
-   ```markdown
-   5. shows validation error for empty nombreArtistico
-      - Leave nombreArtistico empty
-      - Click submit
-      - Assert: mensaje "El nombre artístico es obligatorio" visible
-   ```
-
-**Gaps:** Ninguno. Required validation, UI con asterisco, y test de campo vacio completos.
-
----
-
-### AC-01-5: Imagen URL opcional y validada
-
-**Cobertura:** CUBIERTA
-
-**Evidencia en planes:**
-
-1. **shared/contracts-plan.md - Linea 139-143 (Schema URL opcional)**
-   ```typescript
-   imagenUrl: z
-     .string()
-     .url('Debe ser una URL válida')
-     .optional()
-     .or(z.literal('')),
-   ```
-
-2. **frontend-plan.md - Linea 560-603 (Campo imagenUrl con preview)**
-   - Input type="url" con validacion Zod
-   - ImagePreview component con manejo de URL invalida
-   - Campo acepta vacio (`.optional().or(z.literal(''))`)
-
-3. **ui-design.md - Linea 560-603 (ImagePreview con error handling)**
-   - Avatar con fallback a icono Music si URL invalida
-   - onError handler para URLs que no cargan
-   - Placeholder si campo vacio
-
-4. **test-strategy.md - Linea 508-522 (Test URL valida/invalida/vacia)**
-   ```markdown
-   8. shows validation error for invalid imagenUrl
-      - Type "not-a-url" en imagenUrl
-      - Assert: mensaje "Debe ser una URL válida" visible
-
-   9. loads image preview when valid URL
-      - Type "https://example.com/avatar.jpg"
-      - Assert: <img> con src visible
-   ```
-
-**Gaps:** Ninguno. Validacion opcional + URL format, UI con preview y fallback, tests de multiples casos.
-
----
-
-### AC-01-9: Usuario autenticado con perfil completo puede acceder a /dashboard
-
-**Cobertura:** CUBIERTA
-
-**Evidencia en planes:**
-
-1. **frontend-plan.md - Linea 140-151 (Guard en CreateArtistaProfilePage)**
-   ```tsx
-   useEffect(() => {
-     if (!isAuthenticated) {
-       router.push('/auth/login'); // No autenticado → login
-     }
-     if (artista) {
-       router.push('/dashboard'); // Ya tiene perfil → dashboard
-     }
-   }, [isAuthenticated, artista]);
-   ```
-
-2. **frontend-plan.md - Linea 1118-1131 (Dashboard con verificacion de perfil)**
-   ```tsx
-   const { data: artista } = useArtistaByUserId(userId);
-
-   if (!artista) {
-     return (
-       <Banner variant="warning">
-         Completa tu perfil de artista para empezar a crear campañas.
-         <Link href="/artista/perfil/crear">Completar ahora</Link>
-       </Banner>
-     );
-   }
-   ```
-
-3. **frontend-plan.md - Linea 660-673 (Hook useArtistaByUserId)**
-   - Query para verificar si usuario tiene perfil creado
-   - Enabled solo si userId existe (token valido)
-   - Retry: false para no reintentar en 404
-
-4. **test-strategy.md - Linea 1121-1134 (E2E test flujo completo)**
-   ```markdown
-   Flujo 1: Registro Completo Exitoso
-   6. Redirige a /artista/perfil/crear
-   ...
-   11. Redirige a /dashboard
-   12. Muestra toast "Bienvenido, [nombreArtistico]"
-   ```
-
-**Gaps:** Ninguno. Guard con useEffect, verificacion de perfil, redirecciones, y test E2E implementados.
-
----
-
-### AC-01-10: Schemas Zod en shared reutilizados
-
-**Cobertura:** CUBIERTA
-
-**Evidencia en planes:**
-
-1. **frontend-plan.md - Linea 981-1011 (Dependencias de Shared)**
-   ```typescript
-   // Schemas:
-   import {
-     registerSchema,
-     createArtistaSchema,
-     type RegisterFormData,
-     type CreateArtistaFormData,
-   } from '@shared/schemas';
-   ```
-
-2. **shared/contracts-plan.md - Lineas 78-107 (Definicion registerSchema)**
-   - Schema completo en `src/shared/schemas/auth.schema.ts`
-   - Exporta `RegisterFormData` type inferido
-
-3. **shared/contracts-plan.md - Lineas 109-147 (Definicion createArtistaSchema)**
-   - Schema completo en `src/shared/schemas/artista.schema.ts`
-   - Exporta `CreateArtistaFormData` type inferido
-
-4. **frontend-plan.md - Linea 211-216 (Uso de registerSchema en RegisterForm)**
-   ```typescript
-   const form = useForm<RegisterFormData>({
-     resolver: zodResolver(registerSchema),
-     mode: 'onBlur',
-   });
-   ```
-
-5. **frontend-plan.md - Linea 374-384 (Uso de createArtistaSchema en CreateArtistaForm)**
-   ```typescript
-   const form = useForm<CreateArtistaFormData>({
-     resolver: zodResolver(createArtistaSchema),
-   });
-   ```
-
-6. **test-strategy.md - Linea 50-84 (Mocks usan schemas de shared)**
-   ```typescript
-   import { RegisterFormData } from '@/shared/schemas/auth.schema';
-   import { CreateArtistaFormData } from '@/shared/schemas/artista.schema';
-   ```
-
-**Gaps:** Ninguno. Schemas definidos en shared, importados en admin, y testeados con mismos schemas.
+Sin embargo, este componente `Banner` no esta definido en `ui-design.md` ni hay especificacion de como se ve visualmente. Esto es un gap menor porque:
+1. No bloquea el flujo principal (usuario puede completar perfil desde `/artista/perfil/crear`)
+2. Es un nice-to-have para mejorar UX si usuario cierra navegador antes de completar perfil
+3. Se puede implementar con un componente shadcn/ui `Alert` simple
 
 ---
 
 ## 5. Validacion de Tests
 
-### 5.1 Cobertura de Criterios en Tests
+### Cobertura de Criterios en Tests
 
 | Criterio | Test Planificado | Tipo | Archivo | Estado |
 |----------|------------------|------|---------|--------|
-| AC-01-2 | test-password-min-length | Unit | RegisterForm.test.tsx:365-367 | PLANIFICADO |
-| AC-01-3 | test-passwords-match | Unit | RegisterForm.test.tsx:356-361 | PLANIFICADO |
-| AC-01-4 | test-nombre-required | Unit | CreateArtistaForm.test.tsx:495-498 | PLANIFICADO |
-| AC-01-5 | test-imagen-optional-url | Unit | CreateArtistaForm.test.tsx:508-522 | PLANIFICADO |
-| AC-01-9 | test-dashboard-access-guard | Integration | E2E:1121-1134 | PLANIFICADO |
-| AC-01-10 | test-shared-schema-reuse | Unit | Implied in all schema tests | PLANIFICADO |
+| AC-01-1 | displays API error message (email duplicado) | Integration | RegisterForm.test.tsx | ✅ CUBIERTO |
+| AC-01-2 | shows password min length error | Unit | RegisterForm.test.tsx | ✅ CUBIERTO |
+| AC-01-3 | shows password mismatch error | Unit | RegisterForm.test.tsx | ✅ CUBIERTO |
+| AC-01-4 | shows validation error for empty nombreArtistico | Unit | CreateArtistaForm.test.tsx | ✅ CUBIERTO |
+| AC-01-5 | loads image preview when valid URL + shows validation error for invalid imagenUrl | Unit | CreateArtistaForm.test.tsx + ImagePreview.test.tsx | ✅ CUBIERTO |
+| AC-01-6 | stores token in localStorage on success | Integration | useRegister.test.ts | ✅ CUBIERTO |
+| AC-01-7 | sends JWT token in Authorization header | Unit | useCreateArtista.test.ts | ✅ CUBIERTO |
+| AC-01-9 | - | - | - | ⚠️ NO CUBIERTO |
+| AC-01-10 | Uso de schemas importados desde @shared/schemas | Implicito en validacion | RegisterForm.test + CreateArtistaForm.test | ✅ CUBIERTO |
 
-**Cobertura total de tests:** 16 tests (12 unit + 4 integration)
-- RegisterForm: 9 tests (validaciones, submit, loading, errors)
-- CreateArtistaForm: 13 tests (validaciones, character counter, image preview)
-- useRegister hook: 7 tests (mutation, localStorage, invalidations)
-- useCreateArtista hook: 8 tests (mutation, auth header, invalidations)
+### Tests Faltantes
 
-**Objetivo de cobertura:** 80%+ (definido en test-strategy.md linea 7)
+| Criterio | Test Requerido | Prioridad | Razon |
+|----------|----------------|-----------|-------|
+| AC-01-9 | test-dashboard-redirect-if-no-profile | Baja | Validar que dashboard muestra banner si `useArtistaByUserId()` retorna null |
 
-### 5.2 Tests Criticos para Criterios
-
-**AC-01-2 (Password min 8 chars):**
-- RegisterForm.test.tsx - "shows password min length error"
-- auth.schema.test.ts - Validacion Zod de min(8)
-
-**AC-01-3 (Passwords match):**
-- RegisterForm.test.tsx - "shows password mismatch error"
-- auth.schema.test.ts - Validacion .refine() de matching
-
-**AC-01-4 (Nombre artistico required):**
-- CreateArtistaForm.test.tsx - "shows validation error for empty nombreArtistico"
-- artista.schema.test.ts - Validacion Zod de min(1)
-
-**AC-01-5 (Imagen URL optional):**
-- CreateArtistaForm.test.tsx - "shows validation error for invalid imagenUrl"
-- ImagePreview.test.tsx - "renders placeholder when no URL"
-
-**AC-01-9 (Dashboard access guard):**
-- E2E test - "Flujo 1: Registro Completo Exitoso" (lineas 1121-1134)
-- Integration test - useEffect guard redirects
-
-**AC-01-10 (Shared schemas):**
-- Todos los tests usan imports de @shared/schemas
-- No hay definiciones duplicadas
-
-### 5.3 MSW Handlers para Tests
-
-**auth.service.test.ts:**
-- Handler POST /api/auth/register (success y error 409)
-- Mock de localStorage para token
-- Verificacion de request body con RegisterRequest
-
-**artista.service.test.ts:**
-- Handler POST /api/artistas (success, error 400, error 401)
-- Mock de Authorization header con Bearer token
-- Verificacion de CreateArtistaRequest
-
-**Cobertura MSW:** Completa para endpoints criticos de la feature.
+**Nota:** El gap de test es consecuencia del gap menor en UI (Banner no especificado). Si se implementa el Banner, se debe agregar el test correspondiente.
 
 ---
 
 ## 6. Validacion de UI/UX
 
-### 6.1 Screens Requeridas vs Planificadas
+### Screens Requeridas vs Planificadas
 
-| Screen Requerida | Ruta | Componentes Planificados | Estado |
-|------------------|------|-------------------------|--------|
-| Formulario Registro | /auth/register | RegisterForm, PasswordInput, Card, Input, Button | PLANIFICADO |
-| Formulario Perfil | /artista/perfil/crear | CreateArtistaForm, ImagePreview, CharacterCounter, Textarea | PLANIFICADO |
-| Dashboard | /dashboard | DashboardLayout con verificacion perfil, Banner warning | PLANIFICADO |
+| Screen Requerida | Planificada | Componentes | Mockup/Referencia | Estado |
+|------------------|-------------|-------------|-------------------|--------|
+| Registro de Usuario (`/auth/register`) | Si | RegisterForm, PasswordInput | WPR_4-Login.png (adaptado) | ✅ CUBIERTO |
+| Crear Perfil Artista (`/artista/perfil/crear`) | Si | CreateArtistaForm, ImagePreview, CharacterCounter | Dashtail form patterns | ✅ CUBIERTO |
+| Dashboard (`/dashboard`) | Parcial | Banner faltante | WPR_5-Dashboard-Artist.png | ⚠️ PARCIAL |
 
-**Cobertura:** 3/3 screens requeridas planificadas.
+### Estados de UI (RegisterForm)
 
-### 6.2 Estados de UI Criticos
+| Estado | Requerido | Planificado | Componentes | Estado |
+|--------|-----------|-------------|-------------|--------|
+| Default | Si | Si | Form vacio, inputs enabled | ✅ CUBIERTO |
+| Focus | Si | Si | Border purple, ring glow | ✅ CUBIERTO |
+| Typing | Si | Si | Validacion onBlur | ✅ CUBIERTO |
+| Loading | Si | Si | Button spinner, inputs disabled | ✅ CUBIERTO |
+| Error | Si | Si | Border rojo, mensaje debajo input | ✅ CUBIERTO |
+| Success | Si | Si | Toast + redirect a /artista/perfil/crear | ✅ CUBIERTO |
+| Password Visible | Si | Si | Eye icon toggle | ✅ CUBIERTO |
 
-| Estado | Requerido | Planificado | Archivo/Seccion | Estado |
-|--------|-----------|-------------|-----------------|--------|
-| Loading | Si | isPending con Loader2 spinner | ui-design.md:1360-1367 | CUBIERTO |
-| Error | Si | Border rojo + mensaje role="alert" | ui-design.md:1290-1351 | CUBIERTO |
-| Success | Si | Toast sonner verde + redirect | ui-design.md:1261-1284 | CUBIERTO |
-| Validation | Si | onBlur validation con mensajes | ui-design.md:662-679 | CUBIERTO |
-| Empty | Si | Placeholder Music icon en ImagePreview | ui-design.md:1201-1223 | CUBIERTO |
-| Focus | Si | Ring purple 2px con glow | ui-design.md:854-858 | CUBIERTO |
-| Disabled | Si | opacity 50%, cursor not-allowed | ui-design.md:1371-1378 | CUBIERTO |
+### Estados de UI (CreateArtistaForm)
 
-**Cobertura:** 7/7 estados criticos planificados con detalle.
-
-### 6.3 Responsive Design
-
-| Breakpoint | RegisterForm | CreateArtistaForm | Estado |
-|------------|--------------|-------------------|--------|
-| Mobile (< 640px) | Card w-full, padding p-4, font-size text-xl | Grid 1 col, Image w-24 h-24, buttons stack | PLANIFICADO |
-| Tablet (640-768px) | Card max-w-md, padding p-6, font-size text-2xl | Grid 2 cols, Image w-32 h-32 | PLANIFICADO |
-| Desktop (> 1024px) | Card max-w-md centrado, padding p-8, font-size text-3xl | Grid 2 cols, Image w-32 h-32, buttons inline | PLANIFICADO |
-
-**Cobertura:** Mobile-first responsive completo (ui-design.md Sec. 7).
-
-### 6.4 Accesibilidad WCAG AA
-
-| Criterio | Planificado | Archivo/Seccion | Estado |
-|----------|-------------|-----------------|--------|
-| Contraste 4.5:1 minimo | White (#fff) sobre bg-card (#0f1729) = 15.8:1 | ui-design.md:924-932 | CUBIERTO |
-| Labels asociados a inputs | htmlFor + id en todos los campos | ui-design.md:1027-1042 | CUBIERTO |
-| ARIA attributes | aria-invalid, aria-describedby, role="alert" | ui-design.md:933-943 | CUBIERTO |
-| Keyboard navigation | Tab order logico, Enter para submit, Space para toggle | ui-design.md:944-963 | CUBIERTO |
-| Focus visible | Ring 2px purple en todos los interactivos | ui-design.md:965-997 | CUBIERTO |
-| Screen reader support | Labels descriptivos, live regions con aria-live | ui-design.md:999-1020 | CUBIERTO |
-
-**Cobertura:** 6/6 criterios WCAG AA planificados con evidencia.
-
-### 6.5 Componentes Reutilizables
-
-| Componente | Descripcion | Reuso | Estado |
-|------------|-------------|-------|--------|
-| PasswordInput | Input con toggle visibilidad | RegisterForm (2 veces) | PLANIFICADO |
-| CharacterCounter | Contador X/Y con colores dinamicos | CreateArtistaForm (descripcion) | PLANIFICADO |
-| ImagePreview | Avatar con fallback y loading | CreateArtistaForm (imagenUrl) | PLANIFICADO |
-
-**Cobertura:** 3 componentes custom reutilizables planificados.
+| Estado | Requerido | Planificado | Componentes | Estado |
+|--------|-----------|-------------|-------------|--------|
+| Default | Si | Si | Form vacio, solo nombreArtistico required | ✅ CUBIERTO |
+| Typing Descripcion | Si | Si | Character counter (0/2000) con colores | ✅ CUBIERTO |
+| Image Preview Loading | Si | Si | Skeleton con debounce 500ms | ✅ CUBIERTO |
+| Image Preview Error | Si | Si | Avatar con icono Music fallback | ✅ CUBIERTO |
+| Loading Submit | Si | Si | Button spinner, inputs disabled | ✅ CUBIERTO |
+| Error | Si | Si | Toast notification rojo | ✅ CUBIERTO |
+| Success | Si | Si | Toast verde + redirect a /dashboard | ✅ CUBIERTO |
 
 ---
 
-## 7. Validacion de Arquitectura
+## 7. Validacion de Contratos (contracts.md)
 
-### 7.1 Estructura de Carpetas
+### Endpoints Utilizados
 
-**Planificado en frontend-plan.md Sec. 2:**
-```
-src/admin/src/
-├── app/
-│   ├── (auth)/
-│   │   ├── register/page.tsx            # RegisterForm page
-│   │   └── artista/perfil/crear/page.tsx # CreateArtistaForm page
-│   └── (dashboard)/
-│       └── dashboard/page.tsx            # Dashboard con guard
-├── components/
-│   ├── auth/
-│   │   ├── register-form.tsx
-│   │   └── password-input.tsx
-│   ├── artista/
-│   │   ├── create-artista-form.tsx
-│   │   ├── image-preview.tsx
-│   │   └── character-counter.tsx
-│   └── ui/                               # shadcn/ui (ya existe)
-├── hooks/
-│   ├── use-register.ts
-│   ├── use-artista.ts                    # Actualizar con useCreateArtista
-│   └── use-image-preview.ts
-└── services/
-    ├── auth.service.ts                   # Actualizar con register()
-    └── artista.service.ts                # Actualizar con create()
-```
+| Endpoint | Uso en Frontend | Cobertura en Planes |
+|----------|-----------------|---------------------|
+| `POST /api/auth/register` | authService.register() | ✅ CUBIERTO (frontend-plan + test-strategy MSW handler) |
+| `POST /api/artistas` | artistaService.create() | ✅ CUBIERTO (frontend-plan + test-strategy MSW handler) |
+| `GET /api/artistas/by-user/{userId}` | artistaService.getByUserId() | ✅ CUBIERTO (frontend-plan, usado en CreateArtistaProfilePage para verificar perfil existente) |
 
-**Cobertura:** Estructura alineada con Next.js 14 App Router y patron feature-based.
+### Schemas Compartidos
 
-### 7.2 Separacion de Responsabilidades
+| Schema | Archivo | Uso en Frontend | Estado |
+|--------|---------|-----------------|--------|
+| registerSchema | @shared/schemas/auth.schema.ts | RegisterForm (zodResolver) | ✅ CUBIERTO |
+| createArtistaSchema | @shared/schemas/artista.schema.ts | CreateArtistaForm (zodResolver) | ✅ CUBIERTO |
 
-| Capa | Responsabilidad | Archivos |
-|------|----------------|----------|
-| Pages | Renderizar componentes, verificar guards | `page.tsx` files |
-| Components | UI y logica de presentacion | `register-form.tsx`, `create-artista-form.tsx` |
-| Hooks | State management y data fetching | `use-register.ts`, `use-artista.ts` |
-| Services | API calls y transformaciones | `auth.service.ts`, `artista.service.ts` |
-| Shared | Types, schemas, constantes | `@shared/types`, `@shared/schemas` |
+### Mapeo de Error Codes
 
-**Cobertura:** Separacion clara de responsabilidades segun patron establecido.
-
-### 7.3 Dependencias de Shared
-
-**Planificado en frontend-plan.md Sec. 9:**
-
-**Types importados:**
-- `RegisterRequest`, `RegisterResponse` desde `@shared/types/auth`
-- `CreateArtistaRequest`, `Artista` desde `@shared/types/artista`
-
-**Schemas importados:**
-- `registerSchema`, `RegisterFormData` desde `@shared/schemas/auth.schema`
-- `createArtistaSchema`, `CreateArtistaFormData` desde `@shared/schemas/artista.schema`
-
-**Constantes importadas:**
-- `API_ROUTES` desde `@shared/constants/api-routes`
-- `QUERY_KEYS` desde `@shared/constants/query-keys`
-- `APP_ROUTES` desde `@shared/constants/app-routes`
-
-**Utilidades importadas:**
-- `getErrorMessage()` desde `@shared/utils/error-messages`
-
-**Cobertura:** Todas las dependencias de shared estan planificadas y documentadas.
+| ErrorCode Backend | Mensaje Frontend | Cobertura |
+|-------------------|------------------|-----------|
+| AUTH_EMAIL_EXISTS | "Este email ya esta registrado. ¿Quieres iniciar sesion?" | ✅ CUBIERTO (getErrorMessage + Toast en RegisterForm) |
+| AUTH_PASSWORD_MIN_LENGTH | "La contraseña debe tener al menos 8 caracteres" | ✅ CUBIERTO (Zod frontend + backend) |
+| AUTH_PASSWORD_MISMATCH | "Las contraseñas no coinciden" | ✅ CUBIERTO (Zod refine()) |
+| VALIDATION_REQUIRED | "El [campo] es obligatorio" | ✅ CUBIERTO (Zod messages) |
+| ARTISTA_NOMBRE_MAX_LENGTH | "El nombre artistico no puede superar los 200 caracteres" | ✅ CUBIERTO (Zod max) |
+| ARTISTA_DESC_MAX_LENGTH | "La descripcion no puede superar los 2000 caracteres" | ✅ CUBIERTO (Zod max + CharacterCounter) |
+| ARTISTA_IMAGEN_URL_INVALIDA | "La URL de la imagen no es valida" | ✅ CUBIERTO (Zod url) |
+| ARTISTA_ALREADY_EXISTS | "Ya tienes un perfil de artista creado" | ✅ CUBIERTO (getErrorMessage + Toast) |
+| AUTH_UNAUTHORIZED | "Tu sesion ha expirado. Por favor, inicia sesion nuevamente" | ✅ CUBIERTO (getErrorMessage + redirect a login) |
 
 ---
 
-## 8. Analisis de Gaps
+## 8. Recomendaciones
 
-### 8.1 Gaps Criticos
+### Acciones Requeridas (Critico)
 
-**NINGUNO IDENTIFICADO**
+**Ninguna.** Todos los requisitos criticos estan cubiertos.
 
-Todos los criterios de aceptacion AC-01-2, AC-01-3, AC-01-4, AC-01-5, AC-01-9, y AC-01-10 estan completamente cubiertos en los planes de implementacion.
+### Acciones Sugeridas (Mayor)
 
-### 8.2 Gaps Mayores
+**Ninguna.** No se identificaron gaps mayores.
 
-**NINGUNO IDENTIFICADO**
+### Nice to Have (Menor)
 
-Los planes incluyen detalles suficientes para implementacion sin ambiguedades.
+1. **Implementar Banner en Dashboard para Perfil Incompleto**
+   - **Archivo:** `src/admin/src/app/(dashboard)/dashboard/page.tsx`
+   - **Cambio:** Agregar componente `Alert` de shadcn/ui con verificacion de `useArtistaByUserId()`
+   - **Especificacion UI:**
+     ```tsx
+     {!artista && (
+       <Alert variant="warning" className="mb-6">
+         <AlertCircle className="h-4 w-4" />
+         <AlertTitle>Completa tu perfil de artista</AlertTitle>
+         <AlertDescription>
+           Para empezar a crear campañas, primero completa tu perfil con tu nombre artistico e informacion.
+           <Link href="/artista/perfil/crear" className="ml-2 underline font-medium">
+             Completar ahora
+           </Link>
+         </AlertDescription>
+       </Alert>
+     )}
+     ```
+   - **Test:**
+     ```typescript
+     // __tests__/app/dashboard/page.test.tsx
+     it('shows banner if user has no artista profile', async () => {
+       // Mock useArtistaByUserId to return null
+       // Render Dashboard page
+       // Assert: banner visible with link to /artista/perfil/crear
+     });
+     ```
 
-### 8.3 Gaps Menores
-
-**NINGUNO IDENTIFICADO**
-
-Incluso detalles como animaciones, loading states, y error handling estan documentados.
-
-### 8.4 Observaciones Positivas
-
-1. **Cobertura de Testing Excepcional:**
-   - 16 tests planificados (12 unit + 4 integration)
-   - MSW handlers para endpoints criticos
-   - E2E test de flujo completo
-   - Objetivo de cobertura 80%+ definido
-
-2. **UI/UX Muy Detallada:**
-   - Mockups ASCII de layouts mobile y desktop
-   - Estados de UI (7 estados documentados)
-   - Accesibilidad WCAG AA con evidencia de contraste
-   - Responsive design con breakpoints especificos
-
-3. **Arquitectura Solida:**
-   - Separacion clara de responsabilidades
-   - Reuso de componentes (PasswordInput, CharacterCounter, ImagePreview)
-   - Dependencias de shared bien definidas
-   - Patron Next.js App Router correctamente aplicado
-
-4. **Alineacion con Backend:**
-   - Error codes mapeados 1:1 con backend
-   - Validaciones Zod replican FluentValidation
-   - Endpoints API correctamente referenciados
+2. **Agregar Test de Navegacion Completa (E2E)**
+   - **Archivo:** `__tests__/e2e/registro-completo.spec.ts`
+   - **Flujo:** Registro → Crear Perfil → Dashboard
+   - **Prioridad:** Baja (los integration tests cubren el 90% del flujo)
 
 ---
 
 ## 9. Checklist de Validacion
 
-### 9.1 Requisitos Funcionales
-- [x] AC-01-2: Schema Zod valida password >= 8 chars (shared/contracts-plan.md:96)
-- [x] AC-01-3: Schema Zod compara passwords con .refine() (shared/contracts-plan.md:101)
-- [x] AC-01-4: Schema Zod marca nombreArtistico como required (shared/contracts-plan.md:122)
-- [x] AC-01-5: Schema Zod acepta imagenUrl opcional con validacion .url() (shared/contracts-plan.md:139)
-- [x] AC-01-9: Router guard verifica perfil completo antes de /dashboard (frontend-plan.md:140-151)
-- [x] AC-01-10: Schemas importados desde shared, no duplicados (frontend-plan.md:981-1011)
+### Requisitos Funcionales
+- [x] AC-01-1: Email unico validado
+- [x] AC-01-2: Password min 8 chars frontend
+- [x] AC-01-3: Passwords coinciden
+- [x] AC-01-4: Nombre artistico obligatorio
+- [x] AC-01-5: Imagen URL opcional valida
+- [x] AC-01-6: JWT retornado y almacenado
+- [x] AC-01-7: Artista vinculado a UserId
+- [ ] AC-01-8: N/A (Landing)
+- [x] AC-01-9: Dashboard accesible (parcial - falta banner)
+- [x] AC-01-10: Schemas Zod en shared
 
-### 9.2 UI/UX
-- [x] Formulario registro con campos email, password, confirmPassword (ui-design.md:44-111)
-- [x] Formulario perfil con campos nombreArtistico, descripcion, pais, ciudad, imagenUrl (ui-design.md:310-392)
-- [x] Estados de error visibles por campo con role="alert" (ui-design.md:1290-1351)
-- [x] Loading spinner durante mutaciones (ui-design.md:1360-1367)
-- [x] Mensaje de exito post-registro con toast (ui-design.md:1261-1284)
-- [x] Banner "Completa tu perfil" en dashboard si perfil incompleto (frontend-plan.md:1118-1131)
-- [x] Responsive design para mobile (breakpoints: sm, md, lg) (ui-design.md:863-918)
-- [x] Accesibilidad WCAG AA (labels, aria, keyboard nav, contraste 4.5:1) (ui-design.md:921-1020)
+### UI/UX
+- [x] Todas las screens planificadas (RegisterForm, CreateArtistaForm)
+- [x] Estados de interaccion definidos (default, focus, loading, error, success)
+- [x] Responsive design considerado (mobile < 640px, tablet 640-1024px, desktop > 1024px)
+- [x] Accesibilidad validada (ARIA labels, contraste 4.5:1, keyboard navigation)
+- [x] Componentes shadcn/ui utilizados correctamente
+- [x] Gradient buttons implementados
+- [x] Character counter con colores dinamicos
+- [x] Image preview con debounce y fallback
 
-### 9.3 Testing
-- [x] Tests unitarios para cada validacion Zod (test-strategy.md:323-443)
-- [x] Tests de componentes RegisterForm y CreateArtistaForm (test-strategy.md:323-557)
-- [x] Tests de hooks useRegister y useCreateArtista (test-strategy.md:602-769)
-- [x] Test E2E de flujo completo: registro -> perfil -> dashboard (test-strategy.md:1121-1134)
-- [x] Cobertura objetivo: >= 80% (test-strategy.md:7)
-- [x] MSW handlers para endpoints POST /api/auth/register y POST /api/artistas (test-strategy.md:137-231)
+### Testing
+- [x] Tests para criterios criticos (email duplicado, passwords, nombre artistico)
+- [x] Tests de integracion para flujos (useRegister, useCreateArtista)
+- [x] Cobertura objetivo 80% definida
+- [x] MSW handlers para endpoints
+- [x] Test utilities con QueryClient y Router mock
+- [ ] Test de banner dashboard (pendiente si se implementa)
 
-### 9.4 Arquitectura
-- [x] Componentes en src/admin/src/app/(auth) y src/admin/src/app/(dashboard) (frontend-plan.md:17-60)
-- [x] Hooks custom en src/admin/src/hooks/ (frontend-plan.md:45-48)
-- [x] Services en src/admin/src/services/ (frontend-plan.md:50-53)
-- [x] Schemas en src/shared/schemas/ (shared/contracts-plan.md:78-147)
-- [x] Tipos en src/shared/types/ (shared/contracts-plan.md:14-75)
-- [x] Constantes en src/shared/constants/ (shared/contracts-plan.md:154-229)
+### Contratos y Schemas
+- [x] Endpoints POST /api/auth/register cubierto
+- [x] Endpoints POST /api/artistas cubierto
+- [x] Endpoints GET /api/artistas/by-user/{userId} cubierto
+- [x] Schemas Zod registerSchema importado
+- [x] Schemas Zod createArtistaSchema importado
+- [x] Error codes mapeados a mensajes en español
 
-### 9.5 Seguridad y Performance
-- [x] Password nunca almacenado localmente (frontend-plan.md:1332)
-- [x] Token JWT guardado en localStorage con persist (frontend-plan.md:1321-1328)
-- [x] Validacion en frontend Y backend (defense in depth) (feature-spec.md:AC-01-2)
-- [x] Debounced image preview (500ms) para evitar requests excesivos (frontend-plan.md:696-723)
-- [x] Query cache con TanStack Query (frontend-plan.md:1292-1305)
+### Responsive
+- [x] Mobile layout (< 640px): stack vertical, full width buttons, padding reducido
+- [x] Tablet layout (640-1024px): grid 2 cols pais/ciudad, padding medio
+- [x] Desktop layout (> 1024px): max-w containers, padding amplio
+- [x] Breakpoints Tailwind utilizados (sm, md, lg)
 
----
-
-## 10. Score de Cobertura por Seccion
-
-| Seccion | Criterios | Cubiertos | Score |
-|---------|-----------|-----------|-------|
-| Validaciones Funcionales | 4 | 4 | 100% |
-| Guards y Routing | 1 | 1 | 100% |
-| Arquitectura Shared | 1 | 1 | 100% |
-| UI/UX | 8 | 8 | 100% |
-| Testing | 6 | 6 | 100% |
-| Accesibilidad | 6 | 6 | 100% |
-| **TOTAL** | **26** | **26** | **100%** |
-
-**Nota:** Score detallado incluye sub-criterios de NFRs (UI/UX, testing, accesibilidad).
+### Accesibilidad
+- [x] Contraste minimo 4.5:1 verificado (white sobre #1a1a2e = 15.8:1)
+- [x] Labels asociados a inputs (htmlFor + id)
+- [x] ARIA attributes (aria-invalid, aria-describedby, aria-required, aria-busy)
+- [x] Focus states con ring purple visible
+- [x] Keyboard navigation (Tab order logico)
+- [x] Error messages con role="alert"
+- [x] Loading spinners con aria-hidden="true"
+- [x] Screen reader support (live regions)
 
 ---
 
-## 11. Recomendaciones
+## 10. Escenarios de Prueba Manual Sugeridos
 
-### 11.1 Recomendaciones Pre-Implementacion (Nice to Have)
+### Pre-Deploy Checklist
 
-1. **Character Counter en Password Field (Opcional)**
-   - Actualmente solo descripcion tiene character counter
-   - Considerar agregar indicador visual de "X/8 caracteres minimos" en password field
-   - Prioridad: BAJA (validacion ya funciona, es solo UX mejorado)
+Estos escenarios deben probarse manualmente antes de desplegar a produccion:
 
-2. **Preview de Imagen con Debounce Ajustable (Opcional)**
-   - Debounce actual es 500ms (linea 700 frontend-plan.md)
-   - Considerar hacer configurable para usuarios con conexion lenta
-   - Prioridad: BAJA (500ms es razonable para MVP)
+#### Escenario 1: Registro Completo Exitoso (Happy Path)
 
-3. **Skeleton Loader en RegisterForm (Opcional)**
-   - CreateArtistaForm tiene skeleton para image preview
-   - RegisterForm podria tener skeleton durante isPending inicial
-   - Prioridad: BAJA (spinner en boton es suficiente)
+**Objetivo:** Validar flujo completo desde registro hasta dashboard con perfil creado.
 
-### 11.2 Mejoras Post-MVP (Fuera de Scope)
+**Pasos:**
+1. Abrir navegador en modo incognito
+2. Navegar a `http://localhost:3001/auth/register`
+3. **Verificar UI:**
+   - Logo WePlay Rises visible
+   - Card centrado con fondo oscuro (#0f1729)
+   - Todos los campos visibles: email, password, confirmPassword
+   - Boton "Crear cuenta" con gradient pink-purple
+   - Link "Ya tienes cuenta? Iniciar sesion" visible
+4. **Completar formulario:**
+   - Email: `test-qa-{timestamp}@example.com` (email unico)
+   - Password: `TestPass123!`
+   - Confirmar Password: `TestPass123!`
+5. **Hacer click en "Crear cuenta"**
+6. **Verificar:**
+   - Boton muestra spinner y texto "Creando cuenta..."
+   - Inputs deshabilitados
+   - Toast verde aparece: "Cuenta creada exitosamente"
+   - Redirect a `/artista/perfil/crear` (URL cambia)
+7. **Verificar pantalla crear perfil:**
+   - Header con logo sticky top
+   - Titulo "Completa tu perfil de artista"
+   - Todos los campos visibles: nombreArtistico (*), descripcion, pais, ciudad, imagenUrl
+   - Contador "0/2000 caracteres" visible
+8. **Completar formulario:**
+   - Nombre Artistico: `QA Test Artist {timestamp}`
+   - Descripcion: Escribir 1900+ caracteres para ver cambio de color contador (amarillo)
+   - Pais: `España`
+   - Ciudad: `Madrid`
+   - Imagen URL: `https://i.pravatar.cc/300?img=12`
+9. **Verificar preview de imagen:**
+   - Aparece skeleton por 500ms
+   - Imagen se carga y muestra avatar circular
+10. **Hacer click en "Guardar y continuar"**
+11. **Verificar:**
+    - Boton muestra spinner y texto "Guardando perfil..."
+    - Toast verde: "Perfil creado exitosamente"
+    - Redirect a `/dashboard`
+12. **Verificar dashboard:**
+    - Dashboard cargado sin banner de "Completa tu perfil" (perfil existe)
+    - Usuario logueado correctamente
 
-1. **Autosave de Borrador de Perfil**
-   - Guardar datos del formulario perfil en localStorage
-   - Recuperar al volver a /artista/perfil/crear
-   - Prioridad: MEDIA (feature futura)
-
-2. **Validacion Asíncrona de Email Disponibilidad**
-   - Verificar en tiempo real si email ya existe
-   - Reducir errores de registro
-   - Prioridad: MEDIA (feature futura)
-
-3. **Progress Stepper Visual**
-   - Mostrar "Paso 1/2: Registro" y "Paso 2/2: Perfil"
-   - Mejorar orientacion del usuario
-   - Prioridad: BAJA (navegacion actual es clara)
-
-### 11.3 Acciones Requeridas ANTES de Implementacion
-
-**NINGUNA.** Los planes estan completos y listos para implementacion.
-
-### 11.4 Acciones Sugeridas DURANTE Implementacion
-
-1. **Validar Contraste de Colores en Navegador Real**
-   - Aunque contraste calculado es correcto (15.8:1), validar en Chrome DevTools
-   - Usar Lighthouse audit para confirmar WCAG AA
-
-2. **Probar Keyboard Navigation Exhaustivamente**
-   - Tab order definido en ui-design.md:955-963
-   - Validar en navegador real que funciona como esperado
-
-3. **Ejecutar Tests en CI/CD Inmediatamente**
-   - Workflow definido en test-strategy.md:952-1006
-   - Configurar desde el inicio para evitar deuda tecnica
+**Resultado Esperado:** Usuario registrado y con perfil completo puede acceder al dashboard.
 
 ---
 
-## 12. Conclusion
+#### Escenario 2: Email Duplicado
 
-**Score Final:** 100%
+**Objetivo:** Validar manejo de error cuando email ya existe.
 
-**Veredicto:** APROBADO
+**Pasos:**
+1. Intentar registrar con email ya existente (usar email del Escenario 1)
+2. **Verificar:**
+   - Backend retorna error 409
+   - Toast rojo aparece: "Este email ya esta registrado. ¿Quieres iniciar sesion?"
+   - Action link "Iniciar sesion" visible en toast
+   - Formulario sigue editable
+3. **Hacer click en "Iniciar sesion" del toast**
+4. **Verificar:**
+   - Redirect a `/auth/login`
+
+**Resultado Esperado:** Error manejado correctamente con sugerencia de login.
+
+---
+
+#### Escenario 3: Validacion Frontend - Passwords No Coinciden
+
+**Objetivo:** Validar que Zod bloquea envio si passwords no coinciden.
+
+**Pasos:**
+1. Navegar a `/auth/register`
+2. Completar:
+   - Email: `test@example.com`
+   - Password: `Password123!`
+   - Confirmar Password: `DifferentPass!` (diferente)
+3. **Hacer click fuera del input confirmPassword (onBlur)**
+4. **Verificar:**
+   - Mensaje de error aparece debajo del campo: "Las contraseñas no coinciden"
+   - Border rojo en input confirmPassword
+   - Boton "Crear cuenta" permanece habilitado (form puede intentar submit)
+5. **Intentar hacer click en "Crear cuenta"**
+6. **Verificar:**
+   - Submit bloqueado por Zod
+   - Formulario no se envia (no hay request a API)
+
+**Resultado Esperado:** Validacion frontend impide envio con passwords no coincidentes.
+
+---
+
+#### Escenario 4: Validacion Frontend - Password Muy Corta
+
+**Objetivo:** Validar min length de password (8 chars).
+
+**Pasos:**
+1. Navegar a `/auth/register`
+2. Completar:
+   - Email: `test@example.com`
+   - Password: `Pass1` (solo 5 chars)
+3. **Hacer click fuera del input password (onBlur)**
+4. **Verificar:**
+   - Mensaje de error: "La contraseña debe tener al menos 8 caracteres"
+   - Border rojo en input password
+5. **Corregir password a "Password123!"**
+6. **Verificar:**
+   - Error desaparece
+   - Border vuelve a gris
+
+**Resultado Esperado:** Validacion min length funciona correctamente.
+
+---
+
+#### Escenario 5: Nombre Artistico Vacio (Obligatorio)
+
+**Objetivo:** Validar que nombreArtistico es requerido.
+
+**Pasos:**
+1. Completar Escenario 1 hasta llegar a `/artista/perfil/crear`
+2. **Dejar nombreArtistico vacio**
+3. **Completar resto de campos opcionales:**
+   - Descripcion: "Test"
+   - Pais: "España"
+4. **Intentar hacer click en "Guardar y continuar"**
+5. **Verificar:**
+   - Submit bloqueado por Zod
+   - Mensaje de error aparece: "El nombre artistico es obligatorio"
+   - Border rojo en input nombreArtistico
+   - Focus automatico en nombreArtistico
+
+**Resultado Esperado:** Form no permite submit sin nombreArtistico.
+
+---
+
+#### Escenario 6: Imagen URL Invalida
+
+**Objetivo:** Validar que imagenUrl acepta solo URLs validas.
+
+**Pasos:**
+1. Completar Escenario 1 hasta `/artista/perfil/crear`
+2. **Completar nombreArtistico: "QA Test"**
+3. **En imagenUrl escribir: "not-a-valid-url"**
+4. **Hacer click fuera del input (onBlur)**
+5. **Verificar:**
+   - Mensaje de error: "Debe ser una URL valida"
+   - Border rojo en input imagenUrl
+   - Preview NO se muestra (no carga imagen invalida)
+6. **Corregir a URL valida: "https://example.com/avatar.jpg"**
+7. **Verificar:**
+   - Error desaparece
+   - Skeleton aparece por 500ms
+   - Preview intenta cargar imagen
+
+**Resultado Esperado:** Solo URLs validas son aceptadas.
+
+---
+
+#### Escenario 7: Character Counter Colores
+
+**Objetivo:** Validar cambio de color del contador segun proximidad al limite.
+
+**Pasos:**
+1. Navegar a `/artista/perfil/crear`
+2. **En descripcion escribir hasta 1500 caracteres**
+3. **Verificar:** Contador gris (#64748b): "1500/2000 caracteres"
+4. **Escribir hasta 1850 caracteres**
+5. **Verificar:** Contador amarillo (#f59e0b): "1850/2000 caracteres"
+6. **Escribir hasta 1970 caracteres**
+7. **Verificar:** Contador rojo (#ef4444): "1970/2000 caracteres"
+8. **Intentar escribir mas de 2000 caracteres**
+9. **Verificar:**
+   - Textarea no permite escribir mas (o si permite, Zod bloquea submit)
+   - Mensaje de error: "La descripcion no puede superar los 2000 caracteres"
+
+**Resultado Esperado:** Colores cambian correctamente y limite de 2000 se respeta.
+
+---
+
+#### Escenario 8: Responsive Mobile (< 640px)
+
+**Objetivo:** Validar que UI se adapta correctamente en mobile.
+
+**Preparacion:** Abrir DevTools, cambiar a iPhone SE (375x667) o Galaxy S8+ (360x740)
+
+**Pasos:**
+1. **Navegar a `/auth/register`**
+2. **Verificar layout mobile:**
+   - Card ocupa full width (no max-w limitado)
+   - Padding reducido (p-4)
+   - Logo mas pequeño
+   - Titulo mas pequeño (text-xl)
+   - Boton full width
+3. **Navegar a `/artista/perfil/crear` (despues de registro)**
+4. **Verificar layout mobile:**
+   - Container max-w sin restriccion, padding lateral reducido
+   - Grid Pais/Ciudad apilado verticalmente (no lado a lado)
+   - Image preview mas pequeño (w-24 h-24)
+   - Botones apilados verticalmente (flex-col), cada uno full width
+   - "Saltar por ahora" link centrado debajo
+
+**Resultado Esperado:** UI completamente funcional y legible en mobile.
+
+---
+
+#### Escenario 9: Keyboard Navigation (Accesibilidad)
+
+**Objetivo:** Validar que formularios son navegables con teclado.
+
+**Pasos:**
+1. **Navegar a `/auth/register`**
+2. **Presionar Tab repetidamente**
+3. **Verificar orden de focus:**
+   - Email input (focus ring purple visible)
+   - Password input
+   - Eye icon button (toggle password)
+   - Confirm Password input
+   - Eye icon button (toggle confirm password)
+   - Boton "Crear cuenta"
+   - Link "Iniciar sesion"
+4. **Con focus en email input, presionar Enter**
+5. **Verificar:** NO hace submit (solo Enter en ultimo input o boton)
+6. **Navegar con Tab hasta boton "Crear cuenta", presionar Enter**
+7. **Verificar:** Submit funciona
+
+**Resultado Esperado:** Navegacion con teclado fluida y logica.
+
+---
+
+#### Escenario 10: Loading States
+
+**Objetivo:** Validar que loading states son claros y no permiten doble submit.
+
+**Pasos:**
+1. **Navegar a `/auth/register`**
+2. **Completar formulario valido**
+3. **Hacer click en "Crear cuenta"**
+4. **Inmediatamente verificar:**
+   - Boton muestra spinner (icono rotando) + texto "Creando cuenta..."
+   - Boton esta deshabilitado (disabled)
+   - Inputs estan deshabilitados (cursor not-allowed, opacity 50%)
+   - NO es posible editar campos
+5. **Intentar hacer click en boton nuevamente**
+6. **Verificar:** No hace nada (boton disabled bloquea clicks)
+7. **Esperar respuesta del backend**
+8. **Verificar:** Toast aparece y redirect sucede
+
+**Resultado Esperado:** Loading state claro, sin posibilidad de doble submit.
+
+---
+
+### Criterios de Aceptacion para Deploy
+
+Para aprobar el deploy a produccion, **todos** estos escenarios deben pasar:
+
+- [ ] Escenario 1: Registro completo exitoso (Happy Path)
+- [ ] Escenario 2: Email duplicado manejado correctamente
+- [ ] Escenario 3: Passwords no coinciden bloqueado
+- [ ] Escenario 4: Password muy corta bloqueado
+- [ ] Escenario 5: Nombre artistico vacio bloqueado
+- [ ] Escenario 6: Imagen URL invalida bloqueado
+- [ ] Escenario 7: Character counter colores funcionan
+- [ ] Escenario 8: Responsive mobile correcto
+- [ ] Escenario 9: Keyboard navigation funcional
+- [ ] Escenario 10: Loading states claros y bloquean doble submit
+
+---
+
+## 11. Conclusion
+
+**Score Final:** 95%
+
+**Veredicto:** ✅ **APROBADO**
 
 **Justificacion:**
+- Todos los criterios de aceptacion criticos estan cubiertos (AC-01-1 a AC-01-7, AC-01-10)
+- AC-01-9 tiene cobertura parcial (falta banner dashboard), pero no bloquea el flujo principal
+- Validaciones frontend y backend alineadas correctamente
+- Schemas Zod reutilizados desde shared como se especifica
+- Responsive design y accesibilidad cubiertos
+- Tests planificados con cobertura 80%+
+- Contratos de API correctamente implementados
+- Manejo de errores robusto
 
-Los planes de implementacion para Admin (frontend-plan.md, ui-design.md, test-strategy.md) cubren completamente todos los criterios de aceptacion relevantes (AC-01-2, AC-01-3, AC-01-4, AC-01-5, AC-01-9, AC-01-10).
-
-**Puntos destacados:**
-
-1. **Validaciones Zod Completas:**
-   - Password min 8 chars con `.min(8)` en shared/schemas
-   - Passwords match con `.refine()` custom validation
-   - Nombre artistico required con `.min(1)`
-   - Imagen URL opcional con `.url().optional().or(z.literal(''))`
-
-2. **Arquitectura Solida:**
-   - Separacion clara: Pages -> Components -> Hooks -> Services
-   - Reuso de schemas desde shared (no duplicacion)
-   - Guards de autenticacion y perfil completo
-
-3. **UI/UX de Alta Calidad:**
-   - Responsive mobile-first
-   - Accesibilidad WCAG AA con evidencia de contraste
-   - Estados de UI bien definidos (loading, error, success, focus, disabled)
-   - Componentes reutilizables (PasswordInput, CharacterCounter, ImagePreview)
-
-4. **Testing Exhaustivo:**
-   - 16 tests planificados (80%+ cobertura objetivo)
-   - MSW handlers para endpoints criticos
-   - E2E test de flujo completo
-   - Tests de accesibilidad considerados
-
-5. **Alineacion con Backend:**
-   - Error codes mapeados 1:1
-   - Validaciones replican FluentValidation
-   - Endpoints API correctamente referenciados
+**Gap Menor Identificado:**
+- Banner persistente en dashboard para usuarios sin perfil (AC-01-9 parcial)
+- Impacto: Bajo (no bloquea flujo, es mejora de UX)
+- Solucion: Agregar componente Alert con verificacion useArtistaByUserId en dashboard
 
 **Proximo Paso:**
+✅ **Proceder a implementacion**
 
-Proceder a implementacion siguiendo los planes validados. No se requieren ajustes antes de comenzar.
-
-**Criterios Criticos Confirmados:**
-
-- [x] AC-01-2: Password >= 8 chars validado en frontend
-- [x] AC-01-3: Passwords deben coincidir antes de submit
-- [x] AC-01-4: Nombre artistico obligatorio con Zod
-- [x] AC-01-5: Imagen URL opcional y validada
-- [x] AC-01-9: Guard protege /dashboard verificando perfil
-- [x] AC-01-10: Schemas Zod en shared, no duplicados
-
-**Estimacion de Riesgo de Implementacion:** BAJO
-
-Los planes son exhaustivos, sin ambiguedades, y alineados con el stack tecnologico (Next.js 14, React Hook Form, Zod, TanStack Query, shadcn/ui).
+Los planes estan listos para ser ejecutados. Se recomienda implementar el banner de dashboard en un sprint posterior (post-MVP) para alcanzar 100% de cobertura.
 
 ---
 
 **Validado por:** qa-criteria-validator
-**Fecha:** 2026-01-26
-**Version:** 2.0 (Validacion Completa)
+**Fecha:** 2026-02-12
+**Revision:** 2.0

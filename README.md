@@ -24,7 +24,7 @@ Plataforma de crowdfunding musical para grupos noveles.
 |-------|-------|
 | **Nombre** | WePlay Rises |
 | **Descripcion** | Plataforma de crowdfunding y crowdsourcing para grupos musicales noveles |
-| **Autor** | Jonay |
+| **Autor** | Ivan de Blas |
 | **Curso** | AI4Devs - LIDR |
 | **Fecha inicio** | Enero 2026 |
 | **Tiempo total** | 30 horas |
@@ -59,11 +59,13 @@ Plataforma de crowdfunding musical para grupos noveles.
 
 ### Vision
 
-WePlay Rises es una plataforma que conecta a **grupos musicales noveles** con su comunidad de fans y profesionales del sector, permitiendoles:
+WePlay Rises es una plataforma de crowdfunding musical que integra **tres dimensiones** en un mismo ecosistema:
 
-1. **Financiar proyectos** mediante crowdfunding con recompensas
-2. **Contratar profesionales** (ilustradores, tecnicos de sonido, etc.) via crowdsourcing _(Post-MVP)_
-3. **Promocionar su musica** a traves de fans e influencers _(Post-MVP)_
+1. **Crowdfunding**: Los fans financian proyectos musicales a cambio de recompensas exclusivas
+2. **Crowdsourcing**: Los artistas publican necesidades profesionales (productor, disenador, ingeniero de mezcla) y los profesionales envian propuestas
+3. **Crowdpromotion**: Los promotores ayudan a difundir campanas a cambio de comisiones por cada backer referido
+
+Lo innovador es que **un mismo proyecto puede combinar las tres dimensiones**, y el usuario lo ve de forma integrada en una sola interfaz.
 
 ### Problema que Resuelve
 
@@ -74,7 +76,7 @@ Los grupos musicales emergentes enfrentan tres grandes barreras:
 
 ### Propuesta de Valor
 
-Una plataforma integral donde artistas pueden financiar, producir y promocionar sus proyectos musicales con el apoyo de su comunidad.
+Una plataforma integral donde artistas pueden financiar, producir y promocionar sus proyectos musicales con el apoyo de su comunidad. Un mismo proyecto artistico actua como hub que conecta las tres dimensiones.
 
 ### Usuarios Objetivo
 
@@ -82,21 +84,44 @@ Una plataforma integral donde artistas pueden financiar, producir y promocionar 
 |---------|-------------|---------------------|
 | **Artista** | Banda o solista emergente | Financiar y producir su musica |
 | **Fan** | Seguidor de musica independiente | Apoyar a sus artistas favoritos |
-| **Profesional** | Freelancer del sector musical | Encontrar proyectos interesantes _(Post-MVP)_ |
+| **Profesional** | Freelancer del sector musical | Encontrar proyectos y enviar propuestas |
+| **Promotor** | Influencer o fan activo | Difundir campanas a cambio de comisiones |
 
-### Funcionalidades MVP (Crowdfunding)
+### Funcionalidades Implementadas
 
+#### Crowdfunding (nucleo)
 | Feature | Estado |
 |---------|--------|
-| Registro y login de usuarios | Pendiente |
-| Crear perfil de artista | Pendiente |
-| Crear campania de crowdfunding | Pendiente |
-| Definir recompensas con stock | Pendiente |
-| Publicar campania | Pendiente |
-| Ver listado de campanias activas | Pendiente |
-| Ver detalle de campania con progreso | Pendiente |
-| Hacer backing (sin pago real en MVP) | Pendiente |
-| Dashboard de artista con metricas | Pendiente |
+| Registro y login de usuarios (JWT + Identity) | Completada |
+| Crear perfil de artista | Completada |
+| Crear campania de crowdfunding (wizard 4 pasos) | Completada |
+| Definir recompensas con stock | Completada |
+| Publicar campania | Completada |
+| Ver listado de campanias activas con filtros y busqueda | Completada |
+| Ver detalle de campania con progreso, tabs y badges | Completada |
+| Hacer backing con seleccion de recompensa | Completada |
+| Dashboard de artista con metricas | Completada |
+| Comentarios de backers y updates de artistas | Completada |
+| Stretch Goals | Completada |
+
+#### Crowdsourcing
+| Feature | Estado |
+|---------|--------|
+| Templates y guia para artistas noveles | Completada |
+| Gestionar necesidades profesionales | Completada |
+| Explorar y enviar propuestas | Completada |
+| Acuerdos de trabajo y entregables | Completada |
+| Mensajeria entre artista y profesional | Completada |
+| Valoraciones | Completada |
+
+#### Crowdpromotion
+| Feature | Estado |
+|---------|--------|
+| Perfil de promotor | Completada |
+| Programas de promocion | Completada |
+| Inscripcion a programas y tareas | Completada |
+| Tracking y metricas de promocion | Completada |
+| Wallet y comisiones | Completada |
 
 ---
 
@@ -176,8 +201,8 @@ WePlay_Rises/
 │   │   │   │   ├── Crowdfunding.Infra/
 │   │   │   │   └── Crowdfunding.WebApi/
 │   │   │   │
-│   │   │   ├── Crowdsourcing/         # (Placeholder MVP2)
-│   │   │   └── Crowdpromotion/        # (Placeholder MVP2)
+│   │   │   ├── Crowdsourcing/         # Necesidades, Propuestas, Acuerdos
+│   │   │   └── Crowdpromotion/        # Programas, Inscripciones, Wallet
 │   │   │
 │   │   └── WebApi/                    # Composition root
 │   │       ├── Auth/                  # JWT + Identity
@@ -936,32 +961,48 @@ Fan ve confirmacion
 
 | ID | Titulo | Estado | Prioridad | Estimado |
 |----|--------|--------|-----------|----------|
-| WPR-001 | Definir modelo de datos MVP | Pendiente | Alta | 2h |
+| WPR-001 | Definir modelo de datos MVP | ✅ Completada | Alta | 2h |
 | WPR-002 | Copiar BuildingBlocks de miUrba | ✅ Completada | Alta | 2h |
 | WPR-003 | Crear estructura de modulos MVP | ✅ Completada | Alta | 2h |
-| WPR-004 | Configurar DbContext y migrations | Pendiente | Alta | 1h |
-| WPR-005 | Setup proyecto React + Templates | Pendiente | Alta | 1h |
-| WPR-006 | Implementar Identity minimo (JWT) | Pendiente | Alta | 1.5h |
-| WPR-006a | Configurar User Secrets | Pendiente | Alta | 0.25h |
+| WPR-004 | Configurar DbContext y migrations | ✅ Completada | Alta | 1h |
+| WPR-005 | Setup proyecto React + Templates | ✅ Completada | Alta | 1h |
+| WPR-006 | Implementar Identity minimo (JWT) | ✅ Completada | Alta | 1.5h |
+| WPR-006a | Configurar User Secrets | ✅ Completada | Alta | 0.25h |
 
-### Fase 2: Features MVP (12h estimadas)
+### Fase 2: Features MVP - Crowdfunding (12h estimadas)
 
 | ID | Titulo | Estado | Prioridad | Estimado |
 |----|--------|--------|-----------|----------|
-| WPR-010 | US-01 - Registro de Artista | Pendiente | Alta | 2h |
-| WPR-011 | US-02 - Crear Campania | Pendiente | Alta | 3h |
-| WPR-012 | US-03 - Definir Recompensas | Pendiente | Alta | 2h |
-| WPR-013 | US-04 - Hacer Backing | Pendiente | Alta | 2h |
-| WPR-014 | US-05 - Dashboard Artista | Pendiente | Alta | 2h |
+| WPR-010 | US-01 - Registro de Artista | ✅ Completada | Alta | 2h |
+| WPR-011 | US-02 - Crear Campania | ✅ Completada | Alta | 3h |
+| WPR-012 | US-03 - Definir Recompensas | ✅ Completada | Alta | 2h |
+| WPR-013 | US-04 - Hacer Backing | ✅ Completada | Alta | 2h |
+| WPR-014 | US-05 - Dashboard Artista | ✅ Completada | Alta | 2h |
 
 ### Fase 3: Testing y Deploy (10h estimadas)
 
 | ID | Titulo | Estado | Prioridad | Estimado |
 |----|--------|--------|-----------|----------|
-| WPR-020 | Tests unitarios backend | Pendiente | Media | 3h |
-| WPR-021 | Tests de integracion | Pendiente | Media | 2h |
-| WPR-022 | Deploy Azure | Pendiente | Media | 3h |
-| WPR-023 | Documentacion final | Pendiente | Media | 2h |
+| WPR-020 | Tests unitarios backend | ✅ Completada | Media | 3h |
+| WPR-021 | Tests de integracion | ✅ Completada | Media | 2h |
+| WPR-022 | Deploy Azure | ✅ Completada | Media | 3h |
+| WPR-023 | Documentacion final | ✅ Completada | Media | 2h |
+
+### Fase 4: Crowdsourcing y Crowdpromotion
+
+| ID | Titulo | Estado | Prioridad |
+|----|--------|--------|-----------|
+| US-CS-01 | Templates y guia para artistas | ✅ Completada | Alta |
+| US-CS-02 | Gestionar necesidades | ✅ Completada | Alta |
+| US-CS-03 | Explorar y enviar propuestas | ✅ Completada | Alta |
+| US-CS-04 | Acuerdos y entregables | ✅ Completada | Media |
+| US-CS-05 | Mensajeria | ✅ Completada | Media |
+| US-CS-06 | Valoraciones | ✅ Completada | Media |
+| US-CP-01 | Perfil promotor | ✅ Completada | Alta |
+| US-CP-02 | Programas de promocion | ✅ Completada | Alta |
+| US-CP-03 | Inscripcion y tareas | ✅ Completada | Alta |
+| US-CP-04 | Tracking y metricas | ✅ Completada | Media |
+| US-CP-05 | Wallet y comisiones | ✅ Completada | Media |
 
 > Detalle completo en `tasks/backlog.md`
 
@@ -969,11 +1010,7 @@ Fan ve confirmacion
 
 ## 8. Pull Requests
 
-_Se documentaran durante el desarrollo_
-
-| PR | Titulo | Fecha | Estado | Commits |
-|----|--------|-------|--------|---------|
-| - | - | - | - | - |
+El desarrollo se realizo en rama `master` con commits atomicos. Para la entrega se creo la rama `entrega/idb-final`.
 
 ---
 
@@ -983,40 +1020,27 @@ _Se documentaran durante el desarrollo_
 
 | Metrica | Valor |
 |---------|-------|
-| **Total invertido** | 9.0 horas |
-| **Presupuesto restante** | 21.0 horas |
-| **Porcentaje usado** | 30% |
+| **Total invertido** | ~30 horas |
+| **Presupuesto total** | 30 horas |
+| **Porcentaje usado** | 100% |
 
 ```
-[#########.................] 30% (9.0/30h)
+[#########################] 100% (~30/30h)
 ```
 
 ### Por Categoria
 
-| Categoria | Horas | % del Total |
-|-----------|-------|-------------|
-| Planning | 3.0 | 10% |
-| Setup | 3.5 | 12% |
-| Backend | 2.0 | 7% |
-| Frontend | 0 | 0% |
-| Testing | 0 | 0% |
-| Deploy | 0 | 0% |
-| Documentacion | 0.5 | 2% |
-
-### Detalle por Sesion
-
-| Fecha | Horas | Categoria | Descripcion |
-|-------|-------|-----------|-------------|
-| 2026-01-20 | 1.5 | Planning | Debate inicial, analisis modelo datos |
-| 2026-01-20 | 0.5 | Setup | Crear estructura workspace |
-| 2026-01-21 | 1.0 | Setup | Sesion de trabajo |
-| 2026-01-22 | 0.5 | Backend | WPR-002, WPR-003: BuildingBlocks + modulos |
-| 2026-01-22 | 0.5 | Backend | WPR-004: DbContexts por modulo |
-| 2026-01-22 | 0.5 | Planning | Estrategia slices verticales |
-| 2026-01-22 | 0.5 | Documentacion | Doc slices, SDLC tooling |
-| 2026-01-26 | 2.0 | Setup | Comandos Claude y agentes especializados |
-| 2026-01-26 | 1.0 | Planning | User Story: Registro de Artista |
-| 2026-01-27 | 1.0 | Backend | Mejora performance primera ejecucion |
+| Categoria | Horas aprox | % del Total |
+|-----------|-------------|-------------|
+| Planning y Arquitectura | 4.0 | 13% |
+| Setup e Infraestructura | 4.0 | 13% |
+| Backend (Crowdfunding) | 5.0 | 17% |
+| Backend (Crowdsourcing + Crowdpromotion) | 4.0 | 13% |
+| Frontend Landing | 5.0 | 17% |
+| Frontend Admin | 3.0 | 10% |
+| Testing | 2.0 | 7% |
+| Deploy y Docker | 1.5 | 5% |
+| Documentacion y Seed | 1.5 | 5% |
 
 > Detalle completo en `tasks/time-log.md`
 
@@ -1024,45 +1048,116 @@ _Se documentaran durante el desarrollo_
 
 ## Como Ejecutar
 
-### Requisitos
+### Opcion recomendada: Docker Compose
+
+Levanta todo el stack (SQL Server + API + Web + Admin) con un solo comando:
+
+```bash
+docker compose up -d
+```
+
+Servicios disponibles:
+
+| Servicio | URL | Descripcion |
+|----------|-----|-------------|
+| Landing (web) | http://localhost:3000 | Vite + React, campanias publicas |
+| Admin (dashboard) | http://localhost:3001 | Next.js 14, dashboard de artista |
+| API Swagger | http://localhost:5001/swagger | Documentacion interactiva de la API |
+| SQL Server | localhost:1433 | sa / WePlayRises2024! |
+
+Para detener:
+```bash
+docker compose down       # Detener servicios
+docker compose down -v    # Detener y borrar datos de BD
+```
+
+### Seed de datos de demo
+
+Tras levantar Docker, ejecutar el script de seed para poblar la base de datos:
+
+```bash
+sqlcmd -S localhost,1433 -U sa -P "WePlayRises2024!" -d WePlayRises -i scripts/seed-complete.sql
+```
+
+### Credenciales de prueba
+
+#### Artistas (password: `WePlay2026!`)
+
+| Email | Artista | Dimensiones activas |
+|-------|---------|---------------------|
+| vetusta@weplay-test.com | Vetusta Morla | Funding + Sourcing + Promo |
+| badbunny@weplay-test.com | Bad Bunny | Funding + Sourcing + Promo |
+| rosalia@weplay-test.com | Rosalia | Funding + Sourcing |
+| tangana@weplay-test.com | C. Tangana | Funding |
+
+> Vetusta Morla tambien tiene rol Admin.
+
+#### Fans (password: `Test123!`)
+
+| Email | Nombre | Perfil Profesional | Perfil Promotor |
+|-------|--------|--------------------|-----------------|
+| maria.garcia@weplay-test.com | Maria Garcia | No | No |
+| carlos.lopez@weplay-test.com | Carlos Lopez | Productor Musical | Si |
+| emma.wilson@weplay-test.com | Emma Wilson | Ingeniera de Mezcla | Si |
+
+### Opcion alternativa: Desarrollo local
+
+#### Requisitos
 - .NET 8 SDK
 - Node.js 20+
-- SQL Server (LocalDB para desarrollo)
+- SQL Server (LocalDB)
 
-### Backend
+#### Backend
 ```bash
 cd src/api
-dotnet restore
-dotnet build WePlayRises.sln
+dotnet user-secrets set "Jwt:Key" "WePlayRises_DevKey_SuperSecret_MinLength32Chars!" --project WebApi/WePlayRises.WebApi.csproj
+dotnet restore && dotnet build WePlayRises.sln
 dotnet run --project WebApi/WebApi.csproj
-# API disponible en https://localhost:7001
-# Swagger en https://localhost:7001/swagger
+# API en https://localhost:5001/swagger
 ```
 
-### Frontend - Landing Publica
+#### Frontend - Landing
 ```bash
-cd src/web
-npm install
-npm run dev
-# Disponible en http://localhost:3000
+cd src/web && npm install && npm run dev
+# http://localhost:3000
 ```
 
-### Frontend - Dashboard Admin
+#### Frontend - Admin
 ```bash
-cd src/admin
-npm install
-npm run dev
-# Disponible en http://localhost:3001
+cd src/admin && npm install && npm run dev
+# http://localhost:3001
 ```
 
-### Estructura de URLs
+---
 
-| URL | App | Descripcion |
-|-----|-----|-------------|
-| http://localhost:3000 | web | Landing, campanias publicas |
-| http://localhost:3001 | admin | Dashboard de artista |
-| https://localhost:7001/api | api | Backend API |
-| https://localhost:7001/swagger | api | Documentacion Swagger |
+## Como Ejecutar Tests
+
+### Backend (xUnit)
+```bash
+cd src/api && dotnet test
+```
+
+### Frontend - Landing (Vitest)
+```bash
+cd src/web && npm run test:run
+```
+
+### Frontend - Landing E2E (Playwright)
+```bash
+cd src/web && npx playwright test e2e/smoke/ --project=chromium
+```
+
+### Frontend - Admin (Vitest)
+```bash
+cd src/admin && npm run test:run
+```
+
+### Frontend - Admin E2E (Playwright)
+```bash
+cd src/admin && npx playwright test --project=chromium
+```
+
+> Nota: Los tests E2E requieren Docker corriendo con datos seeded.
 
 ---
 
@@ -1073,8 +1168,9 @@ npm run dev
 | ADRs | `docs/architecture/adrs/` | Decisiones arquitectonicas |
 | User Stories | `docs/product/` | Especificaciones de features |
 | Specs detalladas | `docs/specs/` | Contracts, UI/UX, implementation |
+| Demo y video | `docs/20260324_demo-plataforma-weplay-rises.md` | Guion de demo y datos |
 | Tareas | `tasks/` | Backlog, time-log, estados |
-| Reglas Claude | `.claude/rules/` | Convenciones de codigo |
+| Prompts IA | `prompts.md` | Metodologia de desarrollo con Claude Code |
 
 ---
 

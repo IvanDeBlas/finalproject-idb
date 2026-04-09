@@ -1,0 +1,62 @@
+{
+  "id": "weplay-hacer-backing-dev",
+  "name": "WePlay - Desarrollo",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "enabled": true
+    },
+    {
+      "key": "testUsername",
+      "value": "usuario1@mail.com",
+      "enabled": true
+    },
+    {
+      "key": "testPassword",
+      "value": "123456",
+      "enabled": true
+    },
+    {
+      "key": "testUsername2",
+      "value": "api-test@mail.com",
+      "enabled": true
+    },
+    {
+      "key": "testPassword2",
+      "value": "123456",
+      "enabled": true
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "accessToken2",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "campaniaId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "rewardId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "backingId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "originalPledgedAmount",
+      "value": "",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

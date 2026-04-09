@@ -1,0 +1,1241 @@
+{
+  "info": {
+    "name": "WePlay.Valoraciones.IntegrationTests",
+    "description": "Coleccion de pruebas de integracion para la feature cs-valoraciones (US-CS-06). Valida endpoints de creacion y consulta de valoraciones bidireccionales entre artistas y profesionales en acuerdos completados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Login Artista",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('artistaEmail', 'usuario1@mail.com');",
+                  "pm.collectionVariables.set('artistaPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Artista token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('artistaToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{artistaEmail}}\",\n  \"password\": \"{{artistaPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "02. Register Profesional",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'profesional-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('profesionalEmail', email);",
+                  "pm.collectionVariables.set('profesionalPassword', 'TestPassword123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Profesional registered and token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('profesionalToken', json.data.token);",
+                  "    pm.collectionVariables.set('profesionalUserId', json.data.userId || 'profesional-user-id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{profesionalEmail}}\",\n  \"password\": \"{{profesionalPassword}}\",\n  \"confirmPassword\": \"{{profesionalPassword}}\",\n  \"nombre\": \"Test Profesional\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "03. Get Artista Profile ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Has artista data', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    const artista = json.data[0];",
+                  "    if (artista) {",
+                  "        pm.collectionVariables.set('artistaId', artista.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artistas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artistas"]
+            }
+          }
+        },
+        {
+          "name": "04. Create Necesidad (Crowdsourcing)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Necesidad created with ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('necesidadId', json.data);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Test Necesidad {{$timestamp}}\",\n  \"descripcion\": \"Necesidad de prueba para crear acuerdo\",\n  \"presupuesto\": 1000,\n  \"fechaEntrega\": \"2026-03-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades"]
+            }
+          }
+        },
+        {
+          "name": "05. Create Propuesta (Profesional)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Propuesta created with ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('propuestaId', json.data);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{profesionalToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"necesidadId\": \"{{necesidadId}}\",\n  \"descripcionPropuesta\": \"Professional proposal for testing\",\n  \"precioPropuesto\": 950,\n  \"tiempoEstimado\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/propuestas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "propuestas"]
+            }
+          }
+        },
+        {
+          "name": "06. Accept Propuesta (Artista)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId}}/aceptar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "propuestas", "{{propuestaId}}", "aceptar"]
+            }
+          }
+        },
+        {
+          "name": "07. Get Acuerdo by Propuesta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Acuerdo data obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('acuerdoId', json.data.id);",
+                  "    pm.collectionVariables.set('acuerdoEstado', json.data.estadoAcuerdoId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades", "{{necesidadId}}"]
+            }
+          }
+        },
+        {
+          "name": "08. Complete Acuerdo (Artista)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Acuerdo completed', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/completar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "completar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Valoraciones - Happy Path",
+      "item": [
+        {
+          "name": "01. POST Create Valoracion (Artista valora Profesional)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response time < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "pm.test('ServiceResponse success with valoracionId', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.id).to.exist;",
+                  "    pm.expect(json.data.puntuacion).to.equal(5);",
+                  "    pm.expect(json.data.comentario).to.include('excelente');",
+                  "    pm.expect(json.data.fechaCreacion).to.exist;",
+                  "    pm.collectionVariables.set('valoracionId', json.data.id);",
+                  "    pm.collectionVariables.set('userIdValorado', 'profesional-user-id');",
+                  "});",
+                  "pm.test('Success message in response', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.messages).to.be.an('array');",
+                  "    const successMsg = json.messages.find(m => m.message.includes('Valoracion enviada'));",
+                  "    pm.expect(successMsg).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 5,\n  \"comentario\": \"Excelente trabajo, muy profesional y puntual. Las mezclas quedaron increibles.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        },
+        {
+          "name": "02. GET Valoraciones del Usuario Valorado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const profesionalUserId = pm.environment.get('PROFESIONAL_USER_ID') || 'test-user-id';",
+                  "pm.collectionVariables.set('userIdValorado', profesionalUserId);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has resumen structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.resumen).to.exist;",
+                  "    pm.expect(json.data.resumen.totalValoraciones).to.be.at.least(1);",
+                  "    pm.expect(json.data.resumen.distribucion).to.exist;",
+                  "});",
+                  "pm.test('Response has valoraciones list', function () {",
+                  "    const json = pm.response.json();",
+                  "    const valoraciones = json.data.valoraciones;",
+                  "    pm.expect(valoraciones.items).to.be.an('array');",
+                  "    pm.expect(valoraciones.totalCount).to.be.at.least(1);",
+                  "    pm.expect(valoraciones.page).to.equal(1);",
+                  "    pm.expect(valoraciones.pageSize).to.equal(10);",
+                  "});",
+                  "pm.test('Created valoracion appears in list', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.valoraciones.items;",
+                  "    const found = items.find(v => v.puntuacion === 5 && v.comentario.includes('excelente'));",
+                  "    pm.expect(found).to.exist;",
+                  "    pm.expect(found.autorNombre).to.exist;",
+                  "    pm.expect(found.fechaCreacion).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/usuarios/{{profesionalEmail}}/valoraciones?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "usuarios", "{{profesionalEmail}}", "valoraciones"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. POST Valoracion Profesional valora Artista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Profesional valoracion created', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.id).to.exist;",
+                  "    pm.expect(json.data.puntuacion).to.equal(4);",
+                  "    pm.collectionVariables.set('valoracionId2', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{profesionalToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 4,\n  \"comentario\": \"Buen trabajo, rapido en las respuestas y muy claro con los requisitos.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Valoraciones - Validation Errors",
+      "item": [
+        {
+          "name": "01. POST 400 - Puntuacion Missing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error for puntuacion', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const error = json.messages.find(m => m.errorCode === '1001');",
+                  "    pm.expect(error).to.exist;",
+                  "    pm.expect(error.message).to.include('obligatoria');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comentario\": \"Sin puntuacion\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        },
+        {
+          "name": "02. POST 400 - Puntuacion Zero",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error for puntuacion range', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const error = json.messages.find(m => m.errorCode === '1009' || m.errorCode === '1001');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 0,\n  \"comentario\": \"Cero puntuacion\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        },
+        {
+          "name": "03. POST 400 - Puntuacion Greater Than 5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error for puntuacion range', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '1009');",
+                  "    pm.expect(error).to.exist;",
+                  "    pm.expect(error.message).to.include('entre 1 y 5');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 6,\n  \"comentario\": \"Puntuacion mayor a 5\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        },
+        {
+          "name": "04. POST 400 - Comentario Exceeds Max Length",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error for comentario length', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '1002');",
+                  "    pm.expect(error).to.exist;",
+                  "    pm.expect(error.message).to.include('1000 caracteres');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 5,\n  \"comentario\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. EXTRA_CHARS_TO_EXCEED_LIMIT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Valoraciones - Business Rules",
+      "item": [
+        {
+          "name": "01. POST 400 - Duplicate Valoracion Same Acuerdo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has BusinessRule_DuplicateAction error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '4017');",
+                  "    pm.expect(error).to.exist;",
+                  "    pm.expect(error.message).to.include('Ya has dejado una valoracion');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 3,\n  \"comentario\": \"Segunda valoracion - deberia fallar\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Valoraciones - Auth Errors",
+      "item": [
+        {
+          "name": "01. POST 401 - Missing Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 5,\n  \"comentario\": \"Sin token\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "valoraciones"]
+            }
+          }
+        },
+        {
+          "name": "02. GET 401 - Missing Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/usuarios/test-user-id/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "usuarios", "test-user-id", "valoraciones"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Valoraciones - Not Found",
+      "item": [
+        {
+          "name": "01. POST 404 - Acuerdo Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Has NotFound_Acuerdo error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '2011');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 5,\n  \"comentario\": \"Acuerdo inexistente\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/00000000-0000-0000-0000-000000000000/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "00000000-0000-0000-0000-000000000000", "valoraciones"]
+            }
+          }
+        },
+        {
+          "name": "02. GET 404 - User Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Has NotFound_Entity error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const error = json.messages.find(m => m.errorCode === '2000');",
+                  "    pm.expect(error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/usuarios/nonexistent-user-id/valoraciones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "usuarios", "nonexistent-user-id", "valoraciones"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Valoraciones - Pagination",
+      "item": [
+        {
+          "name": "01. GET Valoraciones Page 1 with PageSize 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Pagination working correctly', function () {",
+                  "    const json = pm.response.json();",
+                  "    const pag = json.data.valoraciones;",
+                  "    pm.expect(pag.page).to.equal(1);",
+                  "    pm.expect(pag.pageSize).to.equal(2);",
+                  "    if (pag.totalCount > 0) {",
+                  "        pm.expect(pag.items.length).to.be.at.most(2);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/usuarios/{{profesionalEmail}}/valoraciones?page=1&pageSize=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "usuarios", "{{profesionalEmail}}", "valoraciones"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET Valoraciones with Invalid Page",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 for invalid page', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{artistaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/usuarios/{{profesionalEmail}}/valoraciones?page=0&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "usuarios", "{{profesionalEmail}}", "valoraciones"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "artistaEmail",
+      "value": "usuario1@mail.com",
+      "type": "string"
+    },
+    {
+      "key": "artistaPassword",
+      "value": "123456",
+      "type": "string"
+    },
+    {
+      "key": "artistaToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "profesionalEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "profesionalPassword",
+      "value": "TestPassword123!",
+      "type": "string"
+    },
+    {
+      "key": "profesionalToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "profesionalUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "necesidadId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "propuestaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "acuerdoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "acuerdoEstado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "valoracionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "valoracionId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userIdValorado",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

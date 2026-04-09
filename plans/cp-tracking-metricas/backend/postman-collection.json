@@ -1,0 +1,2345 @@
+{
+  "info": {
+    "name": "WePlay.cp-tracking-metricas.IntegrationTests",
+    "description": "Integration test collection for CP Tracking and Metrics API (US-CP-05)\n\nEndpoints:\n- POST /api/crowdpromotion/tracking/evento (public, no auth)\n- POST /api/crowdpromotion/tracking/conversion (internal)\n- GET /api/crowdpromotion/programas/{programaId}/metricas (artista auth)\n- GET /api/crowdpromotion/promotor/metricas (promotor auth)\n\nDependencies:\n- Auth module: user registration, login, JWT tokens\n- cp-inscripcion-programa: programa, promotor, codigoReferido creation\n- Crowdfunding: campania, backing for conversion tracking",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Register Artista User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'artista-tracking-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('artistaEmail', email);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Artista user registered with 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Token obtained for artista', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('artistaToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{artistaEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\",\n  \"nombre\": \"Test Artista Tracking\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Register Promotor User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'promotor-tracking-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('promotorEmail', email);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Promotor user registered with 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Token obtained for promotor', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('promotorToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{promotorEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\",\n  \"nombre\": \"Test Promotor Tracking\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. Register Fan User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'fan-tracking-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('fanEmail', email);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Fan user registered with 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Token obtained for fan', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('fanToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{fanEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\",\n  \"nombre\": \"Test Fan Tracking\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. Create Artista Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Artista profile created with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Artista ID saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('artistaId', json.data);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreArtistico\": \"Setup Artista {{$timestamp}}\",\n  \"descripcion\": \"Created for tracking tests\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/artistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artistas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. Create Campania (Draft)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Campania created with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Campania ID saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('campaniaId', json.data);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Setup Campaign {{$timestamp}}\",\n  \"descripcion\": \"Created for tracking metrics\",\n  \"importeObjetivo\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/campanias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "campanias"
+              ]
+            }
+          }
+        },
+        {
+          "name": "06. Create Reward",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Reward created with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Reward ID saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('rewardId', json.data);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"nombre\": \"Setup Reward\",\n  \"descripcion\": \"Reward for testing\",\n  \"importeMinimo\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rewards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rewards"
+              ]
+            }
+          }
+        },
+        {
+          "name": "07. Create PromoPrograma",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('PromoPrograma created with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Programa ID saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('programaId', json.data);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"titulo\": \"Setup Promo Program {{$timestamp}}\",\n  \"descripcion\": \"Program for tracking tests\",\n  \"porcentajeComision\": 15,\n  \"monedaId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "08. Invite Promotor to Program",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Promotor invited with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Codigo referido saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.codigoReferido).to.exist;",
+                  "    pm.collectionVariables.set('codigoReferido', json.data.codigoReferido);",
+                  "    pm.collectionVariables.set('promotorProgramaId', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"programaId\": \"{{programaId}}\",\n  \"email\": \"{{promotorEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotores/invitar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotores",
+                "invitar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "09. Approve Promotor Invite",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Promotor invite approved with 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('ServiceResponse success', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotores/invitaciones/{{promotorProgramaId}}/aceptar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotores",
+                "invitaciones",
+                "{{promotorProgramaId}}",
+                "aceptar"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking Event - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. POST RegistrarEvento - Click (Anonymous)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Click event registered with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('ServiceResponse success + save evento ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.eventoId).to.exist;",
+                  "    pm.expect(json.data.registrado).to.be.true;",
+                  "    pm.collectionVariables.set('clickEventoId', json.data.eventoId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 1,\n  \"codigoReferido\": \"{{codigoReferido}}\",\n  \"campaniaId\": null,\n  \"urlOrigen\": \"https://example.com/campaign\",\n  \"urlReferer\": \"https://social.com/share\",\n  \"utmSource\": \"weplay\",\n  \"utmMedium\": \"referral\",\n  \"utmCampaign\": \"test-program\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. POST RegistrarEvento - PageView",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('PageView event registered with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains evento ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.registrado).to.be.true;",
+                  "    pm.collectionVariables.set('pageviewEventoId', json.data.eventoId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 2,\n  \"codigoReferido\": \"{{codigoReferido}}\",\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"urlOrigen\": \"https://weplay.com/campanias/{{campaniaId}}\",\n  \"utmSource\": \"weplay\",\n  \"utmMedium\": \"referral\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. POST RegistrarEvento - Signup (Authenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Signup event registered with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains evento ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.registrado).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 3,\n  \"codigoReferido\": \"{{codigoReferido}}\",\n  \"campaniaId\": \"{{campaniaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. POST RegistrarEvento - Share",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Share event registered with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains evento ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.registrado).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 5,\n  \"codigoReferido\": \"{{codigoReferido}}\",\n  \"urlOrigen\": \"https://weplay.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. POST RegistrarEvento - Click (No Codigo Referido - Anonymous Tracking)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Anonymous click event registered with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Event registered without promotor code', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.eventoId).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 1,\n  \"codigoReferido\": null,\n  \"urlOrigen\": \"https://weplay.com/home\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking Event - Validation Errors",
+      "item": [
+        {
+          "name": "POST 400 - Invalid TipoEventoPromoId (value=0)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1001 (Required)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1001');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 0,\n  \"codigoReferido\": \"{{codigoReferido}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Invalid TipoEventoPromoId (value=6)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1033 (Invalid tipo evento)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1033');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 6,\n  \"codigoReferido\": \"{{codigoReferido}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Backing tipo evento not allowed in evento endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1034 (Backing not permitted)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1034');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 4,\n  \"codigoReferido\": \"{{codigoReferido}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - CodigoReferido exceeds 50 characters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1002 (MaxLength)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1002');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 1,\n  \"codigoReferido\": \"123456789012345678901234567890123456789012345678901234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - UrlOrigen exceeds 2048 characters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error on URL length', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 1,\n  \"codigoReferido\": \"test123\",\n  \"urlOrigen\": \"https://example.com/very/long/url/that/exceeds/2048/characters/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking Event - Rate Limiting",
+      "item": [
+        {
+          "name": "POST 201 - First click (within rate limit window)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('First click accepted with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Save IP for rate limit test', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.collectionVariables.set('rateLimitTestEventoId', json.data.eventoId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 1,\n  \"codigoReferido\": \"ratelimit-test\",\n  \"urlOrigen\": \"https://test.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 429 - Duplicate click within 5 minutes (rate limited)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 429 (Too Many Requests)', function () {",
+                  "    pm.response.to.have.status(429);",
+                  "});",
+                  "",
+                  "pm.test('Error code 4032 (Rate limit exceeded)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('4032');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoEventoPromoId\": 1,\n  \"codigoReferido\": \"ratelimit-test\",\n  \"urlOrigen\": \"https://test.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/evento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "evento"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking Conversion - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. Create Backing (for conversion test)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Backing created with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Backing ID saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.collectionVariables.set('backingId', json.data);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"rewardId\": \"{{rewardId}}\",\n  \"monto\": 50,\n  \"codigoReferido\": \"{{codigoReferido}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/backings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "backings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. POST RegistrarConversion - Valid Backing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Conversion registered with 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('ServiceResponse success + verify commission', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.eventoId).to.exist;",
+                  "    pm.expect(json.data.comisionCalculada).to.exist;",
+                  "    pm.collectionVariables.set('conversionEventoId', json.data.eventoId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoReferido\": \"{{codigoReferido}}\",\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"aportacionId\": \"{{backingId}}\",\n  \"valorMonetario\": 50,\n  \"monedaId\": 1,\n  \"userIdAfectado\": \"fan-user-id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/conversion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "conversion"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking Conversion - Validation Errors",
+      "item": [
+        {
+          "name": "POST 400 - Missing CodigoReferido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1001 (Required)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1001');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoReferido\": \"\",\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"aportacionId\": \"{{backingId}}\",\n  \"valorMonetario\": 50,\n  \"monedaId\": 1,\n  \"userIdAfectado\": \"user-id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/conversion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "conversion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Missing CampaniaId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error - campania required', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoReferido\": \"{{codigoReferido}}\",\n  \"campaniaId\": \"00000000-0000-0000-0000-000000000000\",\n  \"aportacionId\": \"{{backingId}}\",\n  \"valorMonetario\": 50,\n  \"monedaId\": 1,\n  \"userIdAfectado\": \"user-id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/conversion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "conversion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - ValorMonetario <= 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1035 (Invalid monetary value)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1035');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoReferido\": \"{{codigoReferido}}\",\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"aportacionId\": \"{{backingId}}\",\n  \"valorMonetario\": -10,\n  \"monedaId\": 1,\n  \"userIdAfectado\": \"user-id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/tracking/conversion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "tracking",
+                "conversion"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Programa Metricas - Read Lifecycle",
+      "item": [
+        {
+          "name": "01. GET Programa Metricas (no date filter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains expected estructura', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.programaId).to.eql(pm.collectionVariables.get('programaId'));",
+                  "    pm.expect(json.data.kpis).to.exist;",
+                  "    pm.expect(json.data.rankingPromotores).to.be.an('array');",
+                  "    pm.expect(json.data.eventosPorDia).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET Programa Metricas (with date range)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const today = new Date();",
+                  "const from = new Date(today.getTime() - 30*24*60*60*1000);",
+                  "const fechaDesde = from.toISOString().split('T')[0];",
+                  "const fechaHasta = today.toISOString().split('T')[0];",
+                  "pm.collectionVariables.set('fechaDesde', fechaDesde);",
+                  "pm.collectionVariables.set('fechaHasta', fechaHasta);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains date range in response', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.fechaDesde).to.exist;",
+                  "    pm.expect(json.data.fechaHasta).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/metricas?fechaDesde={{fechaDesde}}&fechaHasta={{fechaHasta}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "metricas"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "{{fechaDesde}}"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "{{fechaHasta}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Programa Metricas - Verify KPIs structure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('KPIs contain all required fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const kpis = json.data.kpis;",
+                  "    pm.expect(kpis.totalClicks).to.be.a('number');",
+                  "    pm.expect(kpis.totalPageViews).to.be.a('number');",
+                  "    pm.expect(kpis.totalSignups).to.be.a('number');",
+                  "    pm.expect(kpis.totalConversiones).to.be.a('number');",
+                  "    pm.expect(kpis.valorTotalGenerado).to.be.a('number');",
+                  "    pm.expect(kpis.tasaConversion).to.be.a('number');",
+                  "    pm.expect(kpis.comisionesTotales).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "metricas"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Programa Metricas - Auth & Not Found Errors",
+      "item": [
+        {
+          "name": "GET 401 - Missing authentication token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET 403 - Non-owner artista accessing program",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test('Forbidden - not program owner', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('4026');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET 404 - Invalid programaId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Not found error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/00000000-0000-0000-0000-000000000000/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "00000000-0000-0000-0000-000000000000",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET 400 - Invalid date range (desde > hasta)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1036 (Invalid date range)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1036');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}/metricas?fechaDesde=2026-12-31&fechaHasta=2026-01-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}",
+                "metricas"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "2026-12-31"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "2026-01-01"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotor Metricas - Read Lifecycle",
+      "item": [
+        {
+          "name": "01. GET Promotor Metricas (all programs)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains promotor metricas structure', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.promotorId).to.exist;",
+                  "    pm.expect(json.data.promotorNombre).to.exist;",
+                  "    pm.expect(json.data.kpis).to.exist;",
+                  "    pm.expect(json.data.eventosRecientes).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET Promotor Metricas (filtered by programa)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response filtered to specific program', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.programaId).to.eql(pm.collectionVariables.get('programaId'));",
+                  "    pm.expect(json.data.programaTitulo).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/metricas?programaId={{programaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "metricas"
+              ],
+              "query": [
+                {
+                  "key": "programaId",
+                  "value": "{{programaId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET Promotor Metricas - Verify KPIs structure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('KPIs contain all promotor-specific fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    const kpis = json.data.kpis;",
+                  "    pm.expect(kpis.misClicks).to.be.a('number');",
+                  "    pm.expect(kpis.misPageViews).to.be.a('number');",
+                  "    pm.expect(kpis.misSignups).to.be.a('number');",
+                  "    pm.expect(kpis.misConversiones).to.be.a('number');",
+                  "    pm.expect(kpis.miValorGenerado).to.be.a('number');",
+                  "    pm.expect(kpis.miComisionAcumulada).to.be.a('number');",
+                  "    pm.expect(kpis.miTasaConversion).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. GET Promotor Metricas (with date range)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const today = new Date();",
+                  "const from = new Date(today.getTime() - 7*24*60*60*1000);",
+                  "const fechaDesde = from.toISOString().split('T')[0];",
+                  "const fechaHasta = today.toISOString().split('T')[0];",
+                  "pm.collectionVariables.set('fechaDesdePromotor', fechaDesde);",
+                  "pm.collectionVariables.set('fechaHastaPromotor', fechaHasta);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains date range applied', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "    pm.expect(json.data.fechaDesde).to.exist;",
+                  "    pm.expect(json.data.fechaHasta).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/metricas?fechaDesde={{fechaDesdePromotor}}&fechaHasta={{fechaHastaPromotor}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "metricas"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "{{fechaDesdePromotor}}"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "{{fechaHastaPromotor}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotor Metricas - Auth & Not Found Errors",
+      "item": [
+        {
+          "name": "GET 401 - Missing authentication token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET 404 - User without promotor profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Promotor not found error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('2015');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fanToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/metricas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET 400 - Invalid date range",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code 1036 (Invalid date range)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1036');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/metricas?fechaDesde=2026-12-31&fechaHasta=2026-01-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "metricas"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "2026-12-31"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "2026-01-01"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "_Teardown",
+      "item": [
+        {
+          "name": "01. Delete PromoPrograma Promotor Invitation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invitation deleted or no-op', function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotores/{{promotorProgramaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotores",
+                "{{promotorProgramaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Delete PromoPrograma",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Program deleted or no-op', function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/programas/{{programaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "programas",
+                "{{programaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. Delete Reward",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Reward deleted or no-op', function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rewards/{{rewardId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rewards",
+                "{{rewardId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. Delete Campania",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Campania deleted or no-op', function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "campanias",
+                "{{campaniaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. Delete Artista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Artista deleted or no-op', function () {",
+                  "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artistas/{{artistaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artistas",
+                "{{artistaId}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "TestPassword123!",
+      "type": "string"
+    },
+    {
+      "key": "artistaEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promotorEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promotorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fanEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fanToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "campaniaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rewardId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "programaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "codigoReferido",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promotorProgramaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clickEventoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pageviewEventoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conversionEventoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "backingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fechaDesde",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fechaHasta",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fechaDesdePromotor",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fechaHastaPromotor",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

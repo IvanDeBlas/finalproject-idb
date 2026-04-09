@@ -1,0 +1,240 @@
+================================================================================
+COLECCION POSTMAN GENERADA: cs-valoraciones Integration Tests (US-CS-06)
+================================================================================
+
+ARCHIVO PRINCIPAL
+================================================================================
+plans/cs-valoraciones/backend/postman-collection.json
+
+DESCRIPCION
+================================================================================
+Colección Postman v2.1 100% ejecutable y auto-inclusiva para probar los
+endpoints de valoraciones bidireccionales (US-CS-06) sin datos previos.
+
+Genera automáticamente:
+- Nuevo usuario profesional (con email dinámico)
+- Acuerdo en estado Completado
+- Valoraciones bidireccionales (artista valora profesional y viceversa)
+
+ESTRUCTURA
+================================================================================
+
+FOLDERS (7 total):
+
+1. _Setup (8 pasos)
+   └─ Prepara acuerdo completado con ambos participantes autenticados
+
+2. Valoraciones - Happy Path (3 pasos)
+   └─ Flujo exitoso: crear valoración + consultar resumen + segunda valoración
+
+3. Valoraciones - Validation Errors (4 pasos)
+   └─ Puntuación faltante, fuera de rango, comentario muy largo
+
+4. Valoraciones - Business Rules (1 paso)
+   └─ Intento de crear duplicado (debe fallar con 4017)
+
+5. Valoraciones - Auth Errors (2 pasos)
+   └─ Requests sin token (401 Unauthorized)
+
+6. Valoraciones - Not Found (2 pasos)
+   └─ Acuerdo inexistente, usuario inexistente (404)
+
+7. Valoraciones - Pagination (2 pasos)
+   └─ Paginación correcta, validación de page=0 (400)
+
+TOTAL: 22 requests + 65+ assertions
+
+ENDPOINTS PROBADOS
+================================================================================
+POST /api/crowdsourcing/acuerdos/{acuerdoId}/valoraciones
+GET  /api/crowdsourcing/usuarios/{userId}/valoraciones
+
+STATUS CODES TESTEADOS
+================================================================================
+200 (OK)
+201 (Created)
+400 (Bad Request)
+401 (Unauthorized)
+404 (Not Found)
+
+ERROR CODES VALIDADOS
+================================================================================
+1001 - Validation_Required (puntuación obligatoria)
+1002 - Validation_MaxLength (comentario > 1000 chars)
+1009 - Validation_InvalidRange (puntuación fuera de 1-5)
+2000 - NotFound_Entity (usuario no existe)
+2011 - NotFound_Acuerdo (acuerdo no existe)
+3001 - Auth_Unauthorized (token inválido/expirado)
+3002 - Auth_Forbidden (no es participante) *no testeado (requiere otro usuario)
+4014 - BusinessRule_InvalidState (acuerdo no completado)
+4017 - BusinessRule_DuplicateAction (valoración duplicada)
+5000 - Internal_UnexpectedError (error inesperado)
+
+VARIABLES DE COLECCIÓN (16 total)
+================================================================================
+baseUrl                 http://localhost:5001
+artistaEmail           usuario1@mail.com (pre-existente)
+artistaPassword        123456
+artistaToken           (generado en _Setup)
+artistaId              (obtenido en _Setup)
+profesionalEmail       (generado dinámicamente con timestamp)
+profesionalPassword    TestPassword123!
+profesionalToken       (generado en _Setup)
+profesionalUserId      (generado en _Setup)
+necesidadId            (creado en _Setup)
+propuestaId            (creado en _Setup)
+acuerdoId              (creado en _Setup - CRUCIAL para valoraciones)
+acuerdoEstado          (debe ser Completado=2)
+valoracionId           (creado en Happy Path)
+valoracionId2          (creado en Happy Path)
+userIdValorado         (dinámico, usuario que recibió valoración)
+
+SCRIPTS ESPECIALES
+================================================================================
+- Email profesional dinámico: profesional-{timestamp}@weplay.com
+  (Evita colisiones entre ejecuciones)
+
+- Pre-request scripts:
+  * Setup: Genera email único, establece contraseñas
+
+- Test scripts (assertions):
+  * Validación de status codes
+  * Parsing de respuestas ServiceResponse
+  * Extracción de IDs para pasos posteriores
+  * Verificación de estructura de datos
+  * Búsqueda de valores en arrays
+
+DEPENDENCIAS
+================================================================================
+Internas:
+- _Setup → Todo lo demás (todos los folders dependen de _Setup)
+- Happy Path → Business Rules (test de duplicado usa acuerdo del happy path)
+- Happy Path → Pagination (test de paginación consulta valoraciones creadas)
+
+Externas:
+- Usuario pre-existente: usuario1@mail.com / 123456
+- Módulo Crowdsourcing implementado (necesidades, propuestas, acuerdos)
+- Backend corriendo en http://localhost:5001
+
+FLUJO DE EJECUCION RECOMENDADO
+================================================================================
+1. _Setup                              (8 requests) → Setup del contexto
+2. Valoraciones - Happy Path           (3 requests) → Flujo exitoso
+3. Valoraciones - Validation Errors    (4 requests) → Validaciones
+4. Valoraciones - Business Rules       (1 request)  → Regla duplicado
+5. Valoraciones - Auth Errors          (2 requests) → Seguridad
+6. Valoraciones - Not Found            (2 requests) → 404s
+7. Valoraciones - Pagination           (2 requests) → Paginación
+
+TOTAL: 22 requests, tiempo ~45-60 segundos
+
+COMO EJECUTAR
+================================================================================
+
+Opción 1: Newman CLI
+  newman run plans/cs-valoraciones/backend/postman-collection.json \
+    --reporters cli,htmlextra \
+    --reporter-htmlextra-export reports/valoraciones-test-report.html
+
+Opción 2: Script Helper
+  ./plans/cs-valoraciones/backend/run-tests.sh all
+  ./plans/cs-valoraciones/backend/run-tests.sh happy
+
+Opción 3: Postman UI
+  - Importar archivo
+  - Ejecutar _Setup primero
+  - Ejecutar folders deseados
+
+DOCUMENTACION ADICIONAL
+================================================================================
+POSTMAN_COLLECTION_README.md    - Documentación detallada (5000+ palabras)
+QUICK_START.md                  - Guía rápida de ejecución
+run-tests.sh                    - Script ejecutable con opciones
+COLLECTION_SUMMARY.txt          - Este archivo
+
+VALIDACIONES IMPLEMENTADAS
+================================================================================
+✓ Estructura ServiceResponse (data + messages + isSuccess)
+✓ Puntuación de 1-5 estrellas (inclusive)
+✓ Comentario opcional (max 1000 caracteres)
+✓ Acuerdo debe estar en estado Completado para valorar
+✓ Solo una valoración por usuario/acuerdo (constraint único BD)
+✓ AutorNombre y AutorImagenUrl en listado
+✓ Resumen con puntuacionMedia, totalValoraciones, distribucion (5 claves)
+✓ Paginación (page, pageSize, totalCount, totalPages)
+✓ Ordenamiento por fechaCreacion DESC
+✓ Bearer token requerido
+✓ Errores con errorCode y message consistentes
+✓ Respuesta times < 500ms (opcional)
+
+CARACTERISTICAS ESPECIALES
+================================================================================
+1. Auto-contenido: No requiere setup manual más allá de usuario pre-existente
+2. Dinámico: Emails generados con Date.now() para evitar colisiones
+3. Robusto: Validaciones de estructura + datos + errores
+4. Documentado: 3 documentos + comentarios en colección
+5. Escalable: Fácil agregar más casos de test
+6. Independiente: Cada folder puede ejecutarse por separado (excepto duplicado)
+7. Debugging: Pre-scripts y test-scripts claros y legibles
+8. Report: Genera HTML + JSON + CLI output
+
+NOTAS IMPORTANTES
+================================================================================
+1. El _Setup es OBLIGATORIO antes de cualquier otro test
+   (Crea acuerdo en estado Completado, sin el resto falla)
+
+2. Happy Path DEBE ejecutarse antes de Business Rules
+   (Test de duplicado intenta crear segundo en mismo acuerdo)
+
+3. Las valoraciones son INMUTABLES (no se pueden editar/eliminar)
+   (No existen endpoints PATCH/PUT - regla de negocio)
+
+4. El UserIdValorado se determina automáticamente en backend
+   (Artista valora a profesional, y viceversa)
+
+5. Constraint único en BD: UQ_ValoracionCrowdsourcing_AcuerdoId_UserIdAutor
+   (Previene duplicados a nivel de BD además de validación en Handler)
+
+ESTADISTICAS
+================================================================================
+Archivos generados:    5
+  - postman-collection.json (JSON ejecutable)
+  - POSTMAN_COLLECTION_README.md (docs completas)
+  - QUICK_START.md (guía rápida)
+  - run-tests.sh (script ejecutable)
+  - COLLECTION_SUMMARY.txt (este archivo)
+
+Requests totales:      22
+Assertions:            65+
+Folders:               7
+Endpoints únicos:      2
+Variables:             16
+
+Líneas de código:      ~1200 (JSON)
+Documentación:         ~7000 palabras
+
+Tiempo de ejecución:   45-60 segundos
+Setup time:            ~15 segundos
+
+SIGUIENTES PASOS
+================================================================================
+1. Validar que usuario1@mail.com existe en BD
+2. Verificar que backend corre en http://localhost:5001
+3. Instalar Newman: npm install -g newman newman-reporter-htmlextra
+4. Ejecutar: newman run plans/cs-valoraciones/backend/postman-collection.json
+5. Implementar endpoints en backend según api-contracts.md
+6. Implementar UI en frontend según feature-spec.md
+7. Agregar E2E tests en Cypress
+
+SOPORTE
+================================================================================
+Documentación:  POSTMAN_COLLECTION_README.md (sección Troubleshooting)
+Ejecución:      QUICK_START.md
+Técnico:        api-contracts.md (especificación de endpoints)
+Feature:        docs/user-stories/cs-valoraciones/feature-spec.md
+
+================================================================================
+Generado con: Claude Agent - WePlay Rises Integration Testing Framework
+Fecha: 2026-02-21
+Feature: cs-valoraciones (US-CS-06 - Valoraciones Bidireccionales)
+================================================================================

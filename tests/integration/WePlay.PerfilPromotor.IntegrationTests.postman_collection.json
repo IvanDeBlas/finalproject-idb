@@ -1,0 +1,782 @@
+{
+  "info": {
+    "name": "WePlay.PerfilPromotor.IntegrationTests",
+    "description": "Coleccion de pruebas de integracion para la feature cp-perfil-promotor (US-CP-01). Valida el lifecycle CRUD del perfil de promotor: creacion, lectura, actualizacion y desactivacion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Login con Usuario de Prueba",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('testEmail', 'usuario1@mail.com');",
+                  "pm.collectionVariables.set('testPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Token obtained and saved', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('accessToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "02. Register New User (for NotFound tests)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'promotor-test-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('newUserEmail', email);",
+                  "pm.collectionVariables.set('newUserPassword', 'TestPassword123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('New user token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.token).to.exist;",
+                  "    pm.collectionVariables.set('newUserToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newUserEmail}}\",\n  \"password\": \"{{newUserPassword}}\",\n  \"confirmPassword\": \"{{newUserPassword}}\",\n  \"nombre\": \"Test Promotor User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotor - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. POST Create Promotor",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('promotorName', 'DJ Marketing Pro ' + timestamp);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response time < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "pm.test('ServiceResponse success and save ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.exist;",
+                  "    pm.collectionVariables.set('promotorId', json.data.id);",
+                  "});",
+                  "pm.test('Response contains correct fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.nombrePublico).to.equal(pm.collectionVariables.get('promotorName'));",
+                  "    pm.expect(json.data.tipoPromotorNombre).to.exist;",
+                  "    pm.expect(json.data.esActivo).to.be.true;",
+                  "    pm.expect(json.data.fechaCreacion).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"{{promotorName}}\",\n  \"tipoPromotorId\": 2,\n  \"emailContacto\": \"contacto@djmarketing.com\",\n  \"urlSitioWeb\": \"https://djmarketing.com\",\n  \"urlInstagram\": \"https://instagram.com/djmarketing\",\n  \"urlTikTok\": \"https://tiktok.com/@djmarketing\",\n  \"urlYouTube\": null,\n  \"urlTwitter\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        },
+        {
+          "name": "02. GET Me - Verify Creation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Profile contains all fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.equal(pm.collectionVariables.get('promotorId'));",
+                  "    pm.expect(json.data.nombrePublico).to.equal(pm.collectionVariables.get('promotorName'));",
+                  "    pm.expect(json.data.tipoPromotorId).to.equal(2);",
+                  "    pm.expect(json.data.tipoPromotorNombre).to.exist;",
+                  "    pm.expect(json.data.emailContacto).to.equal('contacto@djmarketing.com');",
+                  "    pm.expect(json.data.urlSitioWeb).to.equal('https://djmarketing.com');",
+                  "    pm.expect(json.data.esActivo).to.be.true;",
+                  "});",
+                  "pm.test('Calculated fields present', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.totalProgramasActivos).to.be.a('number');",
+                  "    pm.expect(json.data.totalComisionesGanadas).to.be.a('number');",
+                  "    pm.expect(json.data.monedaComisiones).to.equal('EUR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me"]
+            }
+          }
+        },
+        {
+          "name": "03. PUT Update Promotor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response contains updated fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.equal(pm.collectionVariables.get('promotorId'));",
+                  "    pm.expect(json.data.nombrePublico).to.equal('DJ Marketing Pro (Updated)');",
+                  "    pm.expect(json.data.fechaActualizacion).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"DJ Marketing Pro (Updated)\",\n  \"emailContacto\": \"nuevo@djmarketing.com\",\n  \"urlSitioWeb\": \"https://djmarketing.com\",\n  \"urlInstagram\": \"https://instagram.com/djmarketing\",\n  \"urlTikTok\": \"https://tiktok.com/@djmarketing\",\n  \"urlYouTube\": \"https://youtube.com/@djmarketing\",\n  \"urlTwitter\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me"]
+            }
+          }
+        },
+        {
+          "name": "04. GET Me - Verify Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Updated values are persisted', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.nombrePublico).to.equal('DJ Marketing Pro (Updated)');",
+                  "    pm.expect(json.data.emailContacto).to.equal('nuevo@djmarketing.com');",
+                  "    pm.expect(json.data.urlYouTube).to.equal('https://youtube.com/@djmarketing');",
+                  "    pm.expect(json.data.esActivo).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me"]
+            }
+          }
+        },
+        {
+          "name": "05. PATCH Desactivar Promotor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Profile is deactivated', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.exist;",
+                  "    pm.expect(json.data.id).to.equal(pm.collectionVariables.get('promotorId'));",
+                  "    pm.expect(json.data.esActivo).to.be.false;",
+                  "    pm.expect(json.data.programasDadosDeBaja).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {},
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me/desactivar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me", "desactivar"]
+            }
+          }
+        },
+        {
+          "name": "06. GET Me - Verify Deactivation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Deactivation is persisted', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.esActivo).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotor - Validation Errors",
+      "item": [
+        {
+          "name": "POST 400 - nombrePublico Empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code 1001 (Validation_Required)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '1001');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"\",\n  \"tipoPromotorId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - nombrePublico Min Length (< 3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code 1011 (Validation_MinLength)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '1011');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"DJ\",\n  \"tipoPromotorId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - tipoPromotorId Invalid (> 4)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code 1010 (Validation_ForeignKeyNotFound)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '1010');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"Test Promotor\",\n  \"tipoPromotorId\": 999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - emailContacto Invalid Format",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code 1003 (Validation_InvalidEmail)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '1003');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"Test Promotor\",\n  \"tipoPromotorId\": 2,\n  \"emailContacto\": \"not-an-email\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - urlSitioWeb Invalid Format",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code 1013 (Validation_InvalidUrl)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '1013');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"Test Promotor\",\n  \"tipoPromotorId\": 2,\n  \"urlSitioWeb\": \"not-a-url\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotor - Auth Errors",
+      "item": [
+        {
+          "name": "POST 401 - Missing Auth Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"Test Promotor\",\n  \"tipoPromotorId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        },
+        {
+          "name": "GET 401 - Missing Auth Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me"]
+            }
+          }
+        },
+        {
+          "name": "PUT 401 - Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "invalid-token-xyz", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"Updated Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotor - Not Found & Business Rules",
+      "item": [
+        {
+          "name": "GET 404 - Promotor Not Found (new user)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Error code 2015 (NotFound_Promotor)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '2015');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{newUserToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Promotor Already Exists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code 4018 (BusinessRule_PromotorAlreadyExists)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '4018');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombrePublico\": \"Another Promotor\",\n  \"tipoPromotorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor"]
+            }
+          }
+        },
+        {
+          "name": "PATCH 400 - Already Inactive",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code 4019 (BusinessRule_PromotorAlreadyInactive)', function () {",
+                  "    const json = pm.response.json();",
+                  "    const messages = json.messages || [];",
+                  "    const found = messages.some(m => m.errorCode === '4019');",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {},
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/me/desactivar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdpromotion", "promotor", "me", "desactivar"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5001", "type": "string" },
+    { "key": "testEmail", "value": "", "type": "string" },
+    { "key": "testPassword", "value": "123456", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "promotorId", "value": "", "type": "string" },
+    { "key": "promotorName", "value": "", "type": "string" },
+    { "key": "newUserEmail", "value": "", "type": "string" },
+    { "key": "newUserPassword", "value": "TestPassword123!", "type": "string" },
+    { "key": "newUserToken", "value": "", "type": "string" }
+  ]
+}

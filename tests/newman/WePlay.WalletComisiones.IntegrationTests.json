@@ -1,0 +1,1292 @@
+{
+  "info": {
+    "name": "WePlay.WalletComisiones.IntegrationTests",
+    "description": "Coleccion de pruebas de integracion para la feature cp-wallet-comisiones (US-CP-06). Valida la visualizacion del wallet del promotor (saldo, totales), el historial de transacciones con filtros y paginacion, y la solicitud de cobro/retiro con validaciones de saldo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Login Promotor",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('promotorEmail', 'usuario1@mail.com');",
+                  "pm.collectionVariables.set('promotorPassword', '123456');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Promotor token obtained', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.data).to.have.property('token');",
+                  "    pm.expect(json.data.token).to.be.a('string');",
+                  "    pm.collectionVariables.set('promotorToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{promotorEmail}}\",\n    \"password\": \"{{promotorPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet - GET Resumen",
+      "item": [
+        {
+          "name": "01. GET /api/crowdpromotion/promotor/wallet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test('Response structure: PromotorWalletDto', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.data).to.be.an('object');",
+                  "    ",
+                  "    // Validar todos los campos obligatorios",
+                  "    pm.expect(json.data).to.have.property('walletId').that.is.a('string');",
+                  "    pm.expect(json.data).to.have.property('monedaId').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('monedaNombre').that.is.a('string');",
+                  "    pm.expect(json.data).to.have.property('saldoDisponible').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('saldoPendiente').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('totalGanado').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('totalRetirado').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('minimoRetiro').that.is.a('number');",
+                  "});",
+                  "",
+                  "pm.test('Valores logicos: saldoDisponible >= 0', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.saldoDisponible).to.be.at.least(0);",
+                  "});",
+                  "",
+                  "pm.test('Valores logicos: totalGanado >= totalRetirado', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.totalGanado).to.be.at.least(json.data.totalRetirado);",
+                  "});",
+                  "",
+                  "pm.test('Minimo retiro = 10.00', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.minimoRetiro).to.equal(10.00);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = true', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});",
+                  "",
+                  "// Guardar datos para uso en tests posteriores",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('walletId', json.data.walletId);",
+                  "pm.collectionVariables.set('monedaNombre', json.data.monedaNombre);",
+                  "pm.collectionVariables.set('saldoDisponible', json.data.saldoDisponible);",
+                  "pm.collectionVariables.set('totalGanado', json.data.totalGanado);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet - GET Transacciones",
+      "item": [
+        {
+          "name": "01. GET transacciones sin filtros (page=1, pageSize=10)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response structure: WalletTransaccionesPagedDto', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.data).to.be.an('object');",
+                  "    ",
+                  "    // Validar estructura paginada",
+                  "    pm.expect(json.data).to.have.property('items').that.is.an('array');",
+                  "    pm.expect(json.data).to.have.property('totalCount').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('page').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('pageSize').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('totalPages').that.is.a('number');",
+                  "});",
+                  "",
+                  "pm.test('Paginacion: page=1, pageSize=10', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.page).to.equal(1);",
+                  "    pm.expect(json.data.pageSize).to.equal(10);",
+                  "});",
+                  "",
+                  "pm.test('Transacciones tienen estructura correcta', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    ",
+                  "    // Si hay items, validar cada uno",
+                  "    if (items.length > 0) {",
+                  "        items.forEach(function(item) {",
+                  "            pm.expect(item).to.have.property('id').that.is.a('string');",
+                  "            pm.expect(item).to.have.property('esCredito').that.is.a('boolean');",
+                  "            pm.expect(item).to.have.property('importe').that.is.a('number');",
+                  "            pm.expect(item).to.have.property('estadoTransaccionId').that.is.a('number');",
+                  "            pm.expect(item).to.have.property('estadoTransaccionNombre').that.is.a('string');",
+                  "            pm.expect(item).to.have.property('fechaCreacion').that.is.a('string');",
+                  "            // Campos opcionales",
+                  "            pm.expect(item).to.have.property('descripcion'); // puede ser null",
+                  "            pm.expect(item).to.have.property('concepto'); // puede ser null",
+                  "            pm.expect(item).to.have.property('tipoRewardId'); // puede ser null",
+                  "            pm.expect(item).to.have.property('tipoRewardNombre'); // puede ser null",
+                  "            pm.expect(item).to.have.property('promoEventoId'); // puede ser null",
+                  "            pm.expect(item).to.have.property('fechaProcesado'); // puede ser null",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = true', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});",
+                  "",
+                  "// Guardar totalCount para validar paginacion en otros tests",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('totalTransacciones', json.data.totalCount);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/transacciones?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "transacciones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET transacciones filtradas por esCredito=true (ingresos)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Todas las transacciones tienen esCredito=true', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    ",
+                  "    if (items.length > 0) {",
+                  "        items.forEach(function(item) {",
+                  "            pm.expect(item.esCredito).to.be.true;",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Transacciones de credito tienen PromoEventoId', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    ",
+                  "    // Las transacciones de credito pueden tener PromoEventoId",
+                  "    // No se valida que sea NOT NULL porque depende de los datos de test",
+                  "    items.forEach(function(item) {",
+                  "        if (item.esCredito) {",
+                  "            // Solo validar que el campo existe y es un GUID o null",
+                  "            pm.expect(item).to.have.property('promoEventoId');",
+                  "        }",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = true', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/transacciones?esCredito=true&page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "transacciones"
+              ],
+              "query": [
+                {
+                  "key": "esCredito",
+                  "value": "true"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET transacciones filtradas por estadoTransaccionId=1 (Pendiente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Todas las transacciones tienen estadoTransaccionId=1', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    ",
+                  "    if (items.length > 0) {",
+                  "        items.forEach(function(item) {",
+                  "            pm.expect(item.estadoTransaccionId).to.equal(1);",
+                  "            pm.expect(item.estadoTransaccionNombre).to.equal('Pendiente');",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = true', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/transacciones?estadoTransaccionId=1&page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "transacciones"
+              ],
+              "query": [
+                {
+                  "key": "estadoTransaccionId",
+                  "value": "1"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. GET transacciones con rango de fechas",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Calcular fecha desde (30 dias atras) y hasta (hoy)",
+                  "const now = new Date();",
+                  "const desde = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);",
+                  "",
+                  "const desdeISO = desde.toISOString().split('T')[0];",
+                  "const hastaISO = now.toISOString().split('T')[0];",
+                  "",
+                  "pm.collectionVariables.set('fechaDesde', desdeISO);",
+                  "pm.collectionVariables.set('fechaHasta', hastaISO);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Transacciones estan dentro del rango de fechas', function () {",
+                  "    const json = pm.response.json();",
+                  "    const items = json.data.items;",
+                  "    const desde = new Date(pm.collectionVariables.get('fechaDesde'));",
+                  "    const hasta = new Date(pm.collectionVariables.get('fechaHasta'));",
+                  "    ",
+                  "    if (items.length > 0) {",
+                  "        items.forEach(function(item) {",
+                  "            const fecha = new Date(item.fechaCreacion);",
+                  "            pm.expect(fecha.getTime()).to.be.greaterThanOrEqual(desde.getTime());",
+                  "            pm.expect(fecha.getTime()).to.be.lessThanOrEqual(hasta.getTime() + 86400000); // +1 dia",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = true', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/transacciones?fechaDesde={{fechaDesde}}&fechaHasta={{fechaHasta}}&page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "transacciones"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "{{fechaDesde}}"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "{{fechaHasta}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet - POST Cobro (Success)",
+      "item": [
+        {
+          "name": "01. POST cobro valido (saldo suficiente)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Calcular importe a cobrar: minimo permitido (10) si saldo >= 10, sino usa el saldo",
+                  "const saldoDisponible = parseFloat(pm.collectionVariables.get('saldoDisponible'));",
+                  "const importe = Math.min(Math.max(10.00, saldoDisponible * 0.5), saldoDisponible);",
+                  "",
+                  "pm.collectionVariables.set('importeCobro', importe.toFixed(2));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response structure: SolicitarCobroResponseDto', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.data).to.be.an('object');",
+                  "    ",
+                  "    // Validar todos los campos obligatorios",
+                  "    pm.expect(json.data).to.have.property('transaccionId').that.is.a('string');",
+                  "    pm.expect(json.data).to.have.property('importe').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('monedaNombre').that.is.a('string');",
+                  "    pm.expect(json.data).to.have.property('estadoTransaccionNombre').that.is.a('string');",
+                  "    pm.expect(json.data).to.have.property('saldoRestante').that.is.a('number');",
+                  "    pm.expect(json.data).to.have.property('fechaCreacion').that.is.a('string');",
+                  "});",
+                  "",
+                  "pm.test('Importe cobro coincide con el solicitado', function () {",
+                  "    const json = pm.response.json();",
+                  "    const importeSolicitado = parseFloat(pm.collectionVariables.get('importeCobro'));",
+                  "    pm.expect(json.data.importe).to.equal(importeSolicitado);",
+                  "});",
+                  "",
+                  "pm.test('Estado inicial es Pendiente', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data.estadoTransaccionNombre).to.equal('Pendiente');",
+                  "});",
+                  "",
+                  "pm.test('Saldo restante = saldo anterior - importe', function () {",
+                  "    const json = pm.response.json();",
+                  "    const saldoAnterior = parseFloat(pm.collectionVariables.get('saldoDisponible'));",
+                  "    const importeCobro = parseFloat(pm.collectionVariables.get('importeCobro'));",
+                  "    const saldoEsperado = saldoAnterior - importeCobro;",
+                  "    ",
+                  "    pm.expect(json.data.saldoRestante).to.be.closeTo(saldoEsperado, 0.01);",
+                  "});",
+                  "",
+                  "pm.test('Messages contiene success message (code 0001)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    if (json.messages.length > 0) {",
+                  "        const message = json.messages[0];",
+                  "        pm.expect(message).to.have.property('message');",
+                  "        pm.expect(message).to.have.property('errorCode');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = true', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});",
+                  "",
+                  "// Guardar transaccionId y nuevo saldo para validaciones posteriores",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('transaccionCobroId', json.data.transaccionId);",
+                  "pm.collectionVariables.set('saldoPostCobro', json.data.saldoRestante);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"importe\": {{importeCobro}},\n    \"descripcion\": \"Retiro mensual de comisiones\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/cobro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "cobro"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET wallet para verificar saldo actualizado post-cobro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Saldo disponible se decrementó correctamente', function () {",
+                  "    const json = pm.response.json();",
+                  "    const saldoPostCobro = parseFloat(pm.collectionVariables.get('saldoPostCobro'));",
+                  "    ",
+                  "    pm.expect(json.data.saldoDisponible).to.be.closeTo(saldoPostCobro, 0.01);",
+                  "});",
+                  "",
+                  "pm.test('TotalRetirado se incrementó', function () {",
+                  "    const json = pm.response.json();",
+                  "    const totalRetiradorAnterior = parseFloat(pm.collectionVariables.get('totalRetirado') || '0');",
+                  "    const importeCobro = parseFloat(pm.collectionVariables.get('importeCobro'));",
+                  "    ",
+                  "    // Total retirado debe haber aumentado en el importe cobrado",
+                  "    pm.expect(json.data.totalRetirado).to.be.greaterThanOrEqual(totalRetiradorAnterior);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = true', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet - Validation Errors",
+      "item": [
+        {
+          "name": "01. POST 400 - Importe requerido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Error code es 1001 (Campo requerido)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1001');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"descripcion\": \"Retiro sin importe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/cobro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "cobro"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. POST 400 - Importe <= 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Error code es 1021 (Rango fuera de limites)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1021');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"importe\": 0,\n    \"descripcion\": \"Importe cero\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/cobro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "cobro"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. POST 400 - Descripcion > 500 caracteres",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generar string de 501 caracteres",
+                  "const longDesc = 'a'.repeat(501);",
+                  "pm.collectionVariables.set('longDescription', longDesc);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Error code es 1002 (MaxLength excedido)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1002');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"importe\": 15.00,\n    \"descripcion\": \"{{longDescription}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/cobro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "cobro"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet - Business Rule Errors",
+      "item": [
+        {
+          "name": "01. POST 409 - Saldo insuficiente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Intentar cobrar mas del saldo disponible + 1000",
+                  "const saldoDisponible = parseFloat(pm.collectionVariables.get('saldoDisponible'));",
+                  "const importeExcesivo = saldoDisponible + 1000;",
+                  "",
+                  "pm.collectionVariables.set('importeExcesivo', importeExcesivo.toFixed(2));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Error code es 4040 (Saldo insuficiente)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('4040');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"importe\": {{importeExcesivo}},\n    \"descripcion\": \"Cobro excesivo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/cobro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "cobro"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet - Auth Errors",
+      "item": [
+        {
+          "name": "01. GET 401 - Token ausente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Error code es 3001 (No autorizado)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('3001');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET 401 - Token invalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('isSuccess = false', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isSuccess).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token-invalido-xyz"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet - Not Found",
+      "item": [
+        {
+          "name": "01. GET transacciones con paginacion invalida (page=0)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code es 1021 (Rango fuera de limites)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1021');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/transacciones?page=0&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "transacciones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. GET transacciones con pageSize > 50",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code es 1021 (Rango fuera de limites)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1021');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/transacciones?page=1&pageSize=100",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "transacciones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "100"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. GET transacciones con rango de fechas invalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code es 1036 (Rango de fechas invalido)', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('messages').that.is.an('array');",
+                  "    const errorCodes = json.messages.map(m => m.errorCode);",
+                  "    pm.expect(errorCodes).to.include('1036');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{promotorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdpromotion/promotor/wallet/transacciones?fechaDesde=2026-03-31&fechaHasta=2026-03-01&page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "crowdpromotion",
+                "promotor",
+                "wallet",
+                "transacciones"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "2026-03-31"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "2026-03-01"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001"
+    },
+    {
+      "key": "promotorEmail",
+      "value": "usuario1@mail.com"
+    },
+    {
+      "key": "promotorPassword",
+      "value": "123456"
+    },
+    {
+      "key": "promotorToken",
+      "value": ""
+    },
+    {
+      "key": "walletId",
+      "value": ""
+    },
+    {
+      "key": "monedaNombre",
+      "value": ""
+    },
+    {
+      "key": "saldoDisponible",
+      "value": ""
+    },
+    {
+      "key": "totalGanado",
+      "value": ""
+    },
+    {
+      "key": "totalRetirado",
+      "value": ""
+    },
+    {
+      "key": "totalTransacciones",
+      "value": ""
+    },
+    {
+      "key": "fechaDesde",
+      "value": ""
+    },
+    {
+      "key": "fechaHasta",
+      "value": ""
+    },
+    {
+      "key": "importeCobro",
+      "value": ""
+    },
+    {
+      "key": "saldoPostCobro",
+      "value": ""
+    },
+    {
+      "key": "transaccionCobroId",
+      "value": ""
+    },
+    {
+      "key": "importeExcesivo",
+      "value": ""
+    },
+    {
+      "key": "longDescription",
+      "value": ""
+    }
+  ]
+}

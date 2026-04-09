@@ -1,0 +1,73 @@
+{
+  "id": "dashboard-artista-dev",
+  "name": "Dashboard Artista - Development",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fanAccessToken",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "artistaId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "testCampaniaId1",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "otherArtistaCampaniaId",
+      "value": "00000000-0000-0000-0000-000000000099",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "nonExistentCampaniaId",
+      "value": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "artistaEmail",
+      "value": "usuario1@mail.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "artistaPassword",
+      "value": "123456",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fanEmail",
+      "value": "admin-test@mail.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fanPassword",
+      "value": "123456",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

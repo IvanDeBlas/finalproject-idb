@@ -1,0 +1,1118 @@
+{
+    "info": {
+        "_postman_id": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+        "name": "WePlay.Backing.IntegrationTests",
+        "description": "Integration tests for Backing API - WePlay Rises. Full dependency chain: Auth -> Artista -> Campania -> Reward -> Publish -> Fan -> Backing.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "_Setup",
+            "item": [
+                {
+                    "name": "01. Register Artista User",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const email = 'backing-artista-' + Date.now() + '@weplay.com';",
+                                    "pm.collectionVariables.set('testEmail', email);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse structure is correct', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has token and saves accessToken', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.exist;",
+                                    "    pm.expect(json.data.token).to.exist;",
+                                    "    pm.expect(json.data.token).to.be.a('string').and.to.not.be.empty;",
+                                    "    pm.collectionVariables.set('accessToken', json.data.token);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{testEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"confirmPassword\": \"{{testPassword}}\",\n    \"nombre\": \"Backing Test Artista\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "02. Create Artista Profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Artista created and artistaId saved', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.exist;",
+                                    "    const artistaId = typeof json.data === 'string' ? json.data : json.data.id || json.data;",
+                                    "    pm.expect(artistaId).to.be.a('string').and.to.not.be.empty;",
+                                    "    pm.collectionVariables.set('artistaId', artistaId);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nombreArtistico\": \"BackingTest_{{$timestamp}}\",\n    \"descripcion\": \"Test artist for backing integration tests\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/artistas",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "artistas"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "03. Create Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Campania created and campaniaId saved', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.exist;",
+                                    "    const campaniaId = typeof json.data === 'string' ? json.data : json.data.id || json.data;",
+                                    "    pm.expect(campaniaId).to.be.a('string').and.to.not.be.empty;",
+                                    "    pm.collectionVariables.set('campaniaId', campaniaId);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"titulo\": \"BackingTest_Camp_{{$timestamp}}\",\n    \"descripcion\": \"Test campaign for backing integration tests\",\n    \"importeObjetivo\": 5000,\n    \"monedaId\": 1,\n    \"tipoFinanciacionId\": 1,\n    \"fechaFin\": \"2027-06-30T23:59:59Z\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "04. Create Reward",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200 or 201', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Reward created and rewardId saved', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.exist;",
+                                    "    const rewardId = typeof json.data === 'string' ? json.data : json.data.id || json.data;",
+                                    "    pm.expect(rewardId).to.be.a('string').and.to.not.be.empty;",
+                                    "    pm.collectionVariables.set('rewardId', rewardId);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"campaniaId\": \"{{campaniaId}}\",\n    \"tipoRewardId\": 1,\n    \"nombre\": \"BackingTest_Reward\",\n    \"descripcion\": \"Test reward for backing integration tests\",\n    \"importeMinimo\": 10,\n    \"monedaId\": 1,\n    \"esAddOn\": false,\n    \"incluyeEnvioFisico\": false,\n    \"orden\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/rewards",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "rewards"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "05. Publish Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Campania published successfully', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array');",
+                                    "    pm.expect(json.messages.length).to.be.greaterThan(0);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": ""
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/publicar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "publicar"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "06. Register Fan User",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const fanEmail = 'backing-fan-' + Date.now() + '@weplay.com';",
+                                    "pm.collectionVariables.set('fanEmail', fanEmail);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has token and saves fanToken', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.exist;",
+                                    "    pm.expect(json.data.token).to.exist;",
+                                    "    pm.expect(json.data.token).to.be.a('string').and.to.not.be.empty;",
+                                    "    pm.collectionVariables.set('fanToken', json.data.token);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 2000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"{{fanEmail}}\",\n    \"password\": \"{{fanPassword}}\",\n    \"confirmPassword\": \"{{fanPassword}}\",\n    \"nombre\": \"Backing Test Fan\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Backing - Lifecycle",
+            "item": [
+                {
+                    "name": "01. POST Create Backing with Reward - 201 Created",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse structure is correct', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Backing data has expected fields', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const backing = json.data;",
+                                    "    pm.expect(backing).to.have.property('id');",
+                                    "    pm.expect(backing).to.have.property('campaniaId');",
+                                    "    pm.expect(backing).to.have.property('monto');",
+                                    "    pm.expect(backing.monto).to.equal(50);",
+                                    "});",
+                                    "",
+                                    "pm.test('Backing has reward association', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const backing = json.data;",
+                                    "    pm.expect(backing.rewardId).to.exist;",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse indicates success', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "// Save backingId for later tests",
+                                    "const json = pm.response.json();",
+                                    "if (json.data && json.data.id) {",
+                                    "    pm.collectionVariables.set('backingId', json.data.id);",
+                                    "}",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{fanToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"monto\": 50,\n    \"rewardId\": \"{{rewardId}}\",\n    \"mensaje\": \"Test backing with reward\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/backings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "backings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "02. POST Create Backing without Reward - 201 Created",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201', function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Backing created without reward', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const backing = json.data;",
+                                    "    pm.expect(backing).to.have.property('id');",
+                                    "    pm.expect(backing).to.have.property('monto');",
+                                    "    pm.expect(backing.monto).to.equal(25);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse indicates success', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 1000ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{fanToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"monto\": 25,\n    \"mensaje\": \"Test backing without reward\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/backings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "backings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "03. GET Backings by Campania - 200 OK",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Response has list of backings', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    // Support both array and paginated response",
+                                    "    const items = Array.isArray(data) ? data : (data.items || data);",
+                                    "    pm.expect(items).to.be.an('array');",
+                                    "    pm.expect(items.length).to.be.at.least(1);",
+                                    "});",
+                                    "",
+                                    "pm.test('Each backing has required fields', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const data = json.data;",
+                                    "    const items = Array.isArray(data) ? data : (data.items || data);",
+                                    "    items.forEach(function(item) {",
+                                    "        pm.expect(item).to.have.property('id');",
+                                    "        pm.expect(item).to.have.property('monto').that.is.a('number');",
+                                    "        pm.expect(item).to.have.property('fechaCreacion');",
+                                    "    });",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 500ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/backings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "backings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "04. GET Campania Stats - 200 OK",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is true', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Stats has totalRecaudado > 0', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const stats = json.data;",
+                                    "    pm.expect(stats).to.have.property('totalRecaudado');",
+                                    "    pm.expect(stats.totalRecaudado).to.be.a('number').and.to.be.greaterThan(0);",
+                                    "});",
+                                    "",
+                                    "pm.test('Stats has totalBackers >= 1', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const stats = json.data;",
+                                    "    pm.expect(stats).to.have.property('totalBackers');",
+                                    "    pm.expect(stats.totalBackers).to.be.a('number').and.to.be.at.least(1);",
+                                    "});",
+                                    "",
+                                    "pm.test('Stats has expected structure', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const stats = json.data;",
+                                    "    pm.expect(stats).to.have.property('campaniaId');",
+                                    "    pm.expect(stats).to.have.property('promedioAporte').that.is.a('number');",
+                                    "});",
+                                    "",
+                                    "pm.test('Statistics values are logically consistent', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const stats = json.data;",
+                                    "    if (stats.totalBackers > 0 && stats.aporteMinimo !== undefined) {",
+                                    "        pm.expect(stats.aporteMinimo).to.be.lessThanOrEqual(stats.promedioAporte);",
+                                    "        pm.expect(stats.promedioAporte).to.be.lessThanOrEqual(stats.aporteMaximo);",
+                                    "    }",
+                                    "});",
+                                    "",
+                                    "pm.test('Response time < 500ms', function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "stats"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Backing - Validation Errors",
+            "item": [
+                {
+                    "name": "POST Backing with monto = 0 - 400 Bad Request",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error message', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "    pm.expect(json.messages[0].errorCode).to.match(/^1/);",
+                                    "});",
+                                    "",
+                                    "pm.test('Error message references monto', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const msg = json.messages[0].message.toLowerCase();",
+                                    "    pm.expect(msg).to.satisfy(function(m) {",
+                                    "        return m.includes('monto') || m.includes('amount') || m.includes('minimo') || m.includes('mayor');",
+                                    "    });",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{fanToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"monto\": 0,\n    \"mensaje\": \"Test backing with zero amount\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/backings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "backings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Backing with mensaje too long - 400 Bad Request",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "// Generate a message that exceeds max length (>500 chars)",
+                                    "const longMessage = 'A'.repeat(1001);",
+                                    "pm.collectionVariables.set('longMessage', longMessage);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has validation error for message length', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "    pm.expect(json.messages[0].errorCode).to.match(/^1/);",
+                                    "});",
+                                    "",
+                                    "pm.test('Error message references length or caracteres', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const msg = json.messages[0].message.toLowerCase();",
+                                    "    pm.expect(msg).to.satisfy(function(m) {",
+                                    "        return m.includes('caracteres') || m.includes('largo') || m.includes('length') || m.includes('mensaje') || m.includes('maximo');",
+                                    "    });",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{fanToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"monto\": 25,\n    \"mensaje\": \"{{longMessage}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}/backings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}",
+                                "backings"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Backing - Not Found",
+            "item": [
+                {
+                    "name": "POST Backing to non-existent campania - 404 Not Found",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code indicates error (400 or 404)', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Has error message', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{fanToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"monto\": 25,\n    \"mensaje\": \"Test backing to non-existent campaign\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/99999999-9999-9999-9999-999999999999/backings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "99999999-9999-9999-9999-999999999999",
+                                "backings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Backings for non-existent campania - 404 Not Found",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code indicates error (400, 404, or 500)', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([400, 404, 500]);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/99999999-9999-9999-9999-999999999999/backings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "99999999-9999-9999-9999-999999999999",
+                                "backings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET Stats for non-existent campania - 404 Not Found",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code indicates error (400, 404, or 500)', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([400, 404, 500]);",
+                                    "});",
+                                    "",
+                                    "pm.test('ServiceResponse.isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/99999999-9999-9999-9999-999999999999/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "99999999-9999-9999-9999-999999999999",
+                                "stats"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "_Teardown",
+            "item": [
+                {
+                    "name": "DELETE Reward",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const rewardId = pm.collectionVariables.get('rewardId');",
+                                    "if (!rewardId) {",
+                                    "    pm.test('Teardown: Reward skipped (no rewardId)', function () {",
+                                    "        pm.expect(true).to.be.true;",
+                                    "    });",
+                                    "} else {",
+                                    "    pm.test('Teardown: Reward deleted or not found', function () {",
+                                    "        pm.expect(pm.response.code).to.be.oneOf([200, 204, 404, 405, 409]);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/rewards/{{rewardId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "rewards",
+                                "{{rewardId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE Campania",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const campaniaId = pm.collectionVariables.get('campaniaId');",
+                                    "if (!campaniaId) {",
+                                    "    pm.test('Teardown: Campania skipped (no campaniaId)', function () {",
+                                    "        pm.expect(true).to.be.true;",
+                                    "    });",
+                                    "} else {",
+                                    "    pm.test('Teardown: Campania deleted or not found', function () {",
+                                    "        pm.expect(pm.response.code).to.be.oneOf([200, 204, 404, 405, 409]);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/campanias/{{campaniaId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "campanias",
+                                "{{campaniaId}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5001",
+            "type": "string"
+        },
+        {
+            "key": "testEmail",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "testPassword",
+            "value": "TestPassword123!",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "artistaId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "campaniaId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "rewardId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "fanEmail",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "fanPassword",
+            "value": "TestPassword123!",
+            "type": "string"
+        },
+        {
+            "key": "fanToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "backingId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "longMessage",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}

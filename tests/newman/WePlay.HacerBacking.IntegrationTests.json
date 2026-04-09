@@ -1,0 +1,493 @@
+{
+  "info": {
+    "name": "WePlay.HacerBacking.IntegrationTests",
+    "description": "Integration tests for hacer-backing feature (US-04). Self-contained: creates campaign + reward, publishes, then tests backings flow.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Setup - Auth and Data",
+      "item": [
+        {
+          "name": "Setup - Login User 1",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Token saved', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.data).to.have.property('token');",
+            "    pm.environment.set('accessToken', json.data.token);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\"email\":\"{{testUsername}}\",\"password\":\"{{testPassword}}\"}"},
+            "url": {"raw":"{{baseUrl}}/api/auth/login","host":["{{baseUrl}}"],"path":["api","auth","login"]} }
+        },
+        {
+          "name": "Setup - Login User 2",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Token saved', () => {",
+            "    const json = pm.response.json();",
+            "    pm.environment.set('accessToken2', json.data.token);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\"email\":\"{{testUsername2}}\",\"password\":\"{{testPassword2}}\"}"},
+            "url": {"raw":"{{baseUrl}}/api/auth/login","host":["{{baseUrl}}"],"path":["api","auth","login"]} }
+        },
+        {
+          "name": "Setup - Create Campaign",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Campaign created (201 or 200)', () => {",
+            "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+            "});",
+            "pm.test('Campaign ID saved', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.data).to.have.property('id');",
+            "    pm.environment.set('campaniaId', json.data.id);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"titulo\": \"Newman Test Campaign\",\n  \"subtitulo\": \"Integration test campaign\",\n  \"descripcionCorta\": \"Created by Newman integration tests\",\n  \"monedaId\": 1,\n  \"importeObjetivo\": 5000,\n  \"tipoFinanciacionId\": 1,\n  \"permiteAportacionesAnonimas\": true,\n  \"permitePropinas\": false,\n  \"fechaInicio\": \"2026-02-01T00:00:00Z\",\n  \"fechaFin\": \"2026-06-01T00:00:00Z\"\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias","host":["{{baseUrl}}"],"path":["api","campanias"]} }
+        },
+        {
+          "name": "Setup - Create Reward",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Reward created', () => {",
+            "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+            "});",
+            "pm.test('Reward ID saved', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.data).to.have.property('id');",
+            "    pm.environment.set('rewardId', json.data.id);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"campaniaId\": \"{{campaniaId}}\",\n  \"tipoRewardId\": 1,\n  \"nombre\": \"CD Firmado\",\n  \"descripcion\": \"CD firmado por el artista\",\n  \"importeMinimo\": 25,\n  \"monedaId\": 1,\n  \"cantidadMaxima\": 100,\n  \"esActivo\": true,\n  \"orden\": 1\n}"},
+            "url": {"raw":"{{baseUrl}}/api/rewards","host":["{{baseUrl}}"],"path":["api","rewards"]} }
+        },
+        {
+          "name": "Setup - Publish Campaign",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Campaign published', () => pm.response.to.have.status(200));",
+            "pm.test('Estado is 2 (Publicada)', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.data.estadoCampaniaId).to.equal(2);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/publicar","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","publicar"]} }
+        },
+        {
+          "name": "Setup - Save Original Pledged Amount",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Detail retrieved', () => pm.response.to.have.status(200));",
+            "pm.test('Original amount saved', () => {",
+            "    const json = pm.response.json();",
+            "    pm.environment.set('originalPledgedAmount', json.data.importePledgedActual || 0);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}"]} }
+        }
+      ]
+    },
+    {
+      "name": "1. POST backings - Create",
+      "item": [
+        {
+          "name": "POST backings - Authenticated with Reward (201)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+            "pm.test('BackingDto structure', () => {",
+            "    const b = pm.response.json().data;",
+            "    pm.expect(b).to.have.property('id').that.is.a('string');",
+            "    pm.expect(b).to.have.property('campaniaId').that.is.a('string');",
+            "    pm.expect(b).to.have.property('monto').that.is.a('number');",
+            "    pm.expect(b).to.have.property('estadoPedido');",
+            "    pm.expect(b).to.have.property('monedaSimbolo');",
+            "});",
+            "pm.test('Reward info present', () => {",
+            "    pm.expect(pm.response.json().data).to.have.property('rewardNombre');",
+            "});",
+            "pm.test('Not anonymous', () => pm.expect(pm.response.json().data.esAnonimo).to.be.false);",
+            "pm.test('Message stored', () => pm.expect(pm.response.json().data.mensaje).to.equal('Mucha suerte!'));",
+            "pm.test('Estado Completado', () => pm.expect(pm.response.json().data.estadoPedido).to.equal('Completado'));",
+            "pm.test('Backing ID saved', () => pm.environment.set('backingId', pm.response.json().data.id));",
+            "pm.test('Response time < 1000ms', () => pm.expect(pm.response.responseTime).to.be.below(1000));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": \"{{rewardId}}\",\n  \"monto\": 30.00,\n  \"mensaje\": \"Mucha suerte!\",\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"]} }
+        },
+        {
+          "name": "POST backings - Without Reward (201)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('No reward', () => {",
+            "    const b = pm.response.json().data;",
+            "    pm.expect(b.rewardNombre).to.be.oneOf([null, undefined]);",
+            "});",
+            "pm.test('Amount correct', () => pm.expect(pm.response.json().data.monto).to.equal(50));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken2}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": null,\n  \"monto\": 50.00,\n  \"mensaje\": null,\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"]} }
+        },
+        {
+          "name": "POST backings - Anonymous No Auth (201)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('Is anonymous', () => pm.expect(pm.response.json().data.esAnonimo).to.be.true);",
+            "pm.test('Username Anonimo', () => pm.expect(pm.response.json().data.userName).to.equal('Anonimo'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": null,\n  \"monto\": 15.00,\n  \"mensaje\": null,\n  \"esAnonimo\": true\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"]} }
+        },
+        {
+          "name": "POST backings - With Message (201)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('Message stored', () => pm.expect(pm.response.json().data.mensaje).to.equal('Gran proyecto!'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": null,\n  \"monto\": 5.00,\n  \"mensaje\": \"Gran proyecto!\",\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"]} }
+        },
+        {
+          "name": "POST backings - Amount Below 1 EUR (400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('Validation error code (1xxx)', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json.messages).to.be.an('array').with.length.greaterThan(0);",
+            "    pm.expect(json.messages[0].errorCode).to.match(/^1\\d{3}$/);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": null,\n  \"monto\": 0.50,\n  \"mensaje\": null,\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"]} }
+        },
+        {
+          "name": "POST backings - Message > 500 Chars (400)",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["pm.environment.set('longMessage', 'A'.repeat(501));"], "type": "text/javascript" }},
+            { "listen": "test", "script": { "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Error about length', () => {",
+              "    const msg = pm.response.json().messages[0].message.toLowerCase();",
+              "    pm.expect(msg).to.include('500');",
+              "});"
+            ], "type": "text/javascript" }}
+          ],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": null,\n  \"monto\": 10.00,\n  \"mensaje\": \"{{longMessage}}\",\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"]} }
+        },
+        {
+          "name": "POST backings - Campaign Not Found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));",
+            "pm.test('Error 2003', () => pm.expect(pm.response.json().messages[0].errorCode).to.include('2003'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": null,\n  \"monto\": 25.00,\n  \"mensaje\": null,\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000099/backings","host":["{{baseUrl}}"],"path":["api","campanias","00000000-0000-0000-0000-000000000099","backings"]} }
+        },
+        {
+          "name": "POST backings - Reward Not Found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));",
+            "pm.test('Error 2004', () => pm.expect(pm.response.json().messages[0].errorCode).to.include('2004'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": \"00000000-0000-0000-0000-000000000099\",\n  \"monto\": 25.00,\n  \"mensaje\": null,\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"]} }
+        },
+        {
+          "name": "POST backings - Empty GUID (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404 or 400', () => pm.expect(pm.response.code).to.be.oneOf([400, 404]));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{accessToken}}"}],
+            "body": {"mode":"raw","raw":"{\n  \"rewardId\": null,\n  \"monto\": 25.00,\n  \"mensaje\": null,\n  \"esAnonimo\": false\n}"},
+            "url": {"raw":"{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000000/backings","host":["{{baseUrl}}"],"path":["api","campanias","00000000-0000-0000-0000-000000000000","backings"]} }
+        }
+      ]
+    },
+    {
+      "name": "2. GET campanias - List",
+      "item": [
+        {
+          "name": "GET campanias - List",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('ServiceResponse with array', () => {",
+            "    const json = pm.response.json();",
+            "    pm.expect(json).to.have.property('data').that.is.an('array');",
+            "    pm.expect(json).to.have.property('isSuccess').that.is.true;",
+            "});",
+            "pm.test('At least 1 campaign', () => {",
+            "    pm.expect(pm.response.json().data.length).to.be.at.least(1);",
+            "});",
+            "pm.test('Campaign fields', () => {",
+            "    const c = pm.response.json().data[0];",
+            "    pm.expect(c).to.have.property('id');",
+            "    pm.expect(c).to.have.property('titulo');",
+            "    pm.expect(c).to.have.property('importeObjetivo');",
+            "    pm.expect(c).to.have.property('importePledgedActual');",
+            "});",
+            "pm.test('Response time < 500ms', () => pm.expect(pm.response.responseTime).to.be.below(500));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias?pageNumber=1&pageSize=10","host":["{{baseUrl}}"],"path":["api","campanias"],
+              "query": [{"key":"pageNumber","value":"1"},{"key":"pageSize","value":"10"}]} }
+        },
+        {
+          "name": "GET campanias - Search by Title",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Valid array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias?searchTerm=Newman&pageNumber=1&pageSize=20","host":["{{baseUrl}}"],"path":["api","campanias"],
+              "query": [{"key":"searchTerm","value":"Newman"},{"key":"pageNumber","value":"1"},{"key":"pageSize","value":"20"}]} }
+        }
+      ]
+    },
+    {
+      "name": "3. GET campanias/{id} - Detail",
+      "item": [
+        {
+          "name": "GET Detail - With Rewards and Backings",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Campaign detail structure', () => {",
+            "    const c = pm.response.json().data;",
+            "    pm.expect(c).to.have.property('id');",
+            "    pm.expect(c).to.have.property('titulo');",
+            "    pm.expect(c).to.have.property('importeObjetivo');",
+            "    pm.expect(c).to.have.property('importePledgedActual');",
+            "    pm.expect(c).to.have.property('porcentajeProgreso').that.is.a('number');",
+            "});",
+            "pm.test('Rewards array with structure', () => {",
+            "    const c = pm.response.json().data;",
+            "    pm.expect(c).to.have.property('rewards').that.is.an('array');",
+            "    pm.expect(c.rewards.length).to.be.at.least(1);",
+            "    const r = c.rewards[0];",
+            "    pm.expect(r).to.have.property('id');",
+            "    pm.expect(r).to.have.property('nombre');",
+            "    pm.expect(r).to.have.property('importeMinimo').that.is.a('number');",
+            "    pm.expect(r).to.have.property('disponible').that.is.a('boolean');",
+            "});",
+            "pm.test('Backings recientes present', () => {",
+            "    const c = pm.response.json().data;",
+            "    pm.expect(c).to.have.property('backingsRecientes').that.is.an('array');",
+            "    pm.expect(c.backingsRecientes.length).to.be.at.least(3);",
+            "});",
+            "pm.test('Stats calculated', () => {",
+            "    const c = pm.response.json().data;",
+            "    pm.expect(c).to.have.property('totalBackers').that.is.a('number');",
+            "    pm.expect(c).to.have.property('diasRestantes').that.is.a('number');",
+            "    pm.expect(c.diasRestantes).to.be.at.least(0);",
+            "});",
+            "pm.test('Percentage correct', () => {",
+            "    const c = pm.response.json().data;",
+            "    if (c.importeObjetivo > 0) {",
+            "        const exp = Math.round((c.importePledgedActual / c.importeObjetivo) * 100 * 10) / 10;",
+            "        pm.expect(c.porcentajeProgreso).to.equal(exp);",
+            "    }",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}"]} }
+        },
+        {
+          "name": "GET Detail - Not Found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));",
+            "pm.test('Error 2003', () => pm.expect(pm.response.json().messages[0].errorCode).to.include('2003'));",
+            "pm.test('Message descriptive', () => pm.expect(pm.response.json().messages[0].message.toLowerCase()).to.include('no encontrada'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000099","host":["{{baseUrl}}"],"path":["api","campanias","00000000-0000-0000-0000-000000000099"]} }
+        }
+      ]
+    },
+    {
+      "name": "4. GET backings - List",
+      "item": [
+        {
+          "name": "GET backings - List Recent",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Array response', () => pm.expect(pm.response.json().data).to.be.an('array'));",
+            "pm.test('Structure correct', () => {",
+            "    const items = pm.response.json().data;",
+            "    if (items.length > 0) {",
+            "        const b = items[0];",
+            "        pm.expect(b).to.have.property('id');",
+            "        pm.expect(b).to.have.property('nombreBacker').that.is.a('string');",
+            "        pm.expect(b).to.have.property('monto').that.is.a('number');",
+            "        pm.expect(b).to.have.property('fechaCreacion');",
+            "    }",
+            "});",
+            "pm.test('At least 3 backings', () => pm.expect(pm.response.json().data.length).to.be.at.least(3));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings?limit=20","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"],
+              "query":[{"key":"limit","value":"20"}]} }
+        },
+        {
+          "name": "GET backings - Anonymous Names",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('At least 1 Anonimo', () => {",
+            "    const anon = pm.response.json().data.filter(b => b.nombreBacker === 'Anonimo');",
+            "    pm.expect(anon.length).to.be.at.least(1);",
+            "});",
+            "pm.test('Named backers exist', () => {",
+            "    const named = pm.response.json().data.filter(b => b.nombreBacker !== 'Anonimo');",
+            "    pm.expect(named.length).to.be.at.least(1);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings?limit=100","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"],
+              "query":[{"key":"limit","value":"100"}]} }
+        },
+        {
+          "name": "GET backings - Limit 1",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('At most 1', () => pm.expect(pm.response.json().data.length).to.be.at.most(1));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/backings?limit=1","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","backings"],
+              "query":[{"key":"limit","value":"1"}]} }
+        },
+        {
+          "name": "GET backings - Not Found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000099/backings","host":["{{baseUrl}}"],"path":["api","campanias","00000000-0000-0000-0000-000000000099","backings"]} }
+        }
+      ]
+    },
+    {
+      "name": "5. GET stats",
+      "item": [
+        {
+          "name": "GET stats - Campaign Statistics",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Stats structure', () => {",
+            "    const s = pm.response.json().data;",
+            "    pm.expect(s).to.have.property('campaniaId');",
+            "    pm.expect(s).to.have.property('totalBackers').that.is.a('number');",
+            "    pm.expect(s).to.have.property('totalRecaudado').that.is.a('number');",
+            "    pm.expect(s).to.have.property('promedioAporte').that.is.a('number');",
+            "    pm.expect(s).to.have.property('aporteMinimo').that.is.a('number');",
+            "    pm.expect(s).to.have.property('aporteMaximo').that.is.a('number');",
+            "    pm.expect(s).to.have.property('diasRestantes').that.is.a('number');",
+            "});",
+            "pm.test('Non-negative values', () => {",
+            "    const s = pm.response.json().data;",
+            "    pm.expect(s.totalBackers).to.be.at.least(0);",
+            "    pm.expect(s.totalRecaudado).to.be.at.least(0);",
+            "    pm.expect(s.diasRestantes).to.be.at.least(0);",
+            "});",
+            "pm.test('Average between min and max', () => {",
+            "    const s = pm.response.json().data;",
+            "    if (s.totalBackers > 0) {",
+            "        pm.expect(s.promedioAporte).to.be.at.least(s.aporteMinimo);",
+            "        pm.expect(s.promedioAporte).to.be.at.most(s.aporteMaximo);",
+            "    }",
+            "});",
+            "pm.test('Total ~ avg * count', () => {",
+            "    const s = pm.response.json().data;",
+            "    if (s.totalBackers > 0) {",
+            "        pm.expect(Math.abs(s.totalRecaudado - s.promedioAporte * s.totalBackers)).to.be.below(1);",
+            "    }",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/stats","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","stats"]} }
+        },
+        {
+          "name": "GET stats - Not Found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/00000000-0000-0000-0000-000000000099/stats","host":["{{baseUrl}}"],"path":["api","campanias","00000000-0000-0000-0000-000000000099","stats"]} }
+        }
+      ]
+    },
+    {
+      "name": "6. Atomicity Validation",
+      "item": [
+        {
+          "name": "Validate - Pledged Amount Increased",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Pledged increased by backing total', () => {",
+            "    const current = pm.response.json().data.importePledgedActual;",
+            "    const original = parseFloat(pm.environment.get('originalPledgedAmount') || '0');",
+            "    // 4 backings: 30 + 50 + 15 + 5 = 100 EUR",
+            "    pm.expect(current).to.be.at.least(original + 90);",
+            "});",
+            "pm.test('Backers count >= 3', () => {",
+            "    pm.expect(pm.response.json().data.totalBackers).to.be.at.least(3);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}"]} }
+        },
+        {
+          "name": "Validate - Stats Consistency",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": [
+              "const req = { url: pm.environment.get('baseUrl') + '/api/campanias/' + pm.environment.get('campaniaId'), method: 'GET' };",
+              "pm.sendRequest(req, (err, res) => {",
+              "    if (!err && res.code === 200) {",
+              "        pm.environment.set('detailPledged', res.json().data.importePledgedActual);",
+              "        pm.environment.set('detailBackers', res.json().data.totalBackers);",
+              "    }",
+              "});"
+            ], "type": "text/javascript" }},
+            { "listen": "test", "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('TotalRecaudado matches detail', () => {",
+              "    const stats = pm.response.json().data.totalRecaudado;",
+              "    const detail = parseFloat(pm.environment.get('detailPledged') || '0');",
+              "    pm.expect(Math.abs(stats - detail)).to.be.below(1);",
+              "});",
+              "pm.test('TotalBackers matches detail', () => {",
+              "    const stats = pm.response.json().data.totalBackers;",
+              "    const detail = parseInt(pm.environment.get('detailBackers') || '0');",
+              "    pm.expect(stats).to.equal(detail);",
+              "});"
+            ], "type": "text/javascript" }}
+          ],
+          "request": { "method": "GET", "header": [],
+            "url": {"raw":"{{baseUrl}}/api/campanias/{{campaniaId}}/stats","host":["{{baseUrl}}"],"path":["api","campanias","{{campaniaId}}","stats"]} }
+        }
+      ]
+    }
+  ]
+}

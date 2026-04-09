@@ -1,0 +1,1281 @@
+{
+  "info": {
+    "_postman_id": "ae-integ-001",
+    "name": "WePlay.AcuerdosEntregables.IntegrationTests",
+    "description": "Integration tests for Acuerdos, Milestones & Entregables (US-CS-04). Self-contained: creates all dependencies in _Setup. PREREQUISITE: Professional user needs PerfilProfesional created via SQL before running (same as cs-explorar-propuestas collection).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "_Setup",
+      "item": [
+        {
+          "name": "01. Register Artista User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const email = 'ae-artista-' + Date.now() + '@weplay.com';",
+                  "pm.collectionVariables.set('artistaEmail', email);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Saves artistaToken', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('artistaToken', json.data.token);",
+                  "    pm.collectionVariables.set('artistaUserId', json.data.userId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{artistaEmail}}\",\n    \"password\": \"TestPassword123\",\n    \"confirmPassword\": \"TestPassword123\",\n    \"nombre\": \"AE Test Artista\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "02. Create Artista Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Saves artistaId', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('artistaId', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombreArtistico\": \"AE_Test_Artist\",\n    \"descripcion\": \"Created by acuerdos-entregables integration tests\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Artistas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Artistas"]
+            }
+          }
+        },
+        {
+          "name": "03. Create Necesidad 1 (CRUD lifecycle)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "pm.test('Saves necesidadId1', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('necesidadId1', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"AE Test Necesidad 1 - CRUD\",\n    \"descripcion\": \"Necesidad for main CRUD lifecycle test\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 500.00,\n    \"presupuestoMax\": 2000.00,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"{{artistaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades"]
+            }
+          }
+        },
+        {
+          "name": "04. Create Necesidad 2 (Rechazo propuesta)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "pm.test('Saves necesidadId2', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('necesidadId2', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"AE Test Necesidad 2 - Rechazo\",\n    \"descripcion\": \"Necesidad for propuesta rejection test\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 200.00,\n    \"presupuestoMax\": 800.00,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"{{artistaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades"]
+            }
+          }
+        },
+        {
+          "name": "05. Create Necesidad 3 (Cancelacion)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "pm.test('Saves necesidadId3', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('necesidadId3', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"AE Test Necesidad 3 - Cancel\",\n    \"descripcion\": \"Necesidad for acuerdo cancelation test\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 300.00,\n    \"presupuestoMax\": 1200.00,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"{{artistaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades"]
+            }
+          }
+        },
+        {
+          "name": "06. Create Necesidad 4 (Rechazo entregable + Delete milestone)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "pm.test('Saves necesidadId4', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('necesidadId4', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"AE Test Necesidad 4 - Entregable\",\n    \"descripcion\": \"Necesidad for entregable rejection and milestone deletion\",\n    \"tipoNecesidadId\": 1,\n    \"modalidadTrabajoId\": 2,\n    \"presupuestoMin\": 400.00,\n    \"presupuestoMax\": 1500.00,\n    \"monedaId\": 1,\n    \"proyectoArtisticoId\": \"{{artistaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades"]
+            }
+          }
+        },
+        {
+          "name": "07. Register Professional User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// If proToken was injected via --env-var (run-acuerdos-newman.sh), skip registration.",
+                  "const existing = pm.collectionVariables.get('proToken');",
+                  "if (existing && existing.length > 20) {",
+                  "    console.log('proToken already set, skipping registration');",
+                  "} else {",
+                  "    const email = 'ae-pro-' + Date.now() + '@weplay.com';",
+                  "    pm.collectionVariables.set('proEmail', email);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const existing = pm.collectionVariables.get('proToken');",
+                  "if (existing && existing.length > 20) {",
+                  "    pm.test('proToken pre-injected (skipped registration)', function () {",
+                  "        pm.expect(existing).to.be.a('string');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('Status is 200', function () {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "    pm.test('Saves proToken', function () {",
+                  "        const json = pm.response.json();",
+                  "        pm.collectionVariables.set('proToken', json.data.token);",
+                  "        pm.collectionVariables.set('proUserId', json.data.userId);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{proEmail}}\",\n    \"password\": \"TestPassword123\",\n    \"confirmPassword\": \"TestPassword123\",\n    \"nombre\": \"AE Test Professional\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "08. Verify Professional Access (PerfilProfesional placeholder)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// PerfilProfesional is created via SQL by run-newman.sh.",
+                  "// This step verifies the professional can access necesidades.",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{proToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades?page=1&pageSize=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "09. Create Propuesta 1 (Pro → Necesidad 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Saves propuestaId1', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "    pm.collectionVariables.set('propuestaId1', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{proToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"precioPropuesto\": 1000.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 30,\n    \"mensajePropuesta\": \"Propuesta for CRUD lifecycle test - experienced professional.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId1}}/propuestas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades", "{{necesidadId1}}", "propuestas"]
+            }
+          }
+        },
+        {
+          "name": "10. Create Propuesta 2 (Pro → Necesidad 2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Saves propuestaId2', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('propuestaId2', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{proToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"precioPropuesto\": 500.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 15,\n    \"mensajePropuesta\": \"Propuesta for rejection test.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId2}}/propuestas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades", "{{necesidadId2}}", "propuestas"]
+            }
+          }
+        },
+        {
+          "name": "11. Create Propuesta 3 (Pro → Necesidad 3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Saves propuestaId3', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('propuestaId3', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{proToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"precioPropuesto\": 800.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 20,\n    \"mensajePropuesta\": \"Propuesta for cancelation lifecycle test.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId3}}/propuestas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades", "{{necesidadId3}}", "propuestas"]
+            }
+          }
+        },
+        {
+          "name": "12. Create Propuesta 4 (Pro → Necesidad 4)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Saves propuestaId4', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('propuestaId4', json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{proToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"precioPropuesto\": 1200.00,\n    \"monedaId\": 1,\n    \"diasEstimados\": 25,\n    \"mensajePropuesta\": \"Propuesta for entregable rejection and milestone deletion tests.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/necesidades/{{necesidadId4}}/propuestas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "necesidades", "{{necesidadId4}}", "propuestas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Acuerdos & Entregables - CRUD Lifecycle",
+      "item": [
+        {
+          "name": "01. POST Aceptar Propuesta (crear Acuerdo)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Save acuerdo ID', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('acuerdoId');",
+                  "    pm.collectionVariables.set('acuerdoId', json.data.acuerdoId);",
+                  "    pm.collectionVariables.set('conversacionId', json.data.conversacionId);",
+                  "});",
+                  "pm.test('Response has expected fields', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('tituloInterno');",
+                  "    pm.expect(data).to.have.property('estadoAcuerdoNombre');",
+                  "    pm.expect(data).to.have.property('importeTotalPactado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tituloInterno\": \"Acuerdo CRUD Test\",\n    \"fechaInicio\": \"2026-03-01T00:00:00Z\",\n    \"fechaFinPrevista\": \"2026-06-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId1}}/aceptar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "propuestas", "{{propuestaId1}}", "aceptar"]
+            }
+          }
+        },
+        {
+          "name": "02. GET Acuerdo by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has acuerdo details', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('id');",
+                  "    pm.expect(data).to.have.property('tituloInterno');",
+                  "    pm.expect(data).to.have.property('estadoAcuerdoNombre');",
+                  "    pm.expect(data).to.have.property('miRol');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{artistaToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}"]
+            }
+          }
+        },
+        {
+          "name": "03. POST Create Milestone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Save milestone ID', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('id');",
+                  "    pm.collectionVariables.set('milestoneId', data.id);",
+                  "});",
+                  "pm.test('Response has milestone details', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('titulo');",
+                  "    pm.expect(data).to.have.property('orden');",
+                  "    pm.expect(data).to.have.property('importeParcial');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Milestone 1 - Maqueta\",\n    \"descripcion\": \"Primera entrega: maqueta inicial\",\n    \"importeParcial\": 500.00,\n    \"fechaLimite\": \"2026-04-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/milestones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "milestones"]
+            }
+          }
+        },
+        {
+          "name": "04. PUT Update Milestone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Data reflects update', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('titulo', 'Milestone 1 - Maqueta Actualizada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Milestone 1 - Maqueta Actualizada\",\n    \"descripcion\": \"Maqueta con cambios acordados\",\n    \"importeParcial\": 500.00,\n    \"fechaLimite\": \"2026-04-15T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/milestones/{{milestoneId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "milestones", "{{milestoneId}}"]
+            }
+          }
+        },
+        {
+          "name": "05. POST Create Entregable (as Professional)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Save entregable ID', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('id');",
+                  "    pm.collectionVariables.set('entregableId', data.id);",
+                  "});",
+                  "pm.test('Response has entregable details', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('titulo');",
+                  "    pm.expect(data).to.have.property('estadoEntregableNombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{proToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Entregable - Maqueta v1\",\n    \"descripcion\": \"Primera version de la maqueta\",\n    \"urlRecurso\": \"https://drive.google.com/file/maqueta-v1\",\n    \"milestoneId\": \"{{milestoneId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/entregables",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "entregables"]
+            }
+          }
+        },
+        {
+          "name": "06. PATCH Aprobar Entregable (as Artista)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Entregable approved', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('estadoEntregableNombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"comentario\": \"Excelente trabajo, aprobado.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/entregables/{{entregableId}}/aprobar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "entregables", "{{entregableId}}", "aprobar"]
+            }
+          }
+        },
+        {
+          "name": "07. PATCH Completar Acuerdo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Acuerdo completed', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('estadoAcuerdoNombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{artistaToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoId}}/completar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoId}}", "completar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazo de Propuesta",
+      "item": [
+        {
+          "name": "PATCH Rechazar Propuesta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Propuesta rejected', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('id');",
+                  "    pm.expect(data).to.have.property('estadoPropuestaNombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"No encaja con la vision del proyecto.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId2}}/rechazar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "propuestas", "{{propuestaId2}}", "rechazar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cancelacion de Acuerdo",
+      "item": [
+        {
+          "name": "01. Aceptar Propuesta 3 (crear Acuerdo para cancelar)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Save acuerdo para cancelar', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.collectionVariables.set('acuerdoCancelId', data.acuerdoId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tituloInterno\": \"Acuerdo para Cancelar\",\n    \"fechaInicio\": \"2026-03-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId3}}/aceptar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "propuestas", "{{propuestaId3}}", "aceptar"]
+            }
+          }
+        },
+        {
+          "name": "02. PATCH Cancelar Acuerdo (as Professional)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Acuerdo cancelled', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('estadoAcuerdoNombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{proToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"No puedo continuar con el proyecto por disponibilidad.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoCancelId}}/cancelar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoCancelId}}", "cancelar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazo de Entregable",
+      "item": [
+        {
+          "name": "01. Aceptar Propuesta 4 (crear Acuerdo para entregables)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Save acuerdo para entregables', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.collectionVariables.set('acuerdoEntregId', data.acuerdoId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tituloInterno\": \"Acuerdo para Entregables Test\",\n    \"fechaInicio\": \"2026-03-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId4}}/aceptar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "propuestas", "{{propuestaId4}}", "aceptar"]
+            }
+          }
+        },
+        {
+          "name": "02. Create Entregable para Rechazar (as Pro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Save entregable to reject', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.collectionVariables.set('entregableRejectId', data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{proToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Entregable para Rechazar\",\n    \"descripcion\": \"Draft version with issues\",\n    \"urlRecurso\": \"https://drive.google.com/file/draft-v1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoEntregId}}/entregables",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoEntregId}}", "entregables"]
+            }
+          }
+        },
+        {
+          "name": "03. PATCH Rechazar Entregable (as Artista)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Entregable rejected', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('estadoEntregableNombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"comentario\": \"La calidad no cumple los requisitos acordados. Revisar mezcla.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/entregables/{{entregableRejectId}}/rechazar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "entregables", "{{entregableRejectId}}", "rechazar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE Milestone",
+      "item": [
+        {
+          "name": "01. Create Milestone for Deletion (on acuerdoEntregId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Save milestone for delete', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.collectionVariables.set('milestoneDeleteId', data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Milestone Temporal\",\n    \"descripcion\": \"Milestone to be deleted\",\n    \"importeParcial\": 200.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoEntregId}}/milestones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoEntregId}}", "milestones"]
+            }
+          }
+        },
+        {
+          "name": "02. DELETE Milestone (sin entregables)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 204 or 200', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([204, 200]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{artistaToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoEntregId}}/milestones/{{milestoneDeleteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoEntregId}}", "milestones", "{{milestoneDeleteId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validaciones - Acuerdos (400)",
+      "item": [
+        {
+          "name": "POST 400/409 - Titulo vacio (propuesta ya aceptada)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 or 409', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+                  "});",
+                  "pm.test('Has validation error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.messages).to.be.an('array').and.have.length.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tituloInterno\": \"\",\n    \"fechaInicio\": \"2026-03-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/propuestas/{{propuestaId1}}/aceptar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "propuestas", "{{propuestaId1}}", "aceptar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validaciones - Milestones (400)",
+      "item": [
+        {
+          "name": "POST 400 - Milestone titulo vacio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Has validation error', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.messages).to.be.an('array').and.have.length.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"\",\n    \"importeParcial\": 100.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoEntregId}}/milestones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoEntregId}}", "milestones"]
+            }
+          }
+        },
+        {
+          "name": "POST 400 - Milestone importe zero",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Milestone Invalido\",\n    \"importeParcial\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/{{acuerdoEntregId}}/milestones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "{{acuerdoEntregId}}", "milestones"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Not Found - Errores 404",
+      "item": [
+        {
+          "name": "404 - Acuerdo no encontrado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Has error code 2011', function () {",
+                  "    const json = pm.response.json();",
+                  "    const err = json.messages.find(m => m.errorCode === '2011');",
+                  "    pm.expect(err).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{artistaToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/00000000-0000-0000-0000-000000000001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "00000000-0000-0000-0000-000000000001"]
+            }
+          }
+        },
+        {
+          "name": "404 - Entregable aprobar no encontrado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{artistaToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/entregables/00000000-0000-0000-0000-000000000002/aprobar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "entregables", "00000000-0000-0000-0000-000000000002", "aprobar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autorizacion - Errores 401/403",
+      "item": [
+        {
+          "name": "401 - Sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/crowdsourcing/acuerdos/00000000-0000-0000-0000-000000000099",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "crowdsourcing", "acuerdos", "00000000-0000-0000-0000-000000000099"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5001" },
+    { "key": "artistaEmail", "value": "" },
+    { "key": "artistaToken", "value": "" },
+    { "key": "artistaUserId", "value": "" },
+    { "key": "artistaId", "value": "" },
+    { "key": "proEmail", "value": "" },
+    { "key": "proToken", "value": "" },
+    { "key": "proUserId", "value": "" },
+    { "key": "necesidadId1", "value": "" },
+    { "key": "necesidadId2", "value": "" },
+    { "key": "necesidadId3", "value": "" },
+    { "key": "necesidadId4", "value": "" },
+    { "key": "propuestaId1", "value": "" },
+    { "key": "propuestaId2", "value": "" },
+    { "key": "propuestaId3", "value": "" },
+    { "key": "propuestaId4", "value": "" },
+    { "key": "acuerdoId", "value": "" },
+    { "key": "conversacionId", "value": "" },
+    { "key": "milestoneId", "value": "" },
+    { "key": "entregableId", "value": "" },
+    { "key": "acuerdoCancelId", "value": "" },
+    { "key": "acuerdoEntregId", "value": "" },
+    { "key": "entregableRejectId", "value": "" },
+    { "key": "milestoneDeleteId", "value": "" }
+  ]
+}

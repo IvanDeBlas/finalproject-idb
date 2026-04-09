@@ -1,0 +1,1279 @@
+{
+    "artists": [
+        {
+            "email": "muse.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "MUSE",
+                "generoMusical": "Alternative Rock",
+                "descripcion": "Banda britanica de rock alternativo formada en Teignmouth en 1994. Liderados por Matt Bellamy, son conocidos por sus directos espectaculares, influencias clasicas y electronicas, y albumes conceptuales que van del rock espacial al dubstep sinfonico. Con mas de 30 millones de discos vendidos, buscan financiar su proximo album directamente con sus fans.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/e91e63?text=MUSE"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Will of the People II - Fan-Funded Album",
+                    "subtitulo": "El primer album de MUSE financiado 100% por fans",
+                    "descripcionCorta": "Despues de 30 anos de carrera, queremos hacer algo diferente: un album sin discografica, sin intermediarios, financiado directamente por quienes nos han acompanado desde el principio. Will of the People II sera nuestro disco mas personal y experimental. Cada euro va directo a produccion, mezcla y masterizacion en los Abbey Road Studios.",
+                    "importeObjetivo": 75000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 45,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/e91e63?text=MUSE+-+WOTP+II",
+                    "rewards": [
+                        {
+                            "nombre": "Digital Download Exclusivo",
+                            "importeMinimo": 10,
+                            "descripcion": "Descarga digital del album en alta resolucion (FLAC 24bit) una semana antes del lanzamiento oficial. Incluye artwork digital exclusivo y notas de produccion de Matt Bellamy.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Vinyl Edicion Limitada",
+                            "importeMinimo": 35,
+                            "descripcion": "Vinilo doble en color rojo translucido, edicion numerada y limitada. Incluye descarga digital + poster A3 del artwork. Solo 500 unidades en el mundo.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 500,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Meet and Greet Virtual",
+                            "importeMinimo": 100,
+                            "descripcion": "Sesion virtual grupal de 30 minutos con la banda via Zoom. Maximo 10 personas por sesion. Incluye todo lo anterior + foto digital personalizada firmada digitalmente.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 50,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Credito en el Album",
+                            "importeMinimo": 250,
+                            "descripcion": "Tu nombre aparecera en los creditos del album como Fan Producer. Incluye todo lo anterior + copia test pressing del vinilo + partitura firmada de un tema a elegir.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 100,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "qotsa.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Queens of the Stone Age",
+                "generoMusical": "Stoner Rock",
+                "descripcion": "Proyecto de rock creado por Josh Homme en 1996 en el desierto de Palm Desert, California. Conocidos por su sonido pesado y groovy, riffs hipnoticos y una actitud que desafia las convenciones del rock mainstream. Desde Rated R hasta In Times New Roman, QOTSA ha definido un sonido unico que mezcla stoner rock con pop oscuro.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/ff5722?text=QOTSA"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Songs for the Deaf - Acoustic Sessions",
+                    "subtitulo": "Las canciones que sacudieron el desierto, reimaginadas en acustico",
+                    "descripcionCorta": "Para celebrar los 25 anos de Songs for the Deaf, Josh Homme y compania regrabaran las canciones del album iconico en versiones acusticas e intimas, grabadas en el legendario Rancho De La Luna. Un proyecto por y para los fans del desierto. Sin discografica, sin compromisos.",
+                    "importeObjetivo": 40000,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 40,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ff5722?text=QOTSA+Acoustic",
+                    "rewards": [
+                        {
+                            "nombre": "Streaming Anticipado",
+                            "importeMinimo": 8,
+                            "descripcion": "Acceso anticipado al album acustico 48h antes del estreno. Link privado de streaming + PDF con letras manuscritas por Josh Homme.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Cassette Edicion Desierto",
+                            "importeMinimo": 25,
+                            "descripcion": "Cassette con arena real del desierto de Palm Desert incrustada en la carcasa. Edicion limitada + descarga digital. Una pieza de coleccionista unica.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 300,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Jam Session Privada Virtual",
+                            "importeMinimo": 150,
+                            "descripcion": "Sesion privada de 20 minutos donde Josh toca tu cancion favorita del disco en acustico. Grabacion incluida como archivo WAV. Incluye todo lo anterior.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 20,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Desert Sessions Producer",
+                            "importeMinimo": 500,
+                            "descripcion": "Tu nombre como productor asociado + visita virtual al Rancho De La Luna + todos los rewards anteriores + vinilo master test pressing firmado por toda la banda.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 10,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "arcadefire.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Arcade Fire",
+                "generoMusical": "Indie Rock",
+                "descripcion": "Colectivo canadiense de indie rock liderado por Win Butler y Regine Chassagne, formado en Montreal en 2001. Ganadores del Grammy a Album del Ano por The Suburbs, son conocidos por sus directos catarticos y su capacidad de convertir un concierto en una experiencia comunitaria. Cada album es un mundo sonoro diferente.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/9c27b0?text=Arcade+Fire"
+            },
+            "campaigns": [
+                {
+                    "titulo": "WE Tour - Intimate Documentary",
+                    "subtitulo": "El documental que muestra lo que pasa cuando se apagan las luces",
+                    "descripcionCorta": "Durante la gira de WE, un equipo filmo todo lo que normalmente no ves: los ensayos a las 3am, las discusiones creativas, las risas en el autobus de gira. Este documental es nuestra carta de amor a la vida en la carretera y a los fans que la hacen posible.",
+                    "importeObjetivo": 30000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 35,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/9c27b0?text=Arcade+Fire+Doc",
+                    "rewards": [
+                        {
+                            "nombre": "Screener Digital Privado",
+                            "importeMinimo": 12,
+                            "descripcion": "Acceso exclusivo al documental en streaming antes del estreno publico. Subtitulos en espanol e ingles. Calidad 4K.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Poster Firmado + Screener",
+                            "importeMinimo": 30,
+                            "descripcion": "Poster A2 del documental firmado por Win Butler y Regine Chassagne + screener digital. Diseno exclusivo no disponible en tiendas. Impresion en papel texturizado.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 200,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Nombre en Creditos",
+                            "importeMinimo": 75,
+                            "descripcion": "Tu nombre aparecera en los creditos finales del documental como Community Patron. Incluye poster firmado + screener digital.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 150,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Productor Asociado",
+                            "importeMinimo": 200,
+                            "descripcion": "Credito como Associate Producer + invitacion al estreno online con Q&A en directo con Win y Regine + todos los rewards anteriores + copia en Blu-ray.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 30,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "badbunny.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Bad Bunny",
+                "generoMusical": "Reggaeton / Latin Urban",
+                "descripcion": "Benito Antonio Martinez Ocasio, conocido como Bad Bunny, es el artista latino mas escuchado del planeta. Desde Vega Baja, Puerto Rico, ha redefinido el reggaeton y la musica latina con albumes como YHLQMDLG, Un Verano Sin Ti y DeBi TiRAR MaS fOToS. Su impacto trasciende la musica: moda, lucha libre y activismo social.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/ffeb3b?text=Bad+Bunny"
+            },
+            "campaigns": [
+                {
+                    "titulo": "DtMF - Vinyl Collectors Box",
+                    "subtitulo": "La caja de coleccion definitiva para los fans de verdad",
+                    "descripcionCorta": "DeBi TiRAR MaS fOToS merece mas que streaming. Esta edicion coleccionista incluye vinilos holograficos, fotos ineditas de Puerto Rico, y arte exclusivo de los visuales del album. Hecho por fans, para fans. Produccion limitada financiada directamente por la comunidad.",
+                    "importeObjetivo": 50000,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 30,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ffeb3b?text=Bad+Bunny+DtMF",
+                    "rewards": [
+                        {
+                            "nombre": "Digital Exclusivo",
+                            "importeMinimo": 10,
+                            "descripcion": "Version digital remasterizada + 3 tracks bonus ineditos + wallpapers exclusivos para movil en resolucion 4K. Disponible el dia del lanzamiento.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Box Set Holografico",
+                            "importeMinimo": 45,
+                            "descripcion": "Caja holografica con triple vinilo de color + booklet de 48 paginas con fotos ineditas de Puerto Rico + stickers + postal firmada digitalmente.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 1000,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Backstage Pass Virtual",
+                            "importeMinimo": 120,
+                            "descripcion": "Experiencia virtual backstage: tour por el estudio de Benito en PR + video mensaje personalizado. Incluye Box Set completo + digital.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 100,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Experiencia VIP Total",
+                            "importeMinimo": 350,
+                            "descripcion": "Meet and greet virtual exclusivo + todo lo anterior + camiseta tie-dye edicion ultra limitada + cadena personalizada con tu nombre.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 25,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "omarmontes.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Omar Montes",
+                "generoMusical": "Urban Spain / Flamenco Urbano",
+                "descripcion": "Omar Montes, el rey de Pan Bendito, ha conquistado Espana con su mezcla unica de flamenco, reggaeton y musica urbana. Desde Alocao hasta Pangea, ha demostrado que se puede salir del barrio y llegar a lo mas alto sin perder la esencia. Cantante, showman y fenomeno cultural espanol.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/4caf50?text=Omar+Montes"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Pangea 2 - El Documental",
+                    "subtitulo": "De Pan Bendito al mundo: la historia que nadie ha contado",
+                    "descripcionCorta": "Un documental que sigue a Omar durante la grabacion de Pangea 2, desde las sesiones en Miami hasta las noches en Pan Bendito. Sin filtros, sin guion, la verdad de como se hace un disco numero uno en Espana. Financiado por los fans para que nadie nos diga que cortar.",
+                    "importeObjetivo": 20000,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 30,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/4caf50?text=Omar+Montes+Pangea",
+                    "rewards": [
+                        {
+                            "nombre": "Acceso Anticipado",
+                            "importeMinimo": 8,
+                            "descripcion": "Acceso al documental 72h antes de que salga en plataformas. Link privado + making of de 15 minutos extra con escenas eliminadas.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Camiseta Pangea 2",
+                            "importeMinimo": 25,
+                            "descripcion": "Camiseta exclusiva disenada por Omar con el logo de Pangea 2. Solo disponible aqui, nunca se vendera en tiendas. Incluye acceso anticipado.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 500,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Mencion en Creditos",
+                            "importeMinimo": 60,
+                            "descripcion": "Tu nombre en los creditos del documental como Fan de Pan Bendito. Incluye camiseta + acceso anticipado + agradecimiento en redes de Omar.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 200,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Cena con Omar",
+                            "importeMinimo": 500,
+                            "descripcion": "Cena para 2 personas con Omar en Madrid. Menu sorpresa elegido por el. Incluye todo lo anterior + foto firmada enmarcada + experiencia irrepetible.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 5,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "rosalia.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Rosalia",
+                "generoMusical": "Flamenco Pop / Experimental",
+                "descripcion": "Rosalia Vila Tobella, desde Sant Esteve Sesrovires, ha revolucionado la musica global fusionando flamenco con electronica, reggaeton y avant-garde. El Mal Querer la catapulto internacionalmente y MOTOMAMI confirmo que no hay limites. Grammy, Latin Grammy, MTV: Rosalia no colecciona premios, redefine categorias.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/e91e63?text=Rosalia"
+            },
+            "campaigns": [
+                {
+                    "titulo": "MOTOMAMI Unplugged Sessions",
+                    "subtitulo": "Las canciones de MOTOMAMI como nunca las habias escuchado",
+                    "descripcionCorta": "Imagina SAOKO con solo una guitarra flamenca. O HENTAI al piano. Las MOTOMAMI Unplugged Sessions son la deconstruccion total del album: solo voz, instrumentos acusticos, y la verdad desnuda de cada cancion. Grabado en una iglesia del siglo XVIII en Catalunya.",
+                    "importeObjetivo": 35000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 40,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/e91e63?text=Rosalia+Unplugged",
+                    "rewards": [
+                        {
+                            "nombre": "LP Digital Unplugged",
+                            "importeMinimo": 10,
+                            "descripcion": "Descarga digital en alta calidad (FLAC) de todas las sesiones + video de un tema completo grabado en la iglesia. Experiencia inmersiva.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "LP Transparente Fisico",
+                            "importeMinimo": 40,
+                            "descripcion": "Vinilo transparente con grabado laser de la iglesia en el disco. Edicion numerada + descarga digital. Pieza de arte sonoro.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 400,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Foto Firmada + LP",
+                            "importeMinimo": 75,
+                            "descripcion": "Fotografia de 20x30cm firmada por Rosalia durante las sesiones. Impresion fine art en papel Hahnemuhle + LP transparente + digital.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 150,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Clase de Cante Online",
+                            "importeMinimo": 200,
+                            "descripcion": "Masterclass grupal online (max 20 personas) donde Rosalia explica las tecnicas vocales de cada cancion. Incluye grabacion + todo lo anterior.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 20,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "ctangana.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "C. Tangana",
+                "generoMusical": "Urban / Tradicion Espanola",
+                "descripcion": "Anton Alvarez Alfaro, C. Tangana, El Madrileno. Desde Chamberi ha construido una carrera que va del trap mas crudo a la rumba con Nino de Elche. El Madrileno no fue solo un disco: fue un manifiesto de que la tradicion y la modernidad pueden coexistir. Provocador, visionario y orgullosamente madrileno.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/ff9800?text=C.+Tangana"
+            },
+            "campaigns": [
+                {
+                    "titulo": "El Madrileno - Live at Las Ventas",
+                    "subtitulo": "El concierto que Madrid merece, financiado por Madrid",
+                    "descripcionCorta": "Las Ventas. Un escenario circular. Flamenco, electronica y 20.000 personas. El Madrileno merece un directo a la altura y queremos que los fans decidan que esto ocurra. Sin promotores, sin marcas. Solo Anton, la musica y Madrid. El beneficio integro va a la produccion del espectaculo.",
+                    "importeObjetivo": 45000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 45,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ff9800?text=C.+Tangana+Las+Ventas",
+                    "rewards": [
+                        {
+                            "nombre": "Streaming del Concierto",
+                            "importeMinimo": 10,
+                            "descripcion": "Acceso al streaming en directo del concierto en 4K + repeticion durante 7 dias. Angulos de camara exclusivos.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Vinilo Numerado Live",
+                            "importeMinimo": 35,
+                            "descripcion": "Triple vinilo del concierto en directo, numerado y con sleeve disenado por Santos Bacana. Incluye streaming.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 500,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Entrada VIP Las Ventas",
+                            "importeMinimo": 100,
+                            "descripcion": "Entrada preferente primera fila del ruedo + acceso a soundcheck + vinilo + streaming. La experiencia completa.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 200,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "After Party + Meet and Greet",
+                            "importeMinimo": 300,
+                            "descripcion": "Acceso al after party privado post-concierto + foto con Anton + todos los rewards anteriores. Dress code: de domingo.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 30,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "arcticmonkeys.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Arctic Monkeys",
+                "generoMusical": "Indie Rock",
+                "descripcion": "Cuatro chavales de Sheffield que grabaron demos, los compartieron en MySpace y cambiaron el indie britanico para siempre. Desde Whatever People Say I Am hasta The Car, Alex Turner ha demostrado que se puede evolucionar sin perder la esencia. Arctic Monkeys no siguen tendencias, las crean.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/607d8b?text=Arctic+Monkeys"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Tranquility Base - B-Sides Collection",
+                    "subtitulo": "Las canciones que se quedaron en la base lunar",
+                    "descripcionCorta": "Durante las sesiones de Tranquility Base Hotel and Casino se grabaron 23 canciones. Solo 11 llegaron al disco. Las otras 12 llevan anos en una cinta en algun lugar de Sheffield. Este proyecto las rescata, las mezcla y las publica por primera vez. Un album perdido que merece ser encontrado.",
+                    "importeObjetivo": 25000,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 35,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/607d8b?text=Arctic+Monkeys+B-Sides",
+                    "rewards": [
+                        {
+                            "nombre": "Digital B-Sides",
+                            "importeMinimo": 8,
+                            "descripcion": "Descarga digital de las 12 canciones ineditas en formato FLAC + letras manuscritas por Alex Turner en PDF.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "7 inch Singles Pack",
+                            "importeMinimo": 30,
+                            "descripcion": "Set de 3 singles en vinilo 7 pulgadas con artwork exclusivo + descarga digital. Cada single tiene 4 canciones. Coleccion completa.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 300,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Carta Manuscrita de Alex Turner",
+                            "importeMinimo": 150,
+                            "descripcion": "Carta personal de Alex Turner escrita a mano en papel del hotel Tranquility Base (letterhead custom disenado para el proyecto). Incluye todo lo anterior.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 50,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Sesion de Estudio Privada",
+                            "importeMinimo": 400,
+                            "descripcion": "Asistir como oyente a una sesion de mezcla en los estudios de Sheffield. Maximo 5 personas. Incluye todo lo anterior + vinilo test pressing.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 5,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "billieeilish.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Billie Eilish",
+                "generoMusical": "Alternative Pop",
+                "descripcion": "Billie Eilish Pirate Baird O'Connell cambio las reglas del pop desde su habitacion en Los Angeles. Con su hermano Finneas como productor, creo un sonido susurrado y oscuro que conquisto el mundo antes de cumplir 18 anos. Multiples Grammy, un Oscar, y una generacion entera que la considera la voz de su tiempo.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/00bcd4?text=Billie+Eilish"
+            },
+            "campaigns": [
+                {
+                    "titulo": "HIT ME HARD AND SOFT - Remix Album",
+                    "subtitulo": "Tus productores favoritos reimaginan cada cancion",
+                    "descripcionCorta": "Que pasa cuando le das las stems de HIT ME HARD AND SOFT a 10 productores diferentes? Desde Kaytranada hasta Arca, pasando por James Blake. Un album de remixes que es un album completamente nuevo. Financiado por fans para que Billie y Finneas tengan libertad total creativa.",
+                    "importeObjetivo": 55000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 45,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/00bcd4?text=Billie+Eilish+Remixes",
+                    "rewards": [
+                        {
+                            "nombre": "Remix Digital",
+                            "importeMinimo": 10,
+                            "descripcion": "Descarga del album de remixes completo en alta resolucion + video lyric exclusivo de un track. Disponible el dia del lanzamiento.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Stems Descargables",
+                            "importeMinimo": 30,
+                            "descripcion": "Pack de stems (voces, instrumentales, efectos) de 3 canciones para que hagas tus propios remixes + album digital completo. Licencia creative commons.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 500,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Hoodie Exclusiva + Album",
+                            "importeMinimo": 65,
+                            "descripcion": "Hoodie oversized disenada por Billie en negro con artwork UV-reactivo (brilla con luz negra) + album digital + stems pack.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 300,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Credito Remix + Experiencia",
+                            "importeMinimo": 250,
+                            "descripcion": "Tu nombre en los creditos como Fan Executive Producer + listening party privada online con Billie y Finneas. Incluye todo lo anterior.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 50,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "vetustamorla.official@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Vetusta Morla",
+                "generoMusical": "Indie Espana",
+                "descripcion": "Seis amigos de Tres Cantos que se convirtieron en la banda indie mas importante de Espana. Sin discografica major, sin reality shows, solo musica y directos memorables. Desde Un Dia en el Mundo hasta Cable a Tierra, Vetusta Morla ha demostrado que se puede llenar estadios siendo fiel a uno mismo. La banda del pueblo, literalmente.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/8bc34a?text=Vetusta+Morla"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Cable a Tierra - Version Orquesta Sinfonica",
+                    "subtitulo": "Nuestras canciones arropadas por 60 musicos",
+                    "descripcionCorta": "Siempre sonamos con escuchar Copenhague con una orquesta sinfonica completa. Este proyecto hace realidad ese sueno: grabaremos Cable a Tierra integro con la Orquesta Sinfonica de RTVE en el Auditorio Nacional. Un disco que une indie y clasica, Tres Cantos y el mundo.",
+                    "importeObjetivo": 15000,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 30,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/8bc34a?text=Vetusta+Morla+Sinfonica",
+                    "rewards": [
+                        {
+                            "nombre": "Disco Digital Orquestal",
+                            "importeMinimo": 8,
+                            "descripcion": "Descarga digital del album sinfonico en FLAC + video del making of de 10 minutos en el Auditorio Nacional.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Partitura Firmada",
+                            "importeMinimo": 25,
+                            "descripcion": "Partitura de Copenhague impresa en papel de alta calidad, firmada por los 6 miembros de la banda + disco digital.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 200,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Ensayo Abierto",
+                            "importeMinimo": 80,
+                            "descripcion": "Asistir al ensayo general con la orquesta en el Auditorio Nacional de Madrid. Aforo limitado. Incluye partitura firmada + disco digital.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 100,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Productor Asociado + Todo",
+                            "importeMinimo": 200,
+                            "descripcion": "Credito como productor asociado en el disco sinfonico + LP doble del album + invitacion a la grabacion real + todos los rewards anteriores.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 30,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "velvetechoes@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "The Velvet Echoes",
+                "generoMusical": "Indie Rock",
+                "descripcion": "Trio de indie rock de Barcelona formado en garajes del Raval. Guitarras lo-fi, letras en ingles y espanol, y una energia en directo que recuerda a los primeros Strokes.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/ab47bc?text=Velvet+Echoes"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Debut Album - Songs from the Underground",
+                    "subtitulo": "10 canciones grabadas en el sotano donde todo empezo",
+                    "descripcionCorta": "Nuestro primer disco. 10 canciones grabadas en el sotano donde ensayamos. Necesitamos financiar la mezcla y masterizacion para que suene como merece.",
+                    "importeObjetivo": 5000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 30,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ab47bc?text=Velvet+Echoes+Debut",
+                    "rewards": [
+                        {
+                            "nombre": "Digital Download",
+                            "importeMinimo": 5,
+                            "descripcion": "Descarga digital del album completo en MP3 y FLAC. Acceso anticipado una semana antes del lanzamiento.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "CD Firmado",
+                            "importeMinimo": 20,
+                            "descripcion": "CD fisico firmado por los 3 miembros de la banda + descarga digital + stickers exclusivos.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 200,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Concierto Privado",
+                            "importeMinimo": 80,
+                            "descripcion": "Concierto privado en Barcelona para ti y 9 amigos. Set acustico de 45 minutos + meet and greet + todo lo anterior.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 10,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "almalatina@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Alma Latina Collective",
+                "generoMusical": "World / Latin",
+                "descripcion": "Colectivo de 8 musicos de diferentes paises latinoamericanos residentes en Madrid. Fusionan cumbia, bossa nova, son cubano y jazz contemporaneo.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/ff7043?text=Alma+Latina"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Latin Fusion World Tour Documentary",
+                    "subtitulo": "De Buenos Aires a Ciudad de Mexico, grabando con musicos locales",
+                    "descripcionCorta": "Queremos documentar nuestra primera gira por Latinoamerica: de Buenos Aires a Ciudad de Mexico, grabando con musicos locales en cada parada. Un documental musical de 60 minutos.",
+                    "importeObjetivo": 12000,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 40,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ff7043?text=Alma+Latina+Tour",
+                    "rewards": [
+                        {
+                            "nombre": "Streaming Documental",
+                            "importeMinimo": 8,
+                            "descripcion": "Acceso al documental en streaming con subtitulos en espanol, ingles y portugues. Disponible por 1 ano.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Vinilo Compilacion",
+                            "importeMinimo": 30,
+                            "descripcion": "Vinilo con las mejores grabaciones de la gira. Cada track grabado en un pais diferente + descarga digital del documental.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 300,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Tu Nombre en Creditos",
+                            "importeMinimo": 75,
+                            "descripcion": "Tu nombre en los creditos del documental como patron del proyecto + vinilo + streaming + agradecimiento especial.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 100,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "silenceandsound@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "Silence and Sound",
+                "generoMusical": "Ambient / Acoustic",
+                "descripcion": "Duo ambient-acustico de Valencia. Graban en iglesias abandonadas, fabricas en desuso y cuevas naturales. Cada espacio es un instrumento mas.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/26a69a?text=Silence+%26+Sound"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Acoustic Sessions in Abandoned Places",
+                    "subtitulo": "Piano, cello y la acustica natural de espacios olvidados",
+                    "descripcionCorta": "Nuestro proximo album sera grabado integramente en 5 localizaciones abandonadas de la Comunitat Valenciana. Piano, cello y la acustica natural de cada espacio.",
+                    "importeObjetivo": 3500,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 30,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/26a69a?text=Silence+Abandoned",
+                    "rewards": [
+                        {
+                            "nombre": "Album Digital",
+                            "importeMinimo": 5,
+                            "descripcion": "Descarga digital del album completo en FLAC + fotos de las localizaciones donde se grabo cada tema.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "CD + Mapa Localizaciones",
+                            "importeMinimo": 18,
+                            "descripcion": "CD fisico en packaging eco + mapa ilustrado con las 5 localizaciones + descarga digital.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 150,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Asistir a Grabacion",
+                            "importeMinimo": 60,
+                            "descripcion": "Asistir como oyente a una sesion de grabacion en una de las localizaciones abandonadas. Experiencia unica + todo lo anterior.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 15,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "djprometheus@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "DJ Prometheus",
+                "generoMusical": "Hip Hop / Classical",
+                "descripcion": "Productor sevillano que fusiona hip hop con musica clasica. Samplea a Bach, Chopin y Debussy sobre beats trap y boom bap. Colabora con MCs y violinistas por igual.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/ffa726?text=DJ+Prometheus"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Hip Hop Meets Classical: The Symphony",
+                    "subtitulo": "12 MCs + 12 instrumentistas clasicos = 1 album",
+                    "descripcionCorta": "Un album donde cada track es una colaboracion entre un MC y un musico clasico. 12 canciones, 12 MCs, 12 instrumentistas. Grabado en el Conservatorio de Sevilla.",
+                    "importeObjetivo": 8000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 35,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ffa726?text=DJ+Prometheus+Symphony",
+                    "rewards": [
+                        {
+                            "nombre": "Digital Album",
+                            "importeMinimo": 8,
+                            "descripcion": "Descarga digital del album completo + video behind-the-scenes de las sesiones en el Conservatorio.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Vinilo Doble",
+                            "importeMinimo": 35,
+                            "descripcion": "Doble vinilo con artwork del Conservatorio de Sevilla + descarga digital + poster A3.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 200,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Masterclass Produccion",
+                            "importeMinimo": 100,
+                            "descripcion": "Masterclass online de 2 horas con DJ Prometheus sobre produccion hip hop + clasica. Grabacion incluida + todo lo anterior.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 30,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "laninadcable@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "fictional",
+            "profile": {
+                "nombreArtistico": "La Nina del Cable",
+                "generoMusical": "Flamenco / Electronic",
+                "descripcion": "Productora y cantaora madrilena que mezcla flamenco puro con sintetizadores modulares y ritmos electronicos. Un pie en la tradicion, otro en el futuro.",
+                "imagenUrl": "https://placehold.co/400x400/1a1a2e/ec407a?text=La+Nina+del+Cable"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Flamenco Electronico - El Nuevo Compas",
+                    "subtitulo": "Bulerias en un secuenciador, soleares en un sampler",
+                    "descripcionCorta": "Mi segundo disco explora que pasa cuando metes bulerias en un secuenciador y soleares en un sampler. Grabado entre Jerez y Berlin. Flamenco del siglo XXI.",
+                    "importeObjetivo": 6000,
+                    "tipoFinanciacionId": 2,
+                    "fechaFinDias": 30,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/1a1a2e/ec407a?text=Nina+Cable+Flamenco",
+                    "rewards": [
+                        {
+                            "nombre": "EP Digital",
+                            "importeMinimo": 5,
+                            "descripcion": "Descarga digital del EP con 5 temas seleccionados del disco + un remix exclusivo.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Vinilo Color",
+                            "importeMinimo": 25,
+                            "descripcion": "Vinilo en color rojo flamenco con artwork de abanico y circuitos + descarga digital completa.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": true,
+                            "cantidadMaxima": 200,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "Clase de Compas + Synth",
+                            "importeMinimo": 70,
+                            "descripcion": "Taller online de 90 minutos: como programar compases flamencos en un sintetizador modular. Incluye vinilo + digital.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": 25,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "verkami.paumoltbiosca@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "verkami",
+            "profile": {
+                "nombreArtistico": "Pau Moltó Biosca",
+                "generoMusical": "Jazz",
+                "descripcion": "Artista de Jazz con un proyecto exitoso en Verkami: \"French Horn Jazz Project\". Proyecto financiado con 94 backers y 5040 EUR recaudados.",
+                "imagenUrl": "https://placehold.co/400x400/2d2d44/4fc3f7?text=Pau%20Molt%C3%B3%20Biosc",
+                "pais": "Spain",
+                "ciudad": "Valencia"
+            },
+            "campaigns": [
+                {
+                    "titulo": "French Horn Jazz Project",
+                    "subtitulo": "Proyecto musical de Pau Moltó Biosca",
+                    "descripcionCorta": "Proyecto de Jazz originalmente financiado en Verkami con un objetivo de 4000 EUR. 94 personas ya apoyaron este proyecto.",
+                    "importeObjetivo": 4000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 45,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/2d2d44/4fc3f7?text=French%20Horn%20Jazz%20Project",
+                    "rewards": [
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 10,
+                            "descripcion": "10€\n\n\n\n  17 backers\n\n\n  \n\n  \n\n      \n\n\n  Digital Download\n\n\n\n  \n\nEarly Digital Download\n\n\n\n\n    \n        \n          Estimated delivery\n          April 2020",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 20,
+                            "descripcion": "20€\n\n\n\n  54 backers\n\n\n  \n\n  \n\n      \n\n\n  Disco Pack and digital download\n\n\n\n  \n\n1 physical CD \n+ Digital download \n+ Social media acknowledgment \n\nShipping charges included",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 40,
+                            "descripcion": "40€\n\n\n\n  2 backers\n\n\n  \n\n  \n\n      \n\n\n  Contribution Fan  \n\n\n\n  \n\n2 physical CDs \n+ Digital Download \n+ Social Media acknowledgment \n\nShipping and charges Included",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 50,
+                            "descripcion": "50€\n\n\n\n  9 backers\n\n\n  \n\n  \n\n      \n\n\n  Fan Plus Contribution\n\n\n\n  \n\n2 Physical CDs\n+ Digital Download\n+ Social Media acknowledgment \n+ Acknowledgment in the CD booklet \n\nShipping Charges",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 75,
+                            "descripcion": "75€\n\n\n\n  5 backers\n\n\n  \n\n  \n\n      \n\n\n  Contribution  Exclusive Fan\n\n\n\n  \n\n2 physical CDs \n+ Digital Download \n+ Social Media acknowledgment \n+ Acknowledgment in the CD Booklet \n+ Two FHJ",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 100,
+                            "descripcion": "100€\n\n\n\n  2 backers\n\n\n  \n\n  \n\n      \n\n\n  Contribution Group\n\n\n\n  \n\n5 physical CDs\n+ Digital download \n+ 2 tickets to concert of the FHJP\n+ acknowledgment on social networks \n+ acknowledgm",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 200,
+                            "descripcion": "200€\n\n\n\n  1 backer\n\n\n  \n\n  \n\n      \n\n\n  Sponsor Contribution\n\n\n\n  \n 10 physical CD \n+ Digital Download\n+ Social Media acknowledgment \n+ Special Thanks in booklet of the Sponsor's CD\n+ Log",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "April 2020",
+                            "importeMinimo": 500,
+                            "descripcion": "500€\n\n\n\n  3 backers\n\n\n  \n\n  \n\n      \n\n\n  Aportación Sponsor Plus\n\n\n\n  \n\n30 physical CD \n+ Digital Download\n+ 2 tickets to concert of the FHJP\n+ Social Media acknowledgment \n+ Special Than",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "email": "verkami.screamingpillows@weplay-test.com",
+            "password": "WePlay2026!",
+            "source": "verkami",
+            "profile": {
+                "nombreArtistico": "Screaming Pillows",
+                "generoMusical": "Jazz",
+                "descripcion": "Artista de Jazz con un proyecto exitoso en Verkami: \"Sedajazz Big Band & Valmuz \"Sinergia\"\". Proyecto financiado con 131 backers y 4080 EUR recaudados.",
+                "imagenUrl": "https://placehold.co/400x400/2d2d44/4fc3f7?text=Screaming%20Pillo",
+                "pais": "Spain",
+                "ciudad": "Valencia"
+            },
+            "campaigns": [
+                {
+                    "titulo": "Sedajazz Big Band & Valmuz \"Sinergia\"",
+                    "subtitulo": "Proyecto musical de Screaming Pillows",
+                    "descripcionCorta": "Proyecto de Jazz originalmente financiado en Verkami con un objetivo de 4000 EUR. 131 personas ya apoyaron este proyecto.",
+                    "importeObjetivo": 4000,
+                    "tipoFinanciacionId": 1,
+                    "fechaFinDias": 45,
+                    "imagenPrincipalUrl": "https://placehold.co/800x450/2d2d44/4fc3f7?text=Sedajazz%20Big%20Band%20%26%20Valmu",
+                    "rewards": [
+                        {
+                            "nombre": "August 2021",
+                            "importeMinimo": 5,
+                            "descripcion": "5€\n\n\n\n  5 backers\n\n\n  \n\n  \n\n        \n      \n  \n\n\n\n  Electrocardiograma\n\n\n\n  \nDonation for the project.\n\n\n\n\n\n    \n        \n          Estimated delivery\n          August 2021",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "January 2021",
+                            "importeMinimo": 10,
+                            "descripcion": "10€\n\n\n\n  23 backers\n\n\n  \n\n  \n\n        \n      \n  \n\n\n\n  Ki\n\n\n\n  \nDigital download \"Sedajazz Big Band & Valmuz\" \n\n\n\n\n\n    \n        \n          Estimated delivery\n          January 2021",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "January 2021",
+                            "importeMinimo": 25,
+                            "descripcion": "25€\n\n\n\n  70 backers\n\n\n  \n\n  \n\n        \n      \n  \n\n\n\n  Marooned\n\n\n\n  \nPhysical CD  \ndigital download of \"Sedajazz Big Band & Valmuz\"  \nShout out in social networks.\n\n\nShipping costs includ",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "January 2021",
+                            "importeMinimo": 50,
+                            "descripcion": "50€\n\n\n\n  27 backers\n\n\n  \n\n  \n\n        \n      \n  \n\n\n\n  Eco\n\n\n\n  \nPhysical CD  \nDigital download of \"Sedajazz Big Band & Valmuz\"  \n2 Tickets for the launch of the CD  \nShout out in social n",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "January 2021",
+                            "importeMinimo": 120,
+                            "descripcion": "120€\n\n\n\n  6 backers\n\n\n  \n\n  \n\n        \n      \n  \n\n\n\n  Elements\n\n\n\n  \n2 physical CD´s  \nDigital download of \"Sedajazz Big Band & Valmuz\"  \nDinner for 2 with Valmuz band  \n2 Tickets for the",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "January 2021",
+                            "importeMinimo": 2000,
+                            "descripcion": "2.000€\n\n\n\n  0 backers\n\n\n  \n\n  \n\n        \n      \n  \n\n\n\n  Empire\n\n\n\n  \nValmuz Concert  \n10 CD´s  \nShout out in social networks.\n\n\n\n\n\n    \n        \n          Estimated delivery\n          Jan",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        },
+                        {
+                            "nombre": "June 2021",
+                            "importeMinimo": 6000,
+                            "descripcion": "6.000€\n\n\n\n  0 backers\n\n\n  \n\n  \n\n        \n      \n  \n\n\n\n  In The Dark\n\n\n\n  \nConcert of the project \"Sedajazz Big Band & Valmuz\"  \n10 CD's  \nShout out in social networks.",
+                            "tipoRewardId": 1,
+                            "monedaId": 1,
+                            "incluyeEnvioFisico": false,
+                            "cantidadMaxima": null,
+                            "esAddOn": false
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "fans": [
+        {
+            "email": "maria.garcia@weplay-test.com",
+            "password": "Test123!",
+            "name": "Maria Garcia"
+        },
+        {
+            "email": "carlos.lopez@weplay-test.com",
+            "password": "Test123!",
+            "name": "Carlos Lopez"
+        },
+        {
+            "email": "emma.wilson@weplay-test.com",
+            "password": "Test123!",
+            "name": "Emma Wilson"
+        },
+        {
+            "email": "pablo.ruiz@weplay-test.com",
+            "password": "Test123!",
+            "name": "Pablo Ruiz"
+        },
+        {
+            "email": "ana.martinez@weplay-test.com",
+            "password": "Test123!",
+            "name": "Ana Martinez"
+        }
+    ],
+    "backings": [
+        {
+            "fanEmail": "maria.garcia@weplay-test.com",
+            "campaignTitle": "Will of the People II - Fan-Funded Album",
+            "rewardName": "Vinyl Edicion Limitada",
+            "monto": 35,
+            "mensaje": "Desde el Wembley 2007 soy fan. Esto es un sueno hecho realidad.",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "maria.garcia@weplay-test.com",
+            "campaignTitle": "MOTOMAMI Unplugged Sessions",
+            "rewardName": "LP Transparente Fisico",
+            "monto": 40,
+            "mensaje": "MOTOMAMI en acustico va a ser una locura absoluta",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "maria.garcia@weplay-test.com",
+            "campaignTitle": "Cable a Tierra - Version Orquesta Sinfonica",
+            "rewardName": "Partitura Firmada",
+            "monto": 25,
+            "mensaje": "Copenhague con orquesta... voy a llorar",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "carlos.lopez@weplay-test.com",
+            "campaignTitle": "DtMF - Vinyl Collectors Box",
+            "rewardName": "Box Set Holografico",
+            "monto": 45,
+            "mensaje": "El box set va directo a la vitrina, Benito crack",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "carlos.lopez@weplay-test.com",
+            "campaignTitle": "Pangea 2 - El Documental",
+            "rewardName": "Camiseta Pangea 2",
+            "monto": 25,
+            "mensaje": "Omar crack, vamos Pan Bendito!",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "carlos.lopez@weplay-test.com",
+            "campaignTitle": "El Madrileno - Live at Las Ventas",
+            "rewardName": "Vinilo Numerado Live",
+            "monto": 35,
+            "mensaje": "El Madrileno en Las Ventas va a ser historico",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "emma.wilson@weplay-test.com",
+            "campaignTitle": "Tranquility Base - B-Sides Collection",
+            "rewardName": "7 inch Singles Pack",
+            "monto": 30,
+            "mensaje": "Alex Turner B-sides are better than most bands A-sides",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "emma.wilson@weplay-test.com",
+            "campaignTitle": "HIT ME HARD AND SOFT - Remix Album",
+            "rewardName": "Hoodie Exclusiva + Album",
+            "monto": 65,
+            "mensaje": "The hoodie with UV art is genius, cant wait",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "emma.wilson@weplay-test.com",
+            "campaignTitle": "Songs for the Deaf - Acoustic Sessions",
+            "rewardName": "Cassette Edicion Desierto",
+            "monto": 25,
+            "mensaje": "Desert rock on cassette with real sand. Perfect.",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "pablo.ruiz@weplay-test.com",
+            "campaignTitle": "WE Tour - Intimate Documentary",
+            "rewardName": "Poster Firmado + Screener",
+            "monto": 30,
+            "mensaje": "Arcade Fire en directo cambio mi vida en 2014",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "pablo.ruiz@weplay-test.com",
+            "campaignTitle": "Cable a Tierra - Version Orquesta Sinfonica",
+            "rewardName": "Ensayo Abierto",
+            "monto": 80,
+            "mensaje": "Ver a Vetusta con orquesta en el Nacional es un sueno",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "pablo.ruiz@weplay-test.com",
+            "campaignTitle": "Will of the People II - Fan-Funded Album",
+            "rewardName": "Meet and Greet Virtual",
+            "monto": 100,
+            "mensaje": "Llevo 20 anos esperando conocer a Matt Bellamy",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "ana.martinez@weplay-test.com",
+            "campaignTitle": "MOTOMAMI Unplugged Sessions",
+            "rewardName": "Clase de Cante Online",
+            "monto": 200,
+            "mensaje": "Aprender cante de Rosalia no tiene precio",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "ana.martinez@weplay-test.com",
+            "campaignTitle": "DtMF - Vinyl Collectors Box",
+            "rewardName": "Backstage Pass Virtual",
+            "monto": 120,
+            "mensaje": "Benito es el artista de nuestra generacion",
+            "esAnonimo": false
+        },
+        {
+            "fanEmail": "ana.martinez@weplay-test.com",
+            "campaignTitle": "Pangea 2 - El Documental",
+            "rewardName": "Mencion en Creditos",
+            "monto": 60,
+            "mensaje": "Fan desde Alocao, Omar es puro corazon",
+            "esAnonimo": false
+        }
+    ],
+    "metadata": {
+        "generatedAt": "2026-02-27T11:19:50.774Z",
+        "sources": [
+            "fictional/famous-artists.json (10 artists)",
+            "fictional/indie-artists.json (5 artists)",
+            "scraped/verkami-campaigns.json (2 campaigns)",
+            "fictional/fans.json (5 fans, 15 backings)"
+        ],
+        "totalArtists": 17,
+        "totalCampaigns": 17,
+        "totalRewards": 70,
+        "totalFans": 5,
+        "totalBackings": 15
+    }
+}

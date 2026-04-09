@@ -1,0 +1,876 @@
+{
+    "info": {
+        "_postman_id": "WPR006-Auth-Identity-IntegrationTests",
+        "name": "WePlay.Auth.IntegrationTests",
+        "description": "Integration tests for Auth/Identity endpoints (Register, Login, Me). Uses ServiceResponse pattern with collectionVariables. ROOT entity - no dependencies.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "_Setup",
+            "item": [],
+            "description": "No setup needed - Auth is a ROOT entity with no dependencies. Variables are initialized via collection variables."
+        },
+        {
+            "name": "Auth - Registration & Login Lifecycle",
+            "item": [
+                {
+                    "name": "01. POST Register User",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "const email = 'auth-test-' + Date.now() + '@weplay.com';",
+                                    "pm.collectionVariables.set('testEmail', email);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('User registered', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "    pm.expect(json.data).to.exist;",
+                                    "    pm.expect(json.data.token).to.exist;",
+                                    "    pm.expect(json.data.userId).to.exist;",
+                                    "    pm.collectionVariables.set('accessToken', json.data.token);",
+                                    "    pm.collectionVariables.set('userId', json.data.userId);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('Data contains expected fields', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.have.property('userId');",
+                                    "    pm.expect(json.data).to.have.property('token');",
+                                    "    pm.expect(json.data).to.have.property('email');",
+                                    "    pm.expect(json.data).to.have.property('roles');",
+                                    "});",
+                                    "",
+                                    "pm.test('UserId is valid GUID', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
+                                    "    pm.expect(json.data.userId).to.match(guidRegex);",
+                                    "});",
+                                    "",
+                                    "pm.test('Token is valid JWT format', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const parts = json.data.token.split('.');",
+                                    "    pm.expect(parts).to.have.lengthOf(3);",
+                                    "});",
+                                    "",
+                                    "pm.test('Email matches request email', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const email = pm.collectionVariables.get('testEmail');",
+                                    "    pm.expect(json.data.email.toLowerCase()).to.equal(email.toLowerCase());",
+                                    "});",
+                                    "",
+                                    "pm.test('Roles array is not empty', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.roles).to.be.an('array').that.is.not.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\",\n  \"nombre\": \"Test User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "02. POST Login (same credentials)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Login successful', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('Token is returned and valid JWT', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.token).to.exist;",
+                                    "    const parts = json.data.token.split('.');",
+                                    "    pm.expect(parts).to.have.lengthOf(3);",
+                                    "    pm.collectionVariables.set('accessToken', json.data.token);",
+                                    "});",
+                                    "",
+                                    "pm.test('Data contains userId, email, token, roles', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.have.property('userId');",
+                                    "    pm.expect(json.data).to.have.property('email');",
+                                    "    pm.expect(json.data).to.have.property('token');",
+                                    "    pm.expect(json.data).to.have.property('roles');",
+                                    "});",
+                                    "",
+                                    "pm.test('UserId matches registered user', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const registeredUserId = pm.collectionVariables.get('userId');",
+                                    "    pm.expect(json.data.userId).to.equal(registeredUserId);",
+                                    "});",
+                                    "",
+                                    "pm.test('Roles array is not empty', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.roles).to.be.an('array').that.is.not.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "03. GET /me (with token)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Get current user successful', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('Data contains user info fields', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.have.property('userId');",
+                                    "    pm.expect(json.data).to.have.property('email');",
+                                    "    pm.expect(json.data).to.have.property('roles');",
+                                    "});",
+                                    "",
+                                    "pm.test('UserId matches registered user', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const expectedUserId = pm.collectionVariables.get('userId');",
+                                    "    pm.expect(json.data.userId).to.equal(expectedUserId);",
+                                    "});",
+                                    "",
+                                    "pm.test('Email matches registered email', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    const expectedEmail = pm.collectionVariables.get('testEmail');",
+                                    "    pm.expect(json.data.email.toLowerCase()).to.equal(expectedEmail.toLowerCase());",
+                                    "});",
+                                    "",
+                                    "pm.test('Roles is a non-empty array', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data.roles).to.be.an('array').that.is.not.empty;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Auth - Validation Errors",
+            "item": [
+                {
+                    "name": "POST Register empty email - 400",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Empty email returns 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages array contains validation error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "    pm.expect(json.messages[0]).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\",\n  \"nombre\": \"Test User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Register invalid email format - 400",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Invalid email format returns 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages contain email validation error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"not-a-valid-email\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\",\n  \"nombre\": \"Test User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Register password too short - 400",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Short password returns 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages contain password validation error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"shortpw@weplay.com\",\n  \"password\": \"Ab1!\",\n  \"confirmPassword\": \"Ab1!\",\n  \"nombre\": \"Test User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Register mismatched passwords - 400",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Mismatched passwords returns 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages contain password mismatch error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"mismatch@weplay.com\",\n  \"password\": \"TestPassword123!\",\n  \"confirmPassword\": \"DifferentPassword456!\",\n  \"nombre\": \"Test User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login empty email - 400",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Empty email login returns 400', function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages contain validation error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"\",\n  \"password\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Auth - Auth Errors",
+            "item": [
+                {
+                    "name": "POST Login wrong password - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Wrong password returns 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Data is null', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.null;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages contain auth error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"WrongPassword999!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login non-existent email - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Non-existent email returns 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('isSuccess is false', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Data is null', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.null;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages contain auth error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"nonexistent-user-xyz@weplay.com\",\n  \"password\": \"SomePassword123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET /me without token - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Missing token returns 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response indicates failure', function () {",
+                                    "    const responseText = pm.response.text();",
+                                    "    if (responseText) {",
+                                    "        const json = pm.response.json();",
+                                    "        pm.expect(json).to.have.property('isSuccess');",
+                                    "        pm.expect(json.isSuccess).to.be.false;",
+                                    "    }",
+                                    "});",
+                                    "",
+                                    "pm.test('Data is null when body present', function () {",
+                                    "    const responseText = pm.response.text();",
+                                    "    if (responseText) {",
+                                    "        const json = pm.response.json();",
+                                    "        pm.expect(json.data).to.be.null;",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "GET /me with invalid token - 401",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Invalid token returns 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response indicates failure', function () {",
+                                    "    const responseText = pm.response.text();",
+                                    "    if (responseText) {",
+                                    "        const json = pm.response.json();",
+                                    "        pm.expect(json).to.have.property('isSuccess');",
+                                    "        pm.expect(json.isSuccess).to.be.false;",
+                                    "    }",
+                                    "});",
+                                    "",
+                                    "pm.test('Data is null when body present', function () {",
+                                    "    const responseText = pm.response.text();",
+                                    "    if (responseText) {",
+                                    "        const json = pm.response.json();",
+                                    "        pm.expect(json.data).to.be.null;",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer invalid.token.value"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Auth - Conflict",
+            "item": [
+                {
+                    "name": "POST Register duplicate email - 409",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Duplicate email rejected', function () {",
+                                    "    pm.response.to.have.status(409);",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.isSuccess).to.be.false;",
+                                    "});",
+                                    "",
+                                    "pm.test('Response follows ServiceResponse pattern', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('data');",
+                                    "    pm.expect(json).to.have.property('messages');",
+                                    "    pm.expect(json).to.have.property('isSuccess');",
+                                    "});",
+                                    "",
+                                    "pm.test('Data is null', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.data).to.be.null;",
+                                    "});",
+                                    "",
+                                    "pm.test('Messages contain conflict error', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.messages).to.be.an('array').that.is.not.empty;",
+                                    "    pm.expect(json.messages[0]).to.have.property('errorCode');",
+                                    "    pm.expect(json.messages[0]).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\",\n  \"nombre\": \"Duplicate User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5001"
+        },
+        {
+            "key": "testEmail",
+            "value": ""
+        },
+        {
+            "key": "testPassword",
+            "value": "TestPassword123!"
+        },
+        {
+            "key": "accessToken",
+            "value": ""
+        },
+        {
+            "key": "userId",
+            "value": ""
+        }
+    ]
+}

@@ -1,0 +1,5 @@
+export { default as HomePage } from "./HomePage"
+export { default as CampaniasPage } from "./CampaniasPage"
+export { default as CampaniaDetailPage } from "./CampaniaDetailPage"
+export { default as CampaniaNewPage } from "./CampaniaNewPage"
+export { default as ExplorarPage } from "./ExplorarPage"
